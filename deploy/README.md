@@ -1,47 +1,47 @@
 # Deploy
 
-仓库的所有部署产物都集中在此目录。所有命令都从仓库根目录运行，并通过 `--project-directory .` 固定仓库根目录为 Compose 路径基准；环境文件显式使用根目录 `.env`。
+Semua artefak deploy repo ini terkumpul di direktori ini. Semua perintah dijalankan dari root repo, dan `--project-directory .` mengunci root repo sebagai basis path Compose; file environment memakai `.env` di root secara eksplisit.
 
-- `compose.yaml`：默认本地全栈环境，从源码构建 `api`、`worker`、`web-next`、`nginx`，并启动 PostgreSQL、Redis、MinIO、Mailpit。`db-migrate` 在 SQL 迁移后以 `BUNDLED_SERVICES=true` 运行 `scripts/seed-bundled-services.ts`，把 Mailpit / 内嵌 MinIO 的开发默认值写入数据库（已配置、未验证），引导页直接预填。
-- `compose.dev.yaml`：开发环境兼容入口，保留给显式 `docker compose --project-directory . --env-file .env -f deploy/compose.dev.yaml` 使用，同样面向本地开发。
-- `compose.prod.yaml`：从源码构建的部署模板，不包含 MinIO / Mailpit，不预置任何 SMTP / S3 默认值；应用配置全部走 `/setup` 引导页写入数据库。
-- `compose.images.yaml`：使用 GHCR 已构建镜像部署，不包含 MinIO / Mailpit，默认通过 `18080:80` 暴露 Nginx，同样不预置应用配置。
-- `docker/`：`api`、`worker`、`web-next`、`nginx` 四个镜像定义（Compose 构建上下文均为仓库根目录 `.`，Nginx 配置从 `deploy/nginx` 复制；`api` 镜像包含 `scripts/`，供 `db-migrate` 调用迁移与种子脚本）。
-- `nginx/`：Web 静态资源及 `/api` 反向代理配置。
+- `compose.yaml`: lingkungan full-stack lokal default, build dari source untuk `api`, `worker`, `web-next`, `nginx`, plus PostgreSQL, Redis, MinIO, Mailpit. `db-migrate` setelah migrasi SQL menjalankan `scripts/seed-bundled-services.ts` dengan `BUNDLED_SERVICES=true`, menulis nilai default Mailpit / MinIO bawaan ke database (sudah terkonfigurasi, belum terverifikasi), sehingga halaman panduan langsung terisi.
+- `compose.dev.yaml`: pintu masuk lingkungan dev, dipakai dengan perintah eksplisit `docker compose --project-directory . --env-file .env -f deploy/compose.dev.yaml`, juga untuk pengembangan lokal.
+- `compose.prod.yaml`: template deploy dari source, TIDAK berisi MinIO / Mailpit, TIDAK memberi nilai default SMTP / S3; semua konfigurasi aplikasi lewat halaman panduan `/setup` dan ditulis ke database.
+- `compose.images.yaml`: deploy memakai image GHCR yang sudah di-build, TIDAK berisi MinIO / Mailpit, default mengekspos Nginx lewat `18080:80`, konfigurasi aplikasi juga sama-sama tidak terisi.
+- `docker/`: definisi empat image `api`, `worker`, `web-next`, `nginx` (konteks build Compose semuanya root repo `.`, konfigurasi Nginx disalin dari `deploy/nginx`; image `api` berisi `scripts/` agar `db-migrate` bisa memanggil script migrasi dan seed).
+- `nginx/`: konfigurasi reverse proxy `/api` dan aset statis Web.
 
-图库缩略图（派生预览对象）：`apps/worker` 在产物上传成功后生成一张 512px 长边的预览图（图像用 sharp 转 WebP，视频用 ffmpeg 抽一帧转 JPEG），对象键由源键纯函数派生（`<source>.thumb-512.webp|.jpg`，同目录同前缀），视频那一帧同时写入 `assets.poster_object_key` 与 `thumbnail_object_key`。ffmpeg 由 `deploy/docker/worker.Dockerfile` 的 `apk add --no-cache ffmpeg` 提供（Alpine musl 原生包；`ffmpeg-static` 的 glibc 二进制在本镜像内无法执行）。任何预览生成失败都只把 `thumbnail_state` 记为 `failed`，绝不影响任务结果，图库格子自动回退到原图。
+Thumbnail galeri (objek preview turunan): `apps/worker` setelah produk berhasil diunggah membuat satu gambar preview dengan sisi terpanjang 512px (gambar diubah ke WebP memakai sharp, video diambil satu frame memakai ffmpeg lalu diubah ke JPEG), key objek diturunkan murni dari key sumber (`<source>.thumb-512.webp|.jpg`, direktori dan prefix sama), frame video itu sekaligus ditulis ke `assets.poster_object_key` dan `thumbnail_object_key`. ffmpeg disediakan oleh `apk add --no-cache ffmpeg` di `deploy/docker/worker.Dockerfile` (paket native musl Alpine; binary `ffmpeg-static` dari npm berbasis glibc dan tidak bisa dieksekusi di image ini). Kegagalan membuat preview apa pun hanya mencatat `thumbnail_state` sebagai `failed`, tidak pernah memengaruhi hasil tugas, dan grid galeri otomatis kembali memakai gambar asli.
 
-升级到带此功能的版本后请跑一次回填，否则新资产有预览、历史资产仍下载原图，网格表现不一致（`api` 镜像不含 ffmpeg，视频行会记为 `failed`，因此完整回填在 `worker` 容器内执行）：
+Setelah upgrade ke versi yang membawa fitur ini, jalankan backfill sekali, kalau tidak aset baru punya preview sedangkan aset lama masih mengunduh gambar asli dan tampilan grid tidak konsisten (`api` tidak berisi ffmpeg, baris video akan tercatat `failed`, jadi backfill lengkap dieksekusi di dalam container `worker`):
 
 ```bash
 docker compose --project-directory . --env-file .env -f deploy/compose.yaml \
   exec worker sh -c "pnpm --filter @musecanvas/database exec tsx ../../scripts/backfill-asset-thumbnails.ts"
 ```
 
-脚本幂等可重跑，支持 `--dry-run`、`--limit=<n>`、`--kind=image|video|all`；`deploy/compose.prod.yaml` / `compose.images.yaml` 把 `compose.yaml` 换掉即可。
+Script ini idempotent dan bisa dijalankan ulang, mendukung `--dry-run`, `--limit=<n>`, `--kind=image|video|all`; untuk `deploy/compose.prod.yaml` / `compose.images.yaml` tinggal ganti `compose.yaml`-nya saja.
 
-`.env` 只承载 bootstrap 与部署开关：`POSTGRES_PASSWORD`、`APP_MASTER_KEY`、`MINIO_ROOT_*`（内嵌栈）、`MUSECANVAS_IMAGE_TAG` / `MUSECANVAS_HTTP_PORT`，`COOKIE_SECURE`，以及默认全为 `false` 的 `ALLOW_INSECURE_*` / `ALLOW_PLUGIN_UPLOAD` 开关。SMTP、应用 S3 配置、公开访问地址、OAuth 客户端凭据、上传限制和提示词模板是数据库配置，不再经环境变量传递。旧 `prepare-prompt-templates` 脚本仍在 `scripts/` 供手动兼容使用，不再被任何 Compose 文件挂载或执行。
+`.env` hanya berisi bootstrap dan saklar deploy: `POSTGRES_PASSWORD`, `APP_MASTER_KEY`, `MINIO_ROOT_*` (stack bawaan), `MUSECANVAS_IMAGE_TAG` / `MUSECANVAS_HTTP_PORT`, `COOKIE_SECURE`, serta saklar `ALLOW_INSECURE_*` / `ALLOW_PLUGIN_UPLOAD` yang defaultnya semua `false`. SMTP, konfigurasi S3 aplikasi, alamat publik, kredensial client OAuth, batas upload, dan template prompt adalah konfigurasi database, tidak lagi dikirim lewat environment variable. Script lama `prepare-prompt-templates` masih ada di `scripts/` untuk kompatibilitas manual, tidak lagi di-mount atau dieksekusi oleh file Compose mana pun.
 
-Cookie 策略：本地 `compose.yaml` / `compose.dev.yaml` 直接通过 HTTP 提供服务，因此 `COOKIE_SECURE` 默认 `false`；在 TLS 反向代理后使用这两个入口时应设为 `true`。`compose.prod.yaml` / `compose.images.yaml` 按生产 TLS 部署默认 `true`；若明确要把它们的 Nginx 端口直接暴露为纯 HTTP，必须在 `.env` 设置 `COOKIE_SECURE=false`，否则浏览器不会回传 setup/session cookie。
+Kebijakan cookie: stack lokal `compose.yaml` / `compose.dev.yaml` melayani langsung lewat HTTP, jadi `COOKIE_SECURE` default `false`; bila kedua pintu masuk ini dipakai di belakang reverse proxy TLS, set ke `true`. `compose.prod.yaml` / `compose.images.yaml` mengasumsikan deploy produksi bert TLS sehingga default `true`; bila port Nginx-nya memang sengaja diekspos langsung sebagai HTTP polos, set `COOKIE_SECURE=false` di `.env`, kalau tidak browser tidak akan mengirim balik cookie setup/session.
 
-插件代码包上传（默认关闭，需 `ALLOW_PLUGIN_UPLOAD=true`）：管理员上传的 provider 插件包（`plugin_id@version` + 自包含 `.mjs`）经对象存储中转——`api` 校验后写入 `provider_plugins` 表并把制品放进 bucket，`worker` 拉取后动态 `import()`。`api` 与 `worker` 是彼此独立镜像、不共享任何卷，所以 `worker` 只能把本地缓存写在 `PLUGIN_CACHE_DIR`（`backend-env` 默认 `/tmp/musecanvas-plugin-cache`，不得放在镜像层 `/app` 下）。`nginx/default.conf` 为两个大体积上传入口各单独立了一个 location：`/api/admin/plugins/upload` 把 `client_max_body_size` 放宽到 `8m`，`/api/images/edit`（局部修改：浏览器在一次 multipart 请求里同时提交完整源图与不超过 4MB 的 alpha 遮罩）放宽到 `24m`；两处都刻意完整重复 `/api/` 的 `proxy_pass` + `proxy_set_header`：上游是经 `resolver` 解析的变量，只覆盖体积限制的“半截” location 会静默错误代理。`object_key` 为私有 bucket 对象键，任何接口响应都不得返回给客户端。
+Upload paket kode plugin (default mati, perlu `ALLOW_PLUGIN_UPLOAD=true`): paket plugin provider yang diunggah admin (`plugin_id@version` + file `.mjs` yang mandiri) transit lewat object storage — `api` memvalidasi lalu menulis ke tabel `provider_plugins` dan menyimpan artefak ke bucket, `worker` mengambilnya kembali lalu melakukan dynamic `import()`. `api` dan `worker` adalah image yang saling independen dan tidak berbagi volume apa pun, jadi `worker` hanya bisa menulis cache lokal di `PLUGIN_CACHE_DIR` (default `backend-env` adalah `/tmp/musecanvas-plugin-cache`, tidak boleh di layer image `/app`). `nginx/default.conf` membuat location terpisah untuk dua pintu upload berukuran besar: `/api/admin/plugins/upload` menaikkan `client_max_body_size` ke `8m`, `/api/images/edit` (edit sebagian: browser mengirim gambar sumber lengkap plus alpha mask sampai 4MB dalam satu request multipart) ke `24m`; keduanya sengaja mengulang lengkap konfigurasi `proxy_pass` + `proxy_set_header` dari `/api/`: upstream di-resolve lewat variabel `resolver`, location yang hanya menimpa batas ukuran saja akan salah mem-proxy secara diam-diam. `object_key` adalah key objek bucket privat, respons antarmuka apa pun tidak boleh mengembalikannya ke client.
 
-升级兼容（仅保留一个版本，可选）：升级前用旧密钥加密的会话/OTP（`SESSION_SECRET`）、OAuth 客户端凭据（`OAUTH_CREDENTIALS_ENCRYPTION_KEY`）、供应商凭据（`PROVIDER_CREDENTIALS_ENCRYPTION_KEY`）仍可通过只读回退继续读取，所有新写入只使用 `APP_MASTER_KEY` 派生的密钥。四个 Compose 文件的 API/worker 共享 `backend-env` 已透传这三个变量（均可选，缺省为空），新安装留空即可，下个版本移除。`scripts/generate-env.mjs` 只生成/补齐 bootstrap 密钥（`POSTGRES_PASSWORD`、`APP_MASTER_KEY`、`MINIO_ROOT_*`），从不生成旧密钥，已存在的值绝不改动。
+Kompatibilitas upgrade (hanya dipertahankan satu versi, opsional): session/OTP yang dienkripsi key lama (`SESSION_SECRET`), kredensial client OAuth (`OAUTH_CREDENTIALS_ENCRYPTION_KEY`), dan kredensial supplier (`PROVIDER_CREDENTIALS_ENCRYPTION_KEY`) masih bisa dibaca lewat fallback read-only, semua penulisan baru hanya memakai key turunan `APP_MASTER_KEY`. Keempat file Compose sudah meneruskan ketiga variabel ini lewat `backend-env` bersama (semuanya opsional, default kosong), instalasi baru biarkan kosong, versi berikutnya akan menghapusnya. `scripts/generate-env.mjs` hanya membuat/melengkapi bootstrap key (`POSTGRES_PASSWORD`, `APP_MASTER_KEY`, `MINIO_ROOT_*`), tidak pernah membuat key lama, nilai yang sudah ada tidak pernah diubah.
 
-数据库迁移：`db-migrate` 执行的 `packages/database/src/migrate.ts` 只驱动顺序迁移器，按 `packages/database/migrations/NNNN_*.sql` 逐个文件在独立事务中执行并记入 `schema_migrations`（会话级 advisory lock 保证多实例只有一个执行者）。由旧版整块脚本建出的数据库没有历史记录，首次运行会被识别为 legacy 并完整重放一次（所有语句幂等），之后只执行新增文件。`tsx src/migrate.ts --dry-run` 只列出待执行的迁移。已执行的迁移文件不得修改或删除，变更一律新增文件。
+Migrasi database: `db-migrate` menjalankan `packages/database/src/migrate.ts` yang hanya menggerakkan migrator berurutan, mengeksekusi tiap file di `packages/database/migrations/NNNN_*.sql` dalam transaksi terpisah dan mencatatnya ke `schema_migrations` (advisory lock level sesi memastikan hanya satu executor bila ada banyak instance). Database yang dibangun versi lama dari satu script utuh tidak punya catatan riwayat, saat pertama jalan akan dikenali sebagai legacy lalu diputar ulang penuh (semua statement idempotent), setelah itu hanya file baru yang dieksekusi. `tsx src/migrate.ts --dry-run` hanya menampilkan migrasi yang menunggu. File migrasi yang sudah dieksekusi tidak boleh diubah atau dihapus, perubahan apa pun harus lewat file baru.
 
-供应商凭据重新加密（升级到包含 `0027_credentials_converge` 的版本后执行一次）：把仍由旧 `PROVIDER_CREDENTIALS_ENCRYPTION_KEY` 加密的凭据改用 `APP_MASTER_KEY` 派生密钥重新加密，完成后该旧密钥即可从读路径移除。脚本逐行事务 + 比较并交换，可中断、可重跑，只输出凭据 id 与稳定错误码；任何一行失败都以非零退出码结束。
+Enkripsi ulang kredensial supplier (jalankan sekali setelah upgrade ke versi yang berisi `0027_credentials_converge`): kredensial yang masih terenkripsi `PROVIDER_CREDENTIALS_ENCRYPTION_KEY` lama dienkripsi ulang memakai key turunan `APP_MASTER_KEY`; setelah selesai, key lama bisa dihapus dari jalur baca. Script ini per-baris transaksi + compare-and-swap, bisa diinterupsi dan dijalankan ulang, hanya mengeluarkan id kredensial dan kode error yang stabil; satu baris gagal saja akan mengakhiri dengan exit code bukan nol.
 
 ```bash
 docker compose --project-directory . --env-file .env -f deploy/compose.yaml \
   exec worker sh -c "pnpm --filter @musecanvas/database exec tsx ../../scripts/reencrypt-provider-credentials.ts --dry-run"
 ```
 
-确认输出无 `failed` 后去掉 `--dry-run` 再执行一次。
+Setelah memastikan output tidak ada `failed`, hapus `--dry-run` lalu jalankan sekali lagi.
 
-供应商凭据连通测试由 `worker` 执行（只有它会加载插件代码，上传插件同样可测）：`api` 在凭据行上登记测试请求并最多等待约 20 秒，`worker` 每 2 秒领取一次待测请求。`worker` 未运行时测试会停留在“测试中”，启动后自动完成。
+Tes konektivitas kredensial supplier dieksekusi oleh `worker` (hanya dialah yang memuat kode plugin, upload plugin pun bisa dites dengan cara yang sama): `api` mendaftarkan permintaan tes pada baris kredensial lalu menunggu maksimal sekitar 20 detik, `worker` mengambil permintaan yang menunggu setiap 2 detik. Bila `worker` tidak berjalan, tes akan tertahan di status "menguji", dan selesai sendiri setelah worker jalan.
 
-示例（仓库根目录）：
+Contoh (dari root repo):
 
 ```bash
 docker compose --project-directory . --env-file .env -f deploy/compose.yaml up --build -d
@@ -49,4 +49,6 @@ docker compose --project-directory . --env-file .env -f deploy/compose.images.ya
 docker compose --project-directory . --env-file .env -f deploy/compose.prod.yaml up --build -d
 ```
 
-真实密钥只能通过本地环境或部署平台注入，不要提交 `.env`。
+Key asli hanya boleh diinjeksikan lewat environment lokal atau platform deploy, jangan di-commit ke `.env`.
+
+> ⚠️ **Dokploy LABS (ARM64):** pakai `deploy/compose.prod.yaml` (build dari source). JANGAN pakai `compose.images.yaml` — image GHCR upstream hanya `amd64` (workflow tidak mengatur `platforms:`). Lihat `DOKPLOY.md` di root repo.

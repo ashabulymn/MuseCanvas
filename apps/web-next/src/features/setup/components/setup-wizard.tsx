@@ -54,57 +54,57 @@ interface WizardStep {
 const steps: WizardStep[] = [
   {
     id: 'site',
-    label: '站点配置',
+    label: 'Konfigurasi situs',
     sections: ['site'],
-    summary: '站点配置包括服务域名（例如 https://musecanvas.example.com）及公开访问端点。',
+    summary: 'Konfigurasi situs mencakup domain layanan (misalnya https://musecanvas.example.com) dan endpoint akses publik.',
     manual: [
-      '服务端环境变量 BASE_URL 已指向本实例的公开地址。',
-      '站点名称与地址将用于邮件、OAuth 回调与分享链接。',
+      'Environment variable server BASE_URL sudah mengarah ke alamat publik instance ini.',
+      'Nama dan alamat situs akan dipakai untuk email, callback OAuth, dan link berbagi.',
     ],
   },
   {
     id: 'smtp',
-    label: 'SMTP 邮件与管理员',
+    label: 'SMTP email & admin',
     sections: ['smtp', 'admin'],
-    summary: '配置用于向用户发送邮箱登录验证码（OTP）的 SMTP 发信服务器，并领取第一个管理员账号。',
+    summary: 'Konfigurasi server SMTP pengirim untuk mengirim kode OTP login email ke pengguna, lalu buat akun admin pertama.',
     manual: [
-      '发信测试在管理后台的系统配置页执行，向导本身不会发送任何邮件。',
-      '开发环境下可直接查看后端控制台输出的 OTP 验证码，免发信调试。',
+      'Tes pengiriman dilakukan di halaman konfigurasi sistem pada admin panel; wizard ini sendiri tidak mengirim email apa pun.',
+      'Di lingkungan dev, kode OTP bisa langsung dilihat dari output konsol backend, tanpa perlu pengiriman email untuk debugging.',
     ],
   },
   {
     id: 'storage',
-    label: '对象存储（S3）',
+    label: 'Object storage (S3)',
     sections: ['storage'],
-    summary: '对象存储（S3 兼容、阿里云 OSS、腾讯云 COS、Cloudflare R2、本地 MinIO）用于持久化保存用户生成的图片资产。',
+    summary: 'Object storage (kompatibel S3, Alibaba Cloud OSS, Tencent Cloud COS, Cloudflare R2, MinIO lokal) dipakai untuk menyimpan aset gambar hasil generate pengguna secara persisten.',
     manual: [
-      '存储桶凭据在管理后台的系统配置页写入，向导不读写任何对象。',
-      'Worker 会在生成完毕后把资产上传至目标存储桶并签发访问 URL。',
+      'Kredensial bucket ditulis di halaman konfigurasi sistem pada admin panel; wizard tidak membaca atau menulis objek apa pun.',
+      'Worker akan mengunggah aset ke bucket tujuan setelah generate selesai, lalu menerbitkan URL aksesnya.',
     ],
   },
   {
     id: 'providers',
-    label: 'AI 模型与供应商',
+    label: 'Model AI & supplier',
     sections: ['providers', 'models'],
-    summary: '配置上游生成大模型服务凭据（如 OpenAI DALL·E 3、火山引擎 Seedream、Anthropic Claude、Google Veo）。',
+    summary: 'Konfigurasi kredensial layanan model generate upstream (misalnya OpenAI DALL·E 3, Seedream Volcengine, Anthropic Claude, Google Veo).',
     manual: [
-      '凭据可在系统完成引导后，于管理后台添加多个 API Key 并配置费率与用量。',
-      '向导不请求任何上游接口，也不会校验 Key 是否可用。',
+      'Kredensial bisa ditambah dengan banyak API Key setelah panduan selesai, dari admin panel, beserta tarif dan kuota pemakaian.',
+      'Wizard tidak memanggil antarmuka upstream apa pun, dan tidak memvalidasi apakah Key bisa dipakai.',
     ],
   },
   {
     id: 'review',
-    label: '环境检查与完成',
+    label: 'Pemeriksaan lingkungan & selesai',
     sections: ['oauth', 'templates', 'runtime'],
-    summary: '汇总服务端启动时记录的环境检查结果，以及尚未完成的引导条目。',
-    manual: ['下方“环境检查”来自服务端读取结果；其余条目需要你逐项人工确认。'],
+    summary: 'Ringkasan hasil pemeriksaan lingkungan yang dicatat server saat startup, beserta item panduan yang belum selesai.',
+    manual: ['"Pemeriksaan lingkungan" di bawah berasal dari hasil pembacaan server; item lainnya perlu dikonfirmasi satu per satu secara manual.'],
   },
 ]
 
 export function SetupWizardSkeleton() {
   return (
     <div className="flex min-h-screen flex-col bg-canvas text-foreground" role="status" aria-busy="true">
-      <span className="sr-only">正在读取系统配置状态</span>
+      <span className="sr-only">Memuat status konfigurasi sistem</span>
       <header className="flex min-h-[var(--layout-header)] shrink-0 items-center justify-between gap-4 border-b border-border bg-surface px-4 sm:px-6" aria-hidden="true">
         <div className="flex items-center gap-3">
           <Skeleton className="h-5 w-32" />
@@ -158,24 +158,24 @@ export function SetupWizardSkeleton() {
 }
 
 const checkKeyLabel: Record<BootstrapCheckKey, string> = {
-  database: '数据库连接',
-  redis: 'Redis Streams 队列',
-  masterKey: '主密钥（HKDF）',
-  runtime: '运行时限制',
+  database: 'Koneksi database',
+  redis: 'Antrean Redis Streams',
+  masterKey: 'Master key (HKDF)',
+  runtime: 'Batasan runtime',
 }
 
 function sectionLabel(key: OnboardingSectionKey): string {
   return {
-    bootstrap: '环境引导',
-    site: '站点信息',
-    smtp: 'SMTP 邮件',
-    admin: '管理员账号',
-    storage: '对象存储',
-    providers: '模型供应商',
-    models: '生成模型',
-    oauth: 'OAuth 登录',
-    templates: '提示词模板',
-    runtime: '运行时限制',
+    bootstrap: 'Panduan lingkungan',
+    site: 'Info situs',
+    smtp: 'Email SMTP',
+    admin: 'Akun admin',
+    storage: 'Object storage',
+    providers: 'Supplier model',
+    models: 'Model generate',
+    oauth: 'Login OAuth',
+    templates: 'Template prompt',
+    runtime: 'Batasan runtime',
   }[key]
 }
 
@@ -194,7 +194,7 @@ function SectionStatusLine({
         {state ? (
           <span className="font-mono text-xs text-muted-foreground">{state.updatedAt.slice(0, 10)}</span>
         ) : null}
-        <Badge tone={complete ? 'success' : 'neutral'}>{complete ? '服务端已记录' : '尚未完成'}</Badge>
+        <Badge tone={complete ? 'success' : 'neutral'}>{complete ? 'Sudah dicatat server' : 'Belum selesai'}</Badge>
       </span>
     </div>
   )
@@ -279,10 +279,10 @@ export function SetupWizard() {
       <header className="flex min-h-[var(--layout-header)] shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-border bg-surface px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <span className="text-module text-foreground">MuseCanvas</span>
-          <Badge tone="accent">系统安装向导</Badge>
+          <Badge tone="accent">Panduan instalasi sistem</Badge>
         </div>
         {status?.setupComplete ? (
-          <span className="text-sm text-muted-foreground">系统已完成初始配置</span>
+          <span className="text-sm text-muted-foreground">Sistem sudah selesai dikonfigurasi awal</span>
         ) : null}
       </header>
 
@@ -293,7 +293,7 @@ export function SetupWizard() {
             steps={steps.map((step) => ({ id: step.id, label: step.label }))}
             current={currentStepIndex}
             onStepSelect={(index) => navigateToStep(index)}
-            aria-label="安装向导步骤"
+            aria-label="Langkah panduan instalasi"
           />
         </div>
       </div>
@@ -304,7 +304,7 @@ export function SetupWizard() {
             <CardHeader className="gap-1">
               <CardTitle level={2}>{currentStep.label}</CardTitle>
               <CardDescription>
-                为 MuseCanvas 实例配置核心基础设施参数，可随时在管理后台更改。
+                Konfigurasi parameter infrastruktur inti untuk instance MuseCanvas ini; bisa diubah kapan saja dari admin panel.
               </CardDescription>
             </CardHeader>
 
@@ -313,11 +313,11 @@ export function SetupWizard() {
 
               {currentStep.id === 'review' ? (
                 <InfoGroup
-                  title="环境检查（服务端读取结果）"
+                  title="Pemeriksaan lingkungan (hasil pembacaan server)"
                   caption={
                     status?.bootstrap
-                      ? `由服务端在 ${status.bootstrap.checkedAt.slice(0, 10)} 读取，向导本身不执行这些检查。`
-                      : '服务端未返回环境检查结果。'
+                      ? `Dibaca oleh server pada ${status.bootstrap.checkedAt.slice(0, 10)}; wizard ini sendiri tidak menjalankan pemeriksaan tersebut.`
+                      : 'Server tidak mengembalikan hasil pemeriksaan lingkungan.'
                   }
                 >
                   {status?.bootstrap ? (
@@ -331,7 +331,7 @@ export function SetupWizard() {
                               tone={ok ? 'success' : check.status === 'missing' ? 'warning' : 'danger'}
                               icon={ok ? <Check weight="fill" /> : <CircleAlert weight="fill" />}
                             >
-                              {ok ? '正常' : check.status === 'missing' ? '缺失' : '异常'}
+                              {ok ? 'Normal' : check.status === 'missing' ? 'Hilang' : 'Bermasalah'}
                             </Badge>
                           </li>
                         )
@@ -339,7 +339,7 @@ export function SetupWizard() {
                     </ul>
                   ) : (
                     <Alert tone="warning" role="status">
-                      环境检查结果不可用。请确认 API 服务已启动后重新打开本页。
+                      Hasil pemeriksaan lingkungan tidak tersedia. Pastikan layanan API sudah berjalan, lalu buka lagi halaman ini.
                     </Alert>
                   )}
 
@@ -355,8 +355,8 @@ export function SetupWizard() {
                 </InfoGroup>
               ) : (
                 <InfoGroup
-                  title="系统实际检查"
-                  caption="以下状态由服务端引导记录读取，向导不会代为执行任何配置或请求。"
+                  title="Pemeriksaan aktual sistem"
+                  caption="Status berikut dibaca dari catatan panduan server; wizard tidak menjalankan konfigurasi atau request apa pun atas namamu."
                 >
                   <div className="flex flex-col gap-2">
                     {currentStep.sections.map((sectionKey) => (
@@ -371,22 +371,22 @@ export function SetupWizard() {
               )}
 
               <InfoGroup
-                title="人工核对清单"
-                caption="向导不会验证以下内容，请你在对应管理后台页面自行确认。"
+                title="Daftar periksa manual"
+                caption="Wizard tidak memverifikasi hal berikut; silakan konfirmasi sendiri di halaman admin panel yang sesuai."
               >
                 <ManualList items={currentStep.manual} />
               </InfoGroup>
 
               {currentStep.id === 'review' ? (
                 environmentReady ? (
-                  <Alert tone="success" role="status" title="环境检查通过">
-                    服务端记录的环境检查全部正常。仍需人工确认的条目见上方的引导记录状态与核对清单。
+                  <Alert tone="success" role="status" title="Pemeriksaan lingkungan lolos">
+                    Semua pemeriksaan lingkungan yang dicatat server sudah normal. Item yang masih perlu dikonfirmasi manual ada di status catatan panduan dan daftar periksa di atas.
                   </Alert>
                 ) : (
-                  <Alert tone="danger" role="alert" title="环境检查尚未通过">
+                  <Alert tone="danger" role="alert" title="Pemeriksaan lingkungan belum lolos">
                     {status?.bootstrap
-                      ? '至少有一项环境检查未通过，请先处理上方标记为缺失或异常的条目。'
-                      : '服务端没有返回环境检查结果，因此无法确认实例是否具备运行条件。'}
+                      ? 'Setidaknya satu pemeriksaan lingkungan belum lolos; tangani dulu item yang ditandai hilang atau bermasalah di atas.'
+                      : 'Server tidak mengembalikan hasil pemeriksaan lingkungan, jadi tidak bisa dipastikan apakah instance ini sudah siap jalan.'}
                   </Alert>
                 )
               ) : null}
@@ -394,10 +394,10 @@ export function SetupWizard() {
               {currentStep.id === 'review' ? (
                 <div className="flex flex-wrap gap-3">
                   <Link href="/generate" className={buttonVariants({ variant: 'primary' })}>
-                    进入创作端
+                    Masuk ke meja kreasi
                   </Link>
                   <Link href="/admin" className={buttonVariants({ variant: 'secondary' })}>
-                    进入管理后台
+                    Masuk ke admin panel
                   </Link>
                 </div>
               ) : null}
@@ -411,7 +411,7 @@ export function SetupWizard() {
                 disabled={currentStepIndex === 0}
                 icon={<ChevronLeft weight="bold" aria-hidden="true" className={iconSize.sm} />}
               >
-                上一步
+                Langkah sebelumnya
               </Button>
 
               {!isLastStep ? (
@@ -424,7 +424,7 @@ export function SetupWizard() {
                     />
                   }
                 >
-                  下一步
+                  Langkah berikutnya
                 </Button>
               ) : null}
             </div>

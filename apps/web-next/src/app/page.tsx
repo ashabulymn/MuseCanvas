@@ -26,8 +26,8 @@ import { iconSize } from '@/shared/components/ui'
 export const dynamic = 'force-static'
 
 export const metadata = {
-  title: 'MuseCanvas - 把灵感整理成可生成的画面',
-  description: '面向创作者的 AI 图像生成工作台：提示词、画幅与参考图、任务队列和作品图库保持在同一条创作路径上。',
+  title: 'MuseCanvas - Merapikan inspirasi menjadi gambar yang bisa di-generate',
+  description: 'Meja kerja AI image generation untuk kreator: prompt, ukuran kanvas dan gambar referensi, antrean tugas, dan galeri karya tetap dalam satu jalur kreasi.',
 }
 
 const heroPrimary = buttonVariants({ variant: 'primary', size: 'lg' })
@@ -35,65 +35,65 @@ const heroGhost = buttonVariants({ variant: 'ghost', size: 'lg' })
 
 const consoleSpecs: { label: string; value: string; mono?: boolean }[] = [
   // 断行策略：数字与单位、名与版本之间用不断行空格绑定；` / ` 与 ` · ` 两侧留普通空格，允许在分隔符处换行
-  { label: '生成模型', value: 'GPT Image 2.5 / Seedream 4.5', mono: true },
-  { label: '画幅', value: '1:1 · 16:9 · 9:16 · 4:3 · 3:4', mono: true },
-  { label: '单次张数', value: '1 / 2 / 4 张', mono: true },
-  { label: '参考图', value: '最多 4 张，PNG / JPEG', mono: true },
+  { label: 'Model generate', value: 'GPT Image 2.5 / Seedream 4.5', mono: true },
+  { label: 'Ukuran kanvas', value: '1:1 · 16:9 · 9:16 · 4:3 · 3:4', mono: true },
+  { label: 'Jumlah sekali jalan', value: '1 / 2 / 4 gambar', mono: true },
+  { label: 'Gambar referensi', value: 'Maks. 4 gambar, PNG / JPEG', mono: true },
 ]
 
 const capabilities = [
   {
-    title: '提示词不需要套模板',
+    title: 'Prompt tidak perlu pakai template',
     description:
-      '写下主体、场景、材质、光线，以及想避开的元素就够了。风格模板由系统侧统一维护，提交前不必手动挑选。',
+      'Cukup tulis subjek, suasana, material, pencahayaan, dan elemen yang ingin dihindari. Template gaya dikelola seragam dari sisi sistem, tidak perlu dipilih manual sebelum submit.',
     icon: WandSparkles,
   },
   {
-    title: '模型、画幅与参考图',
+    title: 'Model, ukuran kanvas, dan gambar referensi',
     description:
-      '在同一个面板里切换模型、5 种画幅和单次张数，并上传 PNG 或 JPEG 参考图作为构图与风格依据。',
+      'Ganti model, 5 ukuran kanvas, dan jumlah sekali jalan dalam satu panel yang sama, lalu unggah gambar referensi PNG atau JPEG sebagai acuan komposisi dan gaya.',
     icon: Layers3,
   },
   {
-    title: '排队、重试与取消',
+    title: 'Antre, retry, dan batal',
     description:
-      '任务提交后进入队列按序执行，失败会自动重试；也可以只对失败的任务手动重跑，或在结束前取消。',
+      'Setelah disubmit, tugas masuk antrean dan dieksekusi berurutan; bila gagal akan di-retry otomatis. Bisa juga menjalankan ulang manual hanya tugas yang gagal, atau membatalkan sebelum selesai.',
     icon: Repeat,
   },
   {
-    title: '作品自动沉淀',
+    title: 'Karya tersimpan otomatis',
     description:
-      '生成结果自动进入图库。调整网格密度、放大比对细节、下载原图，或者单张、批量删除不要的版本。',
+      'Hasil generate otomatis masuk ke galeri. Atur kerapatan grid, perbesar untuk membandingkan detail, unduh gambar asli, atau hapus versi yang tidak diinginkan — satu per satu atau sekaligus.',
     icon: Library,
   },
   {
-    title: '验证码登录',
+    title: 'Login pakai kode verifikasi',
     description:
-      '用邮箱接收 6 位验证码直接进入，不需要再记一个密码；也支持 GitHub 与 Google 账号。部署方可切换为邀请码注册。',
+      'Terima kode 6 digit lewat email lalu langsung masuk, tidak perlu mengingat password lagi. Mendukung juga akun GitHub dan Google. Pihak yang men-deploy bisa menggantinya ke pendaftaran kode undangan.',
     icon: Mail,
   },
   {
-    title: '自托管与后台',
+    title: 'Self-hosted dan admin panel',
     description:
-      '通过初始化向导完成部署配置，任务、用户、模型与提供商、提示词模板、OAuth 都有各自的管理页面。',
+      'Selesaikan konfigurasi deploy lewat panduan inisialisasi; tugas, pengguna, model dan supplier, template prompt, dan OAuth masing-masing punya halaman pengelolaannya sendiri.',
     icon: ShieldCheck,
   },
 ]
 
 const workflowSteps = [
   {
-    title: '写下画面',
-    description: '用自然语言描述构图与氛围，需要延续某张图的感觉时，直接把它作为参考图上传。',
+    title: 'Tuliskan gambarnya',
+    description: 'Deskripsikan komposisi dan suasana dengan bahasa alami; bila ingin melanjutkan nuansa sebuah gambar, unggah gambar itu langsung sebagai gambar referensi.',
     icon: PenLine,
   },
   {
-    title: '确定输出',
-    description: '选择模型、画幅和单次张数，提交后任务进入队列，每条任务的状态都可以在创作台里跟着看。',
+    title: 'Tentukan output',
+    description: 'Pilih model, ukuran kanvas, dan jumlah sekali jalan; setelah disubmit, tugas masuk antrean dan status setiap tugas bisa diikuti dari meja kreasi.',
     icon: SlidersHorizontal,
   },
   {
-    title: '回看与下载',
-    description: '完成后结果自动出现在图库，按时间回看、放大比对、下载原图，或删除不满意的版本。',
+    title: 'Lihat kembali dan unduh',
+    description: 'Setelah selesai, hasil otomatis muncul di galeri; lihat berdasarkan waktu, perbesar untuk membandingkan, unduh gambar asli, atau hapus versi yang kurang cocok.',
     icon: Download,
   },
 ]
@@ -112,21 +112,21 @@ export default function HomePage() {
                 <h1 className="text-display text-foreground">MuseCanvas</h1>
                 {/* 副标题是 20px 的 subtitle + secondary 色，不再继承 Display */}
                 <p className="mt-4 text-subtitle text-muted-foreground [line-break:strict] [text-wrap:balance]">
-                  把灵感整理成可生成的画面
+                  Merapikan inspirasi menjadi gambar yang bisa di-generate
                 </p>
 
                 <p className="mt-6 max-w-xl text-base text-muted-foreground [text-wrap:pretty]">
-                  从提示词、模型与画幅，到任务队列和作品图库，一次生成经过的每个环节都留在同一条清晰的创作路径里。
+                  Dari prompt, model, dan ukuran kanvas, sampai antrean tugas dan galeri karya — setiap langkah dalam sekali generate tetap berada dalam satu jalur kreasi yang jelas.
                 </p>
 
                 {/* CTA 成对：primary（墨色）+ ghost */}
                 <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
                   <Link href="/login" className={heroPrimary}>
-                    开始创作
+                    Mulai berkarya
                     <ArrowRight weight="bold" aria-hidden="true" />
                   </Link>
                   <Link href="#workflow" className={heroGhost}>
-                    看看创作流程
+                    Lihat alur kreasi
                   </Link>
                 </div>
               </div>
@@ -138,7 +138,7 @@ export default function HomePage() {
               >
                 <div className="flex items-baseline justify-between gap-4 px-6 pb-4 pt-5">
                   <h2 id="console-overview-title" className="whitespace-nowrap text-sm font-medium text-foreground">
-                    创作台速览
+                    Sekilas meja kreasi
                   </h2>
                   <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">/generate</span>
                 </div>
@@ -171,12 +171,12 @@ export default function HomePage() {
           <Reveal>
             <div className="mx-auto w-full max-w-content px-4 py-16 sm:px-6 lg:py-24">
               <header className="max-w-3xl">
-                <h1 className="text-title text-foreground">产品能力</h1>
+                <h1 className="text-title text-foreground">Kemampuan produk</h1>
                 <h2
                   id="capabilities-title"
                   className="mt-3 text-section text-foreground [line-break:strict] [text-wrap:balance]"
                 >
-                  一次生成要经过的环节，都收在同一个工作台里
+                  Semua langkah dalam sekali generate, terkumpul dalam satu meja kerja
                 </h2>
               </header>
 
@@ -207,15 +207,15 @@ export default function HomePage() {
           <Reveal>
             <div className="mx-auto grid w-full max-w-content gap-12 px-4 py-16 sm:px-6 md:grid-cols-[0.8fr_1fr] lg:py-24">
               <div className="max-w-xl">
-                <h1 className="text-title text-foreground">创作流程</h1>
+                <h1 className="text-title text-foreground">Alur kreasi</h1>
                 <h2
                   id="workflow-title"
                   className="mt-3 text-section text-foreground [line-break:strict] [text-wrap:balance]"
                 >
-                  不把灵感塞进表单，而是放进流程
+                  Inspirasi tidak dimasukkan ke formulir, melainkan ke dalam alur
                 </h2>
                 <p className="mt-4 text-base text-muted-foreground [text-wrap:pretty]">
-                  登录后进入的不是一个功能堆叠的后台，而是一个专注的生成工作区：描述画面、确定输出、回看结果，三步之间没有需要来回搬运的中间状态。
+                  Setelah login, yang terbuka bukan tumpukan fitur admin, melainkan ruang kerja generate yang fokus: mendeskripsikan gambar, menentukan output, melihat hasil — tiga langkah tanpa ada state perantara yang harus dipindah-pindah.
                 </p>
               </div>
 
@@ -242,18 +242,18 @@ export default function HomePage() {
           <Reveal>
             <div className="mx-auto flex w-full max-w-content flex-col items-center gap-6 px-4 py-16 text-center sm:px-6 lg:py-24">
               <h2 id="cta-title" className="text-section text-foreground [line-break:strict] [text-wrap:balance]">
-                准备好让第一段描述成形了吗？
+                Siap membuat deskripsi pertamamu menjadi nyata?
               </h2>
               <p className="max-w-2xl text-base text-muted-foreground [text-wrap:pretty]">
-                登录后即进入创作台：写下提示词、选择画幅与张数，生成的作品会直接出现在你的图库里。
+                Setelah login, langsung masuk ke meja kreasi: tulis prompt, pilih ukuran kanvas dan jumlahnya, dan karya yang dihasilkan langsung muncul di galerimu.
               </p>
               <div className="flex flex-col items-center gap-3 sm:flex-row">
                 <Link href="/login" className={heroPrimary}>
-                  进入 MuseCanvas
+                  Masuk ke MuseCanvas
                   <ArrowRight weight="bold" aria-hidden="true" />
                 </Link>
                 <Link href="/terms" className={heroGhost}>
-                  先看用户协议
+                  Baca syarat pengguna dulu
                 </Link>
               </div>
             </div>

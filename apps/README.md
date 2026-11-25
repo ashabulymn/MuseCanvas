@@ -1,6 +1,5 @@
 # Applications
 
-- `web-next`: Next.js 15 (React 19) 用户端和管理员后台。
-- `api`: Next.js API Routes，负责认证、授权和业务接口。
-- `worker`: 独立 TypeScript Worker，负责队列消费和定时任务。
-
+- `web-next`: Next.js 15 (React 19), sisi pengguna dan admin panel.
+- `api`: Next.js API Routes, mengurus autentikasi, otorisasi, dan antarmuka bisnis.
+- `worker`: Worker TypeScript mandiri, mengurus konsumsi antrean dan tugas terjadwal.
