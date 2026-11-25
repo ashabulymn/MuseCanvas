@@ -12,7 +12,26 @@ Fork terjemahan Bahasa Indonesia dari [nextroad-dev/MuseCanvas](https://github.c
 
 - **Tipe: Compose** (bukan Dockerfile tunggal, bukan Nixpacks).
 - **Repo:** `ashabulymn/MuseCanvas`, branch `main`.
-- **File Compose: `deploy/compose.prod.yaml`** — build dari source.
+- **File Compose: `compose.dokploy.yaml` (di root repo)** — salinan persis
+  `deploy/compose.prod.yaml` (hanya header komentar yang ditambah), build
+  dari source.
+- **WAJIB pakai `compose.dokploy.yaml`, JANGAN `deploy/compose.prod.yaml`:**
+  deploy pertama (commit `7dd08bb`) memakai `deploy/compose.prod.yaml` dan
+  gagal deterministik sebelum build mulai:
+  `resolve : lstat /etc/dokploy/compose/labs-musecanvas-7lp4dk/code/deploy/deploy: no such file or directory`.
+  Penyebab: `compose.prod.yaml` memakai build context `"."` + dockerfile
+  `deploy/docker/*.Dockerfile`, yang hanya jalan bila project directory =
+  root repo (seperti perintah lokal upstream yang memakai
+  `--project-directory .`). Dokploy TIDAK memakai `--project-directory`:
+  project directory default Dokploy = direktori file compose (`deploy/`),
+  jadi context `"."` = `deploy/` dan path dockerfile jadi
+  `deploy/deploy/...` yang tidak ada. Dockerfile-nya sendiri juga COPY
+  path dari root repo (`package.json`, `apps/`, `packages/`,
+  `deploy/nginx/default.conf`), jadi context memang HARUS root repo.
+  Dengan file Compose di root, project directory default Dokploy = root
+  repo dan semua path resolve benar. File upstream
+  `deploy/compose.prod.yaml` sengaja TIDAK diubah supaya pemakaian lokal
+  upstream tetap jalan.
 - **JANGAN pakai `deploy/compose.images.yaml`** di Dokploy LABS: image GHCR
   upstream (`ghcr.io/nextroad-dev/musecanvas-*`) hanya di-build untuk
   `amd64` — workflow `.github/workflows/docker-image.yml` tidak mengatur
@@ -82,7 +101,8 @@ database. Mengisinya sebagai env tidak berpengaruh.
 
 1. Buat Application baru di Dokploy LABS, tipe **Compose**.
 2. Hubungkan repo `ashabulymn/MuseCanvas` (branch `main`),
-   Compose File: `deploy/compose.prod.yaml`.
+   Compose File: `compose.dokploy.yaml` (root repo — lihat bagian 1, jangan
+   pakai `deploy/compose.prod.yaml`).
 3. Isi environment variable wajib di atas (bagian 3). **Auto Deploy: OFF**
    (seperti app Dokploy lain — deploy manual supaya build besar tidak
    ke-trigger tiap push).
