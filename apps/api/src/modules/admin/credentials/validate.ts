@@ -79,7 +79,7 @@ export async function resolveCredentialTarget(state: {
   let baseUrl: string | null = state.baseUrl ?? null
   if (state.plugin) {
     const resolved = resolveCredentialBaseUrl(servable[0].manifest, baseUrl)
-    if (!resolved.ok) return failure('INVALID_BASE_URL', 'Base URL does not comply with this plugin's server endpoint policy')
+    if (!resolved.ok) return failure('INVALID_BASE_URL', 'Base URL does not comply with the server endpoint policy of this plugin')
     baseUrl = resolved.baseUrl ?? null
   } else if (baseUrl && !servable.some(entry => resolveCredentialBaseUrl(entry.manifest, baseUrl).ok)) {
     return failure('INVALID_BASE_URL', 'Base URL does not comply with the server endpoint policy of any plugin of this provider')
@@ -136,7 +136,7 @@ export function credentialBindingError(
   }
   const baseUrl = typeof credential.base_url === 'string' ? credential.base_url : null
   if (!resolveCredentialBaseUrl(manifest, baseUrl).ok) {
-    return { code: 'INVALID_BASE_URL', message: 'This provider credential's base URL does not comply with the model plugin's server endpoint policy' }
+    return { code: 'INVALID_BASE_URL', message: 'The base URL of this provider credential does not comply with the server endpoint policy of the model plugin' }
   }
   return null
 }

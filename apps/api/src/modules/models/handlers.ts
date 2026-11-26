@@ -380,7 +380,7 @@ async function savePluginModel(
     // is held to (a `fixed` plugin such as image 1.1.0 accepts only its official host).
     const effectiveBase = (baseUrl === undefined ? existing?.base_url : baseUrl) as string | null | undefined
     if (!resolveCredentialBaseUrl(catalog.manifest, effectiveBase).ok) {
-      return fail('INVALID_BASE_URL', 'Base URL does not comply with this plugin's server endpoint policy')
+      return fail('INVALID_BASE_URL', 'Base URL does not comply with the server endpoint policy of this plugin')
     }
     const credId = input.providerCredentialId
     const effectiveCredId = credId === undefined ? existing?.provider_credential_id : credId

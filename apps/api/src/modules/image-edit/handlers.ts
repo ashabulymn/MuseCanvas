@@ -383,7 +383,7 @@ export async function editImage(
     // The worker re-checks the object it fetches against the row it joins on, so a
     // mismatch here is a job that fails minutes later on a vendor error nobody read.
     if (inspectedSource.mimeType !== String(asset.mime_type || '')) {
-      return fail('INVALID_INPUT_IMAGE', 'The library artwork's actual format does not match its record and cannot be used for local edit', 400)
+      return fail('INVALID_INPUT_IMAGE', 'The actual format of the library artwork does not match its record and cannot be used for local edit', 400)
     }
     source = { width: inspectedSource.width, height: inspectedSource.height }
     // Referenced, not mirrored: no upload row, and never the asset's object key in
