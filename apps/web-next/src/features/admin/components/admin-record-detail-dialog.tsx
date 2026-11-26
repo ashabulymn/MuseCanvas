@@ -80,13 +80,13 @@ export function AdminRecordDetailDialog(props: AdminRecordDetailDialogProps) {
     } else onClose()
   }
   return (
-    <Dialog open={open} onClose={close} title={confirmation ? '确认删除' : title}
-      size={confirmation?.cancelLabel === '取消' ? 'narrow' : 'wide'}
+    <Dialog open={open} onClose={close} title={confirmation ? 'Confirm deletion' : title}
+      size={confirmation?.cancelLabel === 'Cancel' ? 'narrow' : 'wide'}
       panelClassName="max-h-[90dvh] max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_button]:min-w-[var(--control-lg)]"
       footer={confirmation ? <>
         <Button ref={cancelRef} variant="ghost" disabled={confirmation.pending} onClick={confirmation.onCancel}>{confirmation.cancelLabel}</Button>
-        <Button variant="danger" loading={confirmation.pending} disabled={confirmation.pending} onClick={confirmation.onConfirm}>确认删除</Button>
-      </> : <Button variant="ghost" onClick={onClose}>关闭详情</Button>}>
+        <Button variant="danger" loading={confirmation.pending} disabled={confirmation.pending} onClick={confirmation.onConfirm}>Confirm deletion</Button>
+      </> : <Button variant="ghost" onClick={onClose}>Close details</Button>}>
       <AdminRecordDialogContent {...props} cancelRef={cancelRef} />
     </Dialog>
   )
@@ -102,9 +102,9 @@ export function AdminMobileRecords<T extends { id: string }>({
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-3 md:hidden">
-      {loading ? <Card role="status" aria-busy="true"><span className="sr-only">正在加载列表</span><SkeletonText lines={3} /></Card>
-        : error ? <Alert tone="danger" role="alert" action={onRetry && <Button variant="secondary" onClick={onRetry}>刷新重试</Button>}>{error}</Alert>
-        : records.length === 0 ? <Card><EmptyState density="compact" title="暂无记录" description={empty} /></Card>
+      {loading ? <Card role="status" aria-busy="true"><span className="sr-only">Loading list</span><SkeletonText lines={3} /></Card>
+        : error ? <Alert tone="danger" role="alert" action={onRetry && <Button variant="secondary" onClick={onRetry}>Refresh and retry</Button>}>{error}</Alert>
+        : records.length === 0 ? <Card><EmptyState density="compact" title="No records yet" description={empty} /></Card>
         : records.map((record) => (
           <Card key={record.id} density="compact" className="min-w-0 gap-3">
             <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
@@ -112,7 +112,7 @@ export function AdminMobileRecords<T extends { id: string }>({
               {status(record)}
             </div>
             <div className="min-w-0 break-words text-xs text-muted-foreground [overflow-wrap:anywhere]">{summary(record)}</div>
-            <Button variant="secondary" size="lg" onClick={() => onDetails(record)} aria-describedby={`admin-record-${record.id}`}>查看详情</Button>
+            <Button variant="secondary" size="lg" onClick={() => onDetails(record)} aria-describedby={`admin-record-${record.id}`}>View details</Button>
           </Card>
         ))}
     </div>

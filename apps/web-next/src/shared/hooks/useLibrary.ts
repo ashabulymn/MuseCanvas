@@ -49,7 +49,7 @@ export function useLibraryInfiniteQuery(params: LibraryQueryParams = {}, { enabl
     queryFn: async ({ pageParam }) => {
       const res = await api.getAssets({ ...params, cursor: pageParam } as Record<string, string | number | boolean | undefined>)
       if (!res.success || !res.data) {
-        throw new Error(res.error?.message || '获取资产库列表失败')
+        throw new Error(res.error?.message || 'Failed to load asset library')
       }
       return {
         items: res.data.items || [],
@@ -70,7 +70,7 @@ export function useDeleteAssetMutation() {
     mutationFn: async (assetId: string) => {
       const res = await api.deleteAsset(assetId)
       if (!res.success) {
-        throw new Error(res.error?.message || '删除资产失败')
+        throw new Error(res.error?.message || 'Failed to delete asset')
       }
       return assetId
     },
@@ -89,7 +89,7 @@ export function useBatchDeleteAssetsMutation() {
         assetIds.map(async (id) => {
           const res = await api.deleteAsset(id)
           if (!res.success) {
-            throw new Error(res.error?.message || `删除资产 ${id} 失败`)
+            throw new Error(res.error?.message || `Failed to delete asset ${id}`)
           }
         }),
       )

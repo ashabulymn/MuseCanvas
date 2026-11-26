@@ -12,7 +12,7 @@ export function useAccountQuery() {
     queryFn: async () => {
       const res = await api.getMe()
       if (!res.success || !res.data) {
-        throw new Error(res.error?.message || '获取用户账户失败')
+        throw new Error(res.error?.message || 'Failed to load user account')
       }
       return res.data as UserProfile
     },

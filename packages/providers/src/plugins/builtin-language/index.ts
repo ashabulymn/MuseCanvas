@@ -84,7 +84,7 @@ class BuiltinLanguagePlugin implements LanguageProviderPlugin {
 
 export const openAiLanguagePlugin = new BuiltinLanguagePlugin(builtinLanguageManifest({
   id: 'openai-language',
-  displayName: 'OpenAI 兼容语言模型',
+  displayName: 'OpenAI-compatible language model',
   protocols: ['openai_chat', 'openai_responses'],
   host: 'api.openai.com',
   providerId: 'openai',
@@ -94,7 +94,7 @@ export const openAiLanguagePlugin = new BuiltinLanguagePlugin(builtinLanguageMan
 
 export const anthropicLanguagePlugin = new BuiltinLanguagePlugin(builtinLanguageManifest({
   id: 'anthropic-language',
-  displayName: 'Anthropic 语言模型',
+  displayName: 'Anthropic language model',
   protocols: ['anthropic_messages'],
   host: 'api.anthropic.com',
   providerId: 'anthropic',

@@ -26,9 +26,9 @@ import { ArrowClockwiseIcon as RefreshCw } from '@phosphor-icons/react'
 const oauthQueryKey = ['admin', 'oauth-providers'] as const
 
 const sourceLabel: Record<AdminOAuthProvider['source'], string> = {
-  database: '数据库配置',
-  environment: '环境变量配置',
-  none: '未配置凭据',
+  database: 'Database configuration',
+  environment: 'Environment variable configuration',
+  none: 'No credentials configured',
 }
 
 /** Provider ids are lowercase codes; the display name comes from the payload's label. */
@@ -51,7 +51,7 @@ export function AdminOAuthView() {
     queryKey: oauthQueryKey,
     queryFn: async () => {
       const res = await api<AdminOAuthProvider[]>(API_ENDPOINTS.admin.oauthProviders)
-      if (!res.success) throw new Error(res.error?.message || '读取 OAuth 提供商失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to read OAuth providers')
       return res.data || []
     },
   })
@@ -62,7 +62,7 @@ export function AdminOAuthView() {
         method: 'PATCH',
         body: { enabled },
       })
-      if (!res.success) throw new Error(res.error?.message || '更新状态失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to update status')
       return res.data
     },
     onSuccess: async () => {
@@ -75,8 +75,8 @@ export function AdminOAuthView() {
       <PageHeader
         className="min-w-0 [overflow-wrap:anywhere]"
         actionsClassName="max-w-full min-w-0 max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_a]:min-h-[var(--control-lg)]"
-        title="OAuth 登录提供商"
-        description="查看第三方登录配置并管理启停。提供商凭据由初始化流程或服务端环境配置，后台不提供编辑表单。"
+        title="OAuth login providers"
+        description="View third-party login configuration and manage enable/disable. Provider credentials are set by the setup flow or server environment; the admin console provides no edit form."
         actions={
           <Button
             variant="secondary"
@@ -84,7 +84,7 @@ export function AdminOAuthView() {
             loading={isFetching}
             icon={<RefreshCw weight="bold" aria-hidden="true" className={iconSize.sm} />}
           >
-            刷新
+            Refresh
           </Button>
         }
       />
@@ -93,7 +93,7 @@ export function AdminOAuthView() {
 
       {isLoading ? (
         <div className="flex flex-col gap-4" role="status" aria-busy="true">
-          <span className="sr-only">正在加载 OAuth 提供商</span>
+          <span className="sr-only">Loading OAuth providers</span>
           {['github', 'google'].map((provider) => (
             <Card key={provider} aria-hidden="true" className="min-w-0 flex-row flex-wrap items-center justify-between gap-x-6 gap-y-3">
               <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -117,14 +117,14 @@ export function AdminOAuthView() {
       {isError ? (
         <EmptyState
           variant="error"
-          title="无法加载 OAuth 提供商"
+          title="Unable to load OAuth providers"
           description={
             error instanceof Error
-              ? `${error.message}。请检查管理后台会话与网络后重试。`
-              : '加载数据时出现问题，请稍后重试。'
+              ? `${error.message}. Please check the admin session and network, then retry.`
+              : 'There was a problem loading data; please try again later.'
           }
           onAction={() => void refetch()}
-          actionLabel="刷新重试"
+          actionLabel="Refresh and retry"
         />
       ) : null}
 
@@ -138,29 +138,29 @@ export function AdminOAuthView() {
                   <div className="flex min-w-0 flex-1 flex-col gap-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-module text-foreground">{name}</h2>
-                      <Badge tone={p.enabled ? 'success' : 'neutral'}>{p.enabled ? '已启用' : '已停用'}</Badge>
+                      <Badge tone={p.enabled ? 'success' : 'neutral'}>{p.enabled ? 'Enabled' : 'Disabled'}</Badge>
                       <Badge tone={p.source === 'none' ? 'warning' : 'neutral'}>{sourceLabel[p.source]}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Client ID：
+                      Client ID: 
                       <span className="font-mono text-foreground">
-                        {p.clientId ? `${p.clientId.slice(0, 8)}…` : '未配置'}
+                        {p.clientId ? `${p.clientId.slice(0, 8)}…` : 'Not configured'}
                       </span>
                     </p>
                     <div className="min-w-0 text-sm text-muted-foreground">
-                      <p className="mb-1">回调地址</p>
-                      <AdminCopyValue value={p.redirectUri || undefined} label={`${name} 回调地址`} unavailable="未配置回调地址" />
+                      <p className="mb-1">Callback URL</p>
+                      <AdminCopyValue value={p.redirectUri || undefined} label={`${name} Callback URL`} unavailable="No callback URL configured" />
                     </div>
                   </div>
 
                   <div className="flex shrink-0 items-center gap-3">
-                    <span className="text-sm font-medium text-muted-foreground">启用登录</span>
+                    <span className="text-sm font-medium text-muted-foreground">Enable login</span>
                     <Switch
                       checked={p.enabled}
-                      aria-label={`${name} 登录`}
+                      aria-label={`${name} login`}
                       disabled={actions.isToggleBlocked(p.provider)}
                       onCheckedChange={(enabled) =>
-                        actions.run(p.provider, name, () => toggleMutation.mutateAsync({ provider: p.provider, enabled }), enabled ? 'OAuth 登录已启用' : 'OAuth 登录已停用', 'toggle')
+                        actions.run(p.provider, name, () => toggleMutation.mutateAsync({ provider: p.provider, enabled }), enabled ? 'OAuth login enabled' : 'OAuth login disabled', 'toggle')
                       }
                     />
                   </div>
@@ -172,14 +172,14 @@ export function AdminOAuthView() {
           <Card>
             <EmptyState
               variant="first-use"
-              objectName="OAuth 登录"
-              title="欢迎使用 OAuth 登录"
-              description="在这里你可以启用或停用 GitHub、Google 登录。提供商凭据由服务端环境变量或初始化流程写入，管理后台不负责创建提供商。"
-              actionLabel="刷新提供商列表"
+              objectName="OAuth login"
+              title="Welcome to OAuth login"
+              description="Enable or disable GitHub and Google login here. Provider credentials are written by server environment variables or the setup flow; the admin console does not create providers."
+              actionLabel="Refresh provider list"
               onAction={() => void refetch()}
             >
               <p className="max-w-reading text-sm text-muted-foreground">
-                如果列表持续为空，请先在部署配置中为实例填写对应提供商的 Client ID 与 Client Secret。
+                If the list stays empty, first fill in the corresponding provider's Client ID and Client Secret in the deployment configuration for this instance.
               </p>
             </EmptyState>
           </Card>

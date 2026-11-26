@@ -75,7 +75,7 @@ export function FormField({
               <span aria-hidden="true" className="text-danger">
                 *
               </span>
-              <span className="sr-only">（必填）</span>
+              <span className="sr-only">(Required)</span>
             </>
           ) : null}
         </label>

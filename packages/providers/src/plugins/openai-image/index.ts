@@ -117,7 +117,7 @@ function validateAgainstDeclaration(
       if (descriptor.required && descriptor.defaultValue === undefined) {
         issues.push({
           code: GenerationErrorCode.MISSING_REQUIRED_PARAMETER,
-          message: `缺少必填参数 '${descriptor.name}'`,
+          message: `Missing required parameter '${descriptor.name}'`,
           parameter: descriptor.name,
         })
       }

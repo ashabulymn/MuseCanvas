@@ -26,9 +26,9 @@ export interface CanvasPorts {
 }
 export const defaultCanvasPorts: CanvasPorts = { db, limited }
 
-const notFound = () => fail(CanvasErrorCode.CANVAS_NOT_FOUND, '画布不存在', 404)
-const invalidId = () => fail(CanvasErrorCode.INVALID_INPUT, '画布 ID 无效', 400)
-const rateLimited = () => fail('RATE_LIMITED', '请求过于频繁，请稍后再试', 429)
+const notFound = () => fail(CanvasErrorCode.CANVAS_NOT_FOUND, 'Canvas not found', 404)
+const invalidId = () => fail(CanvasErrorCode.INVALID_INPUT, 'Invalid canvas ID', 400)
+const rateLimited = () => fail('RATE_LIMITED', 'Too many requests. Please try again later.', 429)
 
 // The shared body() converts malformed JSON to {}, which would create an empty
 // canvas. Read unknown JSON here so malformed, null and array bodies all fail.
@@ -44,17 +44,17 @@ export async function listCanvases(context: RouteContext, ports: CanvasPorts = d
   const rawLimit = query.get('limit')
   if (query.getAll('limit').length > 1 || query.getAll('cursor').length > 1
     || (rawLimit !== null && !/^[1-9][0-9]{0,2}$/.test(rawLimit))) {
-    return fail(CanvasErrorCode.INVALID_INPUT, '分页参数无效', 400)
+    return fail(CanvasErrorCode.INVALID_INPUT, 'Invalid pagination parameters', 400)
   }
   const limit = rawLimit === null ? 20 : Number(rawLimit)
-  if (limit > 100) return fail(CanvasErrorCode.INVALID_INPUT, '分页参数无效', 400)
+  if (limit > 100) return fail(CanvasErrorCode.INVALID_INPUT, 'Invalid pagination parameters', 400)
   const cursor = query.get('cursor')
   try {
     return ok(await listCanvasDocuments(ports.db(), context.actor.id,
       { limit, ...(cursor === null ? {} : { cursor }) }))
   } catch (error) {
     if (error instanceof Error && error.message === CanvasErrorCode.INVALID_INPUT) {
-      return fail(CanvasErrorCode.INVALID_INPUT, '分页游标无效', 400)
+      return fail(CanvasErrorCode.INVALID_INPUT, 'Invalid pagination cursor', 400)
     }
     throw error
   }
@@ -69,7 +69,7 @@ export async function createCanvas(context: RouteContext, ports: CanvasPorts = d
     // Pool entrypoints own the short transaction: refs and insert commit together.
     return ok(await createCanvasDocument(ports.db(), context.actor.id, parsed.data), { status: 201 })
   } catch (error) {
-    if (error instanceof CanvasReferenceError) return fail(error.code, '画布引用无效', 400)
+    if (error instanceof CanvasReferenceError) return fail(error.code, 'Invalid canvas reference', 400)
     throw error
   }
 }
@@ -93,8 +93,8 @@ export async function updateCanvas(context: RouteContext, ports: CanvasPorts = d
   switch (result.status) {
     case 'updated': return ok(result.document)
     case 'not_found': return notFound()
-    case 'conflict': return fail(CanvasErrorCode.CANVAS_REVISION_CONFLICT, '画布已被更新，请刷新后重试', 409)
-    case 'invalid_reference': return fail(CanvasErrorCode.INVALID_INPUT, '画布引用无效', 400)
+    case 'conflict': return fail(CanvasErrorCode.CANVAS_REVISION_CONFLICT, 'The canvas has been updated. Please refresh and try again.', 409)
+    case 'invalid_reference': return fail(CanvasErrorCode.INVALID_INPUT, 'Invalid canvas reference', 400)
   }
 }
 

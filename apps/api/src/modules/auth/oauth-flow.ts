@@ -213,11 +213,11 @@ export async function completeOAuthInvitation(
 ): Promise<NextResponse> {
   const challengeId = typeof input.challengeId === 'string' ? input.challengeId : ''
   const invitationCode = typeof input.invitationCode === 'string' ? input.invitationCode.trim() : ''
-  if (!challengeId || !invitationCode) return fail('INVALID_INPUT', '缺少注册参数')
+  if (!challengeId || !invitationCode) return fail('INVALID_INPUT', 'Missing registration parameters')
   const ip = clientIpFromRequest(request)
-  if (await limited(`oauth-invite:${ip}`, 10, 600)) return fail('RATE_LIMITED', '请求过于频繁，请稍后再试', 429)
+  if (await limited(`oauth-invite:${ip}`, 10, 600)) return fail('RATE_LIMITED', 'Too many requests. Please try again later.', 429)
   const challenge = await redisGetDel<OAuthChallengeRecord>(`oauth:challenge:${challengeId}`)
-  if (!challenge) return fail('OAUTH_REGISTRATION_EXPIRED', '注册会话已过期，请重新登录', 410)
+  if (!challenge) return fail('OAUTH_REGISTRATION_EXPIRED', 'Registration session expired. Please log in again.', 410)
   let result: { token: string; user: Record<string, unknown> } | null = null
   try {
     result = await transaction(async (client) => {
@@ -227,7 +227,7 @@ export async function completeOAuthInvitation(
       let userId: string
       if (existing.rows[0]) {
         // The account was disabled after the OAuth challenge was issued; do not fall through to the new-user branch.
-        if (existing.rows[0].status !== 'active') throw new InvitationFlowAbort(fail('ACCOUNT_UNAVAILABLE', '账户当前不可用', 403))
+        if (existing.rows[0].status !== 'active') throw new InvitationFlowAbort(fail('ACCOUNT_UNAVAILABLE', 'Account is currently unavailable', 403))
         userId = existing.rows[0].id
       } else {
         const newUser = await client.query('INSERT INTO users(email) VALUES($1) RETURNING id', [challenge.email])
@@ -237,7 +237,7 @@ export async function completeOAuthInvitation(
         await client.query('INSERT INTO oauth_identities(user_id,provider,provider_subject,email_at_link,email_verified,display_name,avatar_url) VALUES($1,$2,$3,$4,true,$5,$6)', [userId, challenge.provider, challenge.providerSubject, challenge.email, challenge.displayName || null, challenge.avatarUrl || null])
       } catch {
         // oauth_provider_subject_active_key conflict: the subject is already linked to another account.
-        throw new InvitationFlowAbort(fail('OAUTH_IDENTITY_CONFLICT', '该第三方账号已绑定其他用户', 409))
+        throw new InvitationFlowAbort(fail('OAUTH_IDENTITY_CONFLICT', 'This third-party account is already linked to another user', 409))
       }
       const token = randomToken()
       await client.query("INSERT INTO sessions(user_id,token_hash,expires_at) VALUES($1,$2,now()+interval '30 days')", [userId, hashToken(token)])
@@ -249,7 +249,7 @@ export async function completeOAuthInvitation(
     if (error instanceof InvitationFlowAbort) return error.response
     throw error
   }
-  if (!result) return fail('INVALID_INVITATION', '邀请码无效或已过期')
+  if (!result) return fail('INVALID_INVITATION', 'Invalid or expired invitation code')
   const response = ok({ user: userDto(result.user) })
   response.cookies.set('muse_session', result.token, { httpOnly: true, secure: shouldUseSecureCookie(await resolvePublicOrigin()), sameSite: 'lax', path: '/', maxAge: 30 * 86400 })
   return response

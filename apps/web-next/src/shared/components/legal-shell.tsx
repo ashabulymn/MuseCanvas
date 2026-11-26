@@ -41,16 +41,16 @@ export function LegalShell({ title, updatedAt, current = 'terms', sections = [],
             {/* Sticky Table of Contents on Desktop (>= 1024px) */}
             {sections.length > 0 && (
               <aside
-                aria-label="条款目录导航"
+                aria-label="Table of contents navigation"
                 className="hidden lg:block lg:w-60 xl:w-68 lg:shrink-0 lg:sticky lg:top-[calc(var(--layout-header)+1.5rem)]"
               >
                 <nav className="flex flex-col gap-3 rounded-card bg-surface p-4 border border-border shadow-soft">
                   <div className="flex items-center justify-between pb-2 border-b border-border">
                     <h2 className="text-base font-medium text-foreground">
-                      {title}目录
+                      {title} Contents
                     </h2>
                     <span className="font-mono text-xs text-muted-foreground">
-                      {sections.length} 条
+                      {sections.length} items
                     </span>
                   </div>
                   <div className="flex flex-col gap-0.5 max-h-[calc(100vh-14rem)] overflow-y-auto pr-1">
@@ -74,7 +74,7 @@ export function LegalShell({ title, updatedAt, current = 'terms', sections = [],
               <header className="pb-6 border-b border-border">
                 <h1 className="text-title font-normal text-foreground leading-[1.25]">{title}</h1>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  最后更新：<span className="font-mono tabular-nums whitespace-nowrap">{updatedAt}</span>
+                  Last updated: <span className="font-mono tabular-nums whitespace-nowrap">{updatedAt}</span>
                 </p>
               </header>
 

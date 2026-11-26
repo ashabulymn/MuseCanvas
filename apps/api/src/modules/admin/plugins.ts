@@ -46,7 +46,7 @@ export function pluginUploadEnabled(): boolean {
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-const UPLOAD_DISABLED = () => fail('PLUGIN_UPLOAD_DISABLED', '插件上传功能未启用，请联系运维设置 ALLOW_PLUGIN_UPLOAD=true')
+const UPLOAD_DISABLED = () => fail('PLUGIN_UPLOAD_DISABLED', 'Plugin upload is not enabled. Please contact operations to set ALLOW_PLUGIN_UPLOAD=true')
 
 /**
  * Non-blocking notice on every legacy `manifest` + `file` upload during the
@@ -57,7 +57,7 @@ const UPLOAD_DISABLED = () => fail('PLUGIN_UPLOAD_DISABLED', '插件上传功能
 export const LEGACY_UPLOAD_WARNING: PluginScanFinding = {
   rule: 'PLUGIN_UPLOAD_LEGACY_FORMAT',
   severity: 'warn',
-  message: '旧上传格式（manifest 字段 + 单个 .mjs）将在过渡期结束后移除，请改为上传包含 manifest.json 的 .zip 插件包',
+  message: 'The legacy upload format (manifest field + a single .mjs file) will be removed after the transition period. Please upload a .zip plugin package containing manifest.json instead.',
 }
 
 /** Structural instead of `NextRequest` so the DB-free branches are unit-testable. */
@@ -118,7 +118,7 @@ export function analyzePluginPackage(manifestText: string, sourceText: string, b
   try {
     manifestInput = JSON.parse(manifestText)
   } catch {
-    return { ok: false, code: 'INVALID_PLUGIN_MANIFEST', findings: [{ rule: 'INVALID_PLUGIN_ID', severity: 'error', message: 'manifest 字段不是合法 JSON' }] }
+    return { ok: false, code: 'INVALID_PLUGIN_MANIFEST', findings: [{ rule: 'INVALID_PLUGIN_ID', severity: 'error', message: 'The manifest field is not valid JSON' }] }
   }
   const scanFindings = scanPluginSource(sourceText)
   const validated = validatePluginManifest(manifestInput)
@@ -234,43 +234,43 @@ async function readPluginUpload(request: PluginPackageRequest): Promise<UploadRe
   try {
     form = await request.formData()
   } catch {
-    return failResponse('INVALID_INPUT', '上传必须使用 multipart/form-data 编码')
+    return failResponse('INVALID_INPUT', 'Uploads must use multipart/form-data encoding')
   }
   const keys = [...form.keys()]
   if (keys.includes('package')) {
     const extraKeys = [...new Set(keys.filter(key => key !== 'package'))]
-    if (extraKeys.length > 0) return failResponse('INVALID_INPUT', `package 字段不能与其他字段同时提交：${extraKeys.join(', ')}`)
+    if (extraKeys.length > 0) return failResponse('INVALID_INPUT', `The package field cannot be submitted together with other fields: ${extraKeys.join(', ')}`)
     const packageFields = form.getAll('package')
-    if (packageFields.length !== 1) return failResponse('INVALID_INPUT', '插件包必须且只能有一个 .zip 文件')
+    if (packageFields.length !== 1) return failResponse('INVALID_INPUT', 'The plugin package must contain exactly one .zip file')
     const packageField = packageFields[0]
-    if (!isUploadFile(packageField)) return failResponse('INVALID_INPUT', 'package 字段必须是 .zip 文件')
-    if (!packageField.name.toLowerCase().endsWith('.zip')) return failResponse('INVALID_INPUT', '插件包必须是单个 .zip 文件')
+    if (!isUploadFile(packageField)) return failResponse('INVALID_INPUT', 'The package field must be a .zip file')
+    if (!packageField.name.toLowerCase().endsWith('.zip')) return failResponse('INVALID_INPUT', 'The plugin package must be a single .zip file')
     const bytes = Buffer.from(await packageField.arrayBuffer())
-    if (bytes.byteLength === 0) return failResponse('INVALID_INPUT', '插件包内容为空')
+    if (bytes.byteLength === 0) return failResponse('INVALID_INPUT', 'The plugin package is empty')
     // The 6 MiB cap is the validator's first step and answers 422 with a finding,
     // like every other package rule, rather than a bare 400 here.
     return { ok: true, format: 'zip-v1', bytes }
   }
   const extraKeys = keys.filter(key => key !== 'manifest' && key !== 'file')
-  if (extraKeys.length > 0) return failResponse('INVALID_INPUT', `上传包含不允许的字段：${extraKeys.join(', ')}`)
+  if (extraKeys.length > 0) return failResponse('INVALID_INPUT', `The upload contains disallowed fields: ${extraKeys.join(', ')}`)
   // getAll, so a repeated `file` cannot smuggle a second artifact that never gets hashed.
   const manifestFields = form.getAll('manifest')
   const fileFields = form.getAll('file')
-  if (manifestFields.length === 0 && fileFields.length === 0) return failResponse('INVALID_INPUT', '缺少 package 字段（.zip 插件包）')
-  if (manifestFields.length !== 1) return failResponse('INVALID_INPUT', 'manifest 字段必须且只能有一个')
-  if (fileFields.length !== 1) return failResponse('INVALID_INPUT', '插件包必须且只能有一个文件')
+  if (manifestFields.length === 0 && fileFields.length === 0) return failResponse('INVALID_INPUT', 'Missing package field (.zip plugin package)')
+  if (manifestFields.length !== 1) return failResponse('INVALID_INPUT', 'There must be exactly one manifest field')
+  if (fileFields.length !== 1) return failResponse('INVALID_INPUT', 'The plugin package must contain exactly one file')
   const manifestField = manifestFields[0]
   if (typeof manifestField !== 'string' || !manifestField.trim()) {
-    return failResponse('INVALID_INPUT', '缺少 manifest 字段（插件清单 JSON 文本）')
+    return failResponse('INVALID_INPUT', 'Missing manifest field (plugin manifest JSON text)')
   }
   const fileField = fileFields[0]
-  if (!isUploadFile(fileField)) return failResponse('INVALID_INPUT', 'file 字段必须是插件包文件')
-  if (!fileField.name.endsWith('.mjs')) return failResponse('INVALID_INPUT', '插件包必须是单个 .mjs 文件')
+  if (!isUploadFile(fileField)) return failResponse('INVALID_INPUT', 'The file field must be a plugin package file')
+  if (!fileField.name.endsWith('.mjs')) return failResponse('INVALID_INPUT', 'The plugin package must be a single .mjs file')
   const bytes = Buffer.from(await fileField.arrayBuffer())
-  if (bytes.byteLength === 0) return failResponse('INVALID_INPUT', '插件包内容为空')
+  if (bytes.byteLength === 0) return failResponse('INVALID_INPUT', 'The plugin package is empty')
   // Size cap is enforced on the decoded length before any hashing or scanning work.
   if (bytes.byteLength > PLUGIN_ARTIFACT_MAX_BYTES) {
-    return failResponse('PLUGIN_ARTIFACT_TOO_LARGE', `插件包不能超过 ${PLUGIN_ARTIFACT_MAX_BYTES} 字节`)
+    return failResponse('PLUGIN_ARTIFACT_TOO_LARGE', `The plugin package cannot exceed ${PLUGIN_ARTIFACT_MAX_BYTES} bytes`)
   }
   return { ok: true, format: 'mjs', manifestText: manifestField, sourceText: bytes.toString('utf8'), bytes }
 }
@@ -312,13 +312,13 @@ export async function listAdminPlugins(): Promise<NextResponse> {
  * Legacy `mjs` rows have no docs and answer all-null.
  */
 export async function getPluginDocs(id: string): Promise<NextResponse> {
-  if (!UUID_PATTERN.test(id)) return fail('NOT_FOUND', '插件不存在', 404)
+  if (!UUID_PATTERN.test(id)) return fail('NOT_FOUND', 'Plugin not found', 404)
   const current = await db().query(
     'SELECT package_format, readme, changelog, license_text FROM provider_plugins WHERE id=$1 AND deleted_at IS NULL',
     [id],
   )
   const row = current.rows[0]
-  if (!row) return fail('NOT_FOUND', '插件不存在', 404)
+  if (!row) return fail('NOT_FOUND', 'Plugin not found', 404)
   return ok(pluginDocsFromRow(row))
 }
 
@@ -416,14 +416,14 @@ export async function installPlugin(
   // A key the static registry already owns can never be loaded: registration is
   // first-write-wins, so the row would sit 'failed' forever. Fail fast instead.
   if (globalProviderRegistry.has(manifest.id, manifest.version)) {
-    return fail('PLUGIN_ID_RESERVED', `${manifest.id}@${manifest.version} 是内置插件标识，请使用其他插件 id`)
+    return fail('PLUGIN_ID_RESERVED', `${manifest.id}@${manifest.version} is a built-in plugin identifier. Please use a different plugin id.`)
   }
   // Credentials are shared per provider account, so an upload claiming a built-in
   // provider (declared, or derived from an id like 'openai') would be handed that
   // account's secrets. Uploaded plugins bring their own provider namespace.
   const providerId = pluginCredentialSpec(manifest).providerId
   if (builtinCredentialProviders().has(providerId)) {
-    return fail('PROVIDER_ID_RESERVED', `凭据供应商 ${providerId} 属于内置插件，请在 manifest.credential.providerId 中使用其他标识`)
+    return fail('PROVIDER_ID_RESERVED', `Credential provider ${providerId} belongs to a built-in plugin. Please use a different identifier in manifest.credential.providerId.`)
   }
   // VERSION IMMUTABILITY: (plugin_id, plugin_version) is write-once, even after a
   // soft delete. Both the worker's registry Map and Node's ESM module cache key on
@@ -433,7 +433,7 @@ export async function installPlugin(
     'SELECT id FROM provider_plugins WHERE plugin_id=$1 AND plugin_version=$2 LIMIT 1',
     [manifest.id, manifest.version],
   )
-  if (duplicate.rows[0]) return fail('PLUGIN_VERSION_IMMUTABLE', '请升级插件版本号后再上传', 409)
+  if (duplicate.rows[0]) return fail('PLUGIN_VERSION_IMMUTABLE', 'Please bump the plugin version before uploading', 409)
   const writes = storageWrites(analysis)
   const written: string[] = []
   try {
@@ -443,7 +443,7 @@ export async function installPlugin(
     }
   } catch {
     await deleteObjectsBestEffort(written, deps.deleteObject)
-    return fail('PLUGIN_ARTIFACT_STORE_FAILED', '插件包写入对象存储失败，请稍后重试', 503)
+    return fail('PLUGIN_ARTIFACT_STORE_FAILED', 'Failed to write the plugin package to object storage. Please try again later.', 503)
   }
   const pkg = analysis.package
   let row: Record<string, unknown>
@@ -481,7 +481,7 @@ export async function installPlugin(
     // fails the object is left orphaned — an unreachable private-bucket key is an
     // acceptable cost, whereas a DB row without a verified artifact is not.
     await deleteObjectsBestEffort(written, deps.deleteObject)
-    return fail('PLUGIN_INSTALL_FAILED', '插件元数据写入失败，制品已回滚删除', 503)
+    return fail('PLUGIN_INSTALL_FAILED', 'Failed to write plugin metadata; the artifact has been rolled back and deleted', 503)
   }
   const result: AdminPluginInstallResult = {
     installed: true,
@@ -493,17 +493,17 @@ export async function installPlugin(
 
 export async function updatePluginStatus(actor: Actor, id: string, input: Record<string, unknown>): Promise<NextResponse> {
   const status = input.status
-  if (status !== 'active' && status !== 'disabled') return fail('INVALID_INPUT', '只能切换插件的启用或停用状态')
-  if (!UUID_PATTERN.test(id)) return fail('NOT_FOUND', '插件不存在', 404)
+  if (status !== 'active' && status !== 'disabled') return fail('INVALID_INPUT', 'Only the plugin enabled/disabled state can be toggled')
+  if (!UUID_PATTERN.test(id)) return fail('NOT_FOUND', 'Plugin not found', 404)
   const current = await db().query('SELECT * FROM provider_plugins WHERE id=$1 AND deleted_at IS NULL', [id])
   const row = current.rows[0]
-  if (!row) return fail('NOT_FOUND', '插件不存在', 404)
+  if (!row) return fail('NOT_FOUND', 'Plugin not found', 404)
   // 'failed' is terminal: the loader rejected those bytes, so re-enabling requires a
   // re-upload under a new version (see the version-immutability rule).
-  if (row.status === 'failed') return fail('PLUGIN_FAILED_IMMUTABLE', '加载失败的插件不能重新启用，请以新版本重新上传', 409)
+  if (row.status === 'failed') return fail('PLUGIN_FAILED_IMMUTABLE', 'A plugin that failed to load cannot be re-enabled. Please re-upload it as a new version.', 409)
   // 'pending' belongs to the worker: until it has imported the artifact there is
   // nothing to enable, and flipping the row early would fake an activation.
-  if (row.status === 'pending') return fail('PLUGIN_NOT_LOADED', '插件尚未由 Worker 加载完成，暂时不能调整状态', 409)
+  if (row.status === 'pending') return fail('PLUGIN_NOT_LOADED', 'The plugin has not finished loading in the worker yet, so its status cannot be changed for now', 409)
   if (row.status === status) return ok(pluginDtoFromRow(row))
   const updated = await transaction(async client => {
     const r = await client.query(
@@ -519,20 +519,20 @@ export async function updatePluginStatus(actor: Actor, id: string, input: Record
     })
     return r.rows[0]
   })
-  if (!updated) return fail('PLUGIN_NOT_LOADED', '插件尚未由 Worker 加载完成，暂时不能调整状态', 409)
+  if (!updated) return fail('PLUGIN_NOT_LOADED', 'The plugin has not finished loading in the worker yet, so its status cannot be changed for now', 409)
   return ok(pluginDtoFromRow(updated))
 }
 
 export async function deletePlugin(actor: Actor, id: string): Promise<NextResponse> {
-  if (!UUID_PATTERN.test(id)) return fail('NOT_FOUND', '插件不存在', 404)
+  if (!UUID_PATTERN.test(id)) return fail('NOT_FOUND', 'Plugin not found', 404)
   const current = await db().query('SELECT * FROM provider_plugins WHERE id=$1 AND deleted_at IS NULL', [id])
   const row = current.rows[0]
-  if (!row) return fail('NOT_FOUND', '插件不存在', 404)
+  if (!row) return fail('NOT_FOUND', 'Plugin not found', 404)
   const inUse = await db().query(
     'SELECT id FROM model_configs WHERE plugin_id=$1 AND plugin_version=$2 AND deleted_at IS NULL LIMIT 1',
     [row.plugin_id, row.plugin_version],
   )
-  if (inUse.rows[0]) return fail('PLUGIN_IN_USE', '该插件版本仍被模型配置引用，请先调整模型后再删除', 409)
+  if (inUse.rows[0]) return fail('PLUGIN_IN_USE', 'This plugin version is still referenced by a model configuration. Please update the model first, then delete it.', 409)
   const deleted = await transaction(async client => {
     const r = await client.query(
       "UPDATE provider_plugins SET deleted_at=now(), status='disabled', updated_at=now() WHERE id=$1 AND deleted_at IS NULL RETURNING *",
@@ -547,7 +547,7 @@ export async function deletePlugin(actor: Actor, id: string): Promise<NextRespon
     })
     return r.rows[0]
   })
-  if (!deleted) return fail('NOT_FOUND', '插件不存在', 404)
+  if (!deleted) return fail('NOT_FOUND', 'Plugin not found', 404)
   // The row is already gone; a lingering object is harmless (unlisted, private bucket).
   await deleteObjectsBestEffort([
     deleted.object_key as string,
@@ -557,7 +557,7 @@ export async function deletePlugin(actor: Actor, id: string): Promise<NextRespon
   return ok({
     deleted: true,
     pinnedRevisionsRetainArtifact: true,
-    note: '历史 model_config_revisions 仍以内容摘要固定并指向该插件标识，已生成的任务记录不受影响；如需再次使用该插件请重新上传新版本。',
+    note: 'Historical model_config_revisions remain pinned by content hash to this plugin identifier, and already-generated task records are unaffected. To use this plugin again, please re-upload a new version.',
   })
 }
 
@@ -567,20 +567,20 @@ export async function deletePlugin(actor: Actor, id: string): Promise<NextRespon
  * passed a full decode is ever stored, and the browser must not reinterpret it.
  */
 export async function getPluginIcon(id: string): Promise<NextResponse> {
-  if (!UUID_PATTERN.test(id)) return fail('NOT_FOUND', '插件不存在', 404)
+  if (!UUID_PATTERN.test(id)) return fail('NOT_FOUND', 'Plugin not found', 404)
   const current = await db().query(
     'SELECT package_format, package_meta FROM provider_plugins WHERE id=$1 AND deleted_at IS NULL',
     [id],
   )
   const row = current.rows[0]
-  if (!row) return fail('NOT_FOUND', '插件不存在', 404)
+  if (!row) return fail('NOT_FOUND', 'Plugin not found', 404)
   const icon = row.package_format === 'zip-v1' ? iconOf(row) : null
-  if (!icon) return fail('NOT_FOUND', '该插件没有图标', 404)
+  if (!icon) return fail('NOT_FOUND', 'This plugin has no icon', 404)
   let bytes: Buffer
   try {
     bytes = await getPrivateS3ObjectBytes(icon.objectKey)
   } catch {
-    return fail('PLUGIN_PACKAGE_UNAVAILABLE', '插件图标暂时无法读取，请稍后重试', 503)
+    return fail('PLUGIN_PACKAGE_UNAVAILABLE', 'The plugin icon cannot be read right now. Please try again later.', 503)
   }
   return new NextResponse(new Uint8Array(bytes), {
     status: 200,
@@ -600,23 +600,23 @@ export async function getPluginIcon(id: string): Promise<NextResponse> {
  * handed out under the installed plugin's name.
  */
 export async function downloadPluginPackage(id: string): Promise<NextResponse> {
-  if (!UUID_PATTERN.test(id)) return fail('NOT_FOUND', '插件不存在', 404)
+  if (!UUID_PATTERN.test(id)) return fail('NOT_FOUND', 'Plugin not found', 404)
   const current = await db().query(
     'SELECT plugin_id, plugin_version, package_format, package_object_key, package_sha256 FROM provider_plugins WHERE id=$1 AND deleted_at IS NULL',
     [id],
   )
   const row = current.rows[0]
-  if (!row) return fail('NOT_FOUND', '插件不存在', 404)
+  if (!row) return fail('NOT_FOUND', 'Plugin not found', 404)
   if (row.package_format !== 'zip-v1' || typeof row.package_object_key !== 'string' || typeof row.package_sha256 !== 'string') {
-    return fail('NOT_FOUND', '该插件以旧格式上传，没有可下载的插件包', 404)
+    return fail('NOT_FOUND', 'This plugin was uploaded in the legacy format and has no downloadable plugin package', 404)
   }
   let bytes: Buffer
   try {
     bytes = await getPrivateS3ObjectBytes(row.package_object_key)
   } catch {
-    return fail('PLUGIN_PACKAGE_UNAVAILABLE', '插件包暂时无法读取，请稍后重试', 503)
+    return fail('PLUGIN_PACKAGE_UNAVAILABLE', 'The plugin package cannot be read right now. Please try again later.', 503)
   }
-  if (sha256Hex(bytes) !== row.package_sha256) return fail('PLUGIN_PACKAGE_UNAVAILABLE', '插件包校验失败', 503)
+  if (sha256Hex(bytes) !== row.package_sha256) return fail('PLUGIN_PACKAGE_UNAVAILABLE', 'Plugin package verification failed', 503)
   return new NextResponse(new Uint8Array(bytes), {
     status: 200,
     headers: {

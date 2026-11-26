@@ -45,15 +45,15 @@ function seal(secret: string, target: CredentialTarget): Sealed | null {
   }
 }
 
-const ENCRYPT_FAILED = () => fail('CREDENTIAL_ENCRYPT_FAILED', '凭据加密失败，请检查加密配置', 500)
+const ENCRYPT_FAILED = () => fail('CREDENTIAL_ENCRYPT_FAILED', 'Credential encryption failed. Please check the encryption configuration.', 500)
 
 export async function createProviderCredential(actor: { id: string }, body: Record<string, unknown>) {
   const parsed = parseCredentialInput(body)
   if (!parsed.ok) return fail(parsed.code, parsed.message)
   const input = parsed.input
   const displayName = input.displayName
-  if (!displayName) return fail('INVALID_INPUT', '凭据名称不能为空')
-  if (!input.secret) return fail('INVALID_INPUT', '凭据内容不能为空（secret）')
+  if (!displayName) return fail('INVALID_INPUT', 'Credential name cannot be empty')
+  if (!input.secret) return fail('INVALID_INPUT', 'Credential content cannot be empty (secret)')
   const resolved = await resolveCredentialTarget(input)
   if (!resolved.ok) return fail(resolved.code, resolved.message)
   const target = resolved.value
@@ -107,7 +107,7 @@ export function credentialRedirected(
 
 export async function updateProviderCredential(actor: { id: string }, id: string, body: Record<string, unknown>) {
   const row = await findProviderCredential(db(), id)
-  if (!row) return fail('NOT_FOUND', '供应商凭据不存在', 404)
+  if (!row) return fail('NOT_FOUND', 'Provider credential not found', 404)
   const parsed = parseCredentialInput(body)
   if (!parsed.ok) return fail(parsed.code, parsed.message)
   const input = parsed.input
@@ -126,7 +126,7 @@ export async function updateProviderCredential(actor: { id: string }, id: string
   }
   const redirected = credentialRedirected(current, next)
   if (redirected && input.secret === undefined) {
-    return fail('SECRET_REQUIRED_FOR_REDIRECT', '更改凭据目标（供应商/插件/主机）时必须提供新密钥', 422)
+    return fail('SECRET_REQUIRED_FOR_REDIRECT', 'A new secret is required when changing the credential target (provider/plugin/host)', 422)
   }
 
   // Metadata-only updates (name, enabled, schema version) touch neither the secret
@@ -184,7 +184,7 @@ export async function updateProviderCredential(actor: { id: string }, id: string
     })
     return r.rows[0]
   })
-  if (!updated) return fail('NOT_FOUND', '供应商凭据不存在', 404)
+  if (!updated) return fail('NOT_FOUND', 'Provider credential not found', 404)
   return ok(providerCredentialDto(updated))
 }
 
@@ -193,7 +193,7 @@ export async function deleteProviderCredential(actor: { id: string }, id: string
     'SELECT id FROM model_configs WHERE provider_credential_id=$1 AND deleted_at IS NULL LIMIT 1',
     [id],
   )
-  if (inUse.rows[0]) return fail('CREDENTIAL_IN_USE', '该凭据仍被模型使用，无法删除', 409)
+  if (inUse.rows[0]) return fail('CREDENTIAL_IN_USE', 'This credential is still in use by a model and cannot be deleted', 409)
   const deleted = await transaction(async (client) => {
     const r = await client.query(
       'UPDATE provider_credentials SET deleted_at=now(),enabled=false,updated_at=now(),updated_by=$2 WHERE id=$1 AND deleted_at IS NULL RETURNING id, display_name',
@@ -205,6 +205,6 @@ export async function deleteProviderCredential(actor: { id: string }, id: string
     })
     return r.rows[0]
   })
-  if (!deleted) return fail('NOT_FOUND', '供应商凭据不存在', 404)
+  if (!deleted) return fail('NOT_FOUND', 'Provider credential not found', 404)
   return ok({ deleted: true })
 }

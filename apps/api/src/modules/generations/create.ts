@@ -35,16 +35,16 @@ export async function createGeneration(context: AuthedContext) {
   const { actor, request } = context
   // First, before any parsing: this is the position it has always held, and a
   // request over budget is refused without being inspected.
-  if (await limited(`gen:create:${actor.id}`, 20, 300)) return fail('RATE_LIMITED', '请求过于频繁，请稍后再试', 429)
+  if (await limited(`gen:create:${actor.id}`, 20, 300)) return fail('RATE_LIMITED', 'Too many requests. Please try again later.', 429)
   const input = await context.json()
 
-  if (Object.keys(input).some(key => !ALLOWED_GENERATION_FIELDS.has(key))) return fail('INVALID_INPUT', '生成请求包含不允许的字段')
-  if (typeof input.prompt !== 'string' || input.prompt.trim().length < 1 || input.prompt.length > 4000 || hasControlChars(input.prompt) || typeof input.modelId !== 'string') return fail('INVALID_INPUT', '生成参数无效')
-  if (!UUID_PATTERN.test(input.modelId)) return fail('INVALID_INPUT', '模型参数无效')
+  if (Object.keys(input).some(key => !ALLOWED_GENERATION_FIELDS.has(key))) return fail('INVALID_INPUT', 'Generation request contains disallowed fields')
+  if (typeof input.prompt !== 'string' || input.prompt.trim().length < 1 || input.prompt.length > 4000 || hasControlChars(input.prompt) || typeof input.modelId !== 'string') return fail('INVALID_INPUT', 'Invalid generation parameters')
+  if (!UUID_PATTERN.test(input.modelId)) return fail('INVALID_INPUT', 'Invalid model parameter')
   // The unified `parameters` object must be an object; the legacy path is only
   // reached when it is absent altogether.
   if (input.parameters !== undefined && (typeof input.parameters !== 'object' || input.parameters === null || Array.isArray(input.parameters))) {
-    return fail('INVALID_INPUT', '生成参数无效')
+    return fail('INVALID_INPUT', 'Invalid generation parameters')
   }
 
   // Role-aware generic inputs with legacy inputImageIds compatibility. Each item
@@ -56,7 +56,7 @@ export async function createGeneration(context: AuthedContext) {
     normalizedInputs = normalizeGenerationInputs(input.inputs, input.inputImageIds)
   } catch (err) {
     if (err instanceof GenerationInputError) return fail(err.code, err.message, err.status)
-    return fail('INVALID_INPUT', '参考图参数无效', 400)
+    return fail('INVALID_INPUT', 'Invalid reference image parameters', 400)
   }
 
   return createGenerationJob({

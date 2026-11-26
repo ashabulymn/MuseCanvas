@@ -14,7 +14,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-canvas px-4 py-12 text-foreground">
       <div className="mb-8 flex justify-center">
-        <Link href="/" aria-label="返回 MuseCanvas 首页" className="rounded-control">
+        <Link href="/" aria-label="Back to MuseCanvas home" className="rounded-control">
           <img
             src="/brand/musecanvas_flow_ribbon_final_pack/03_transparent_trimmed_png/03_wordmark_transparent_trimmed.png"
             alt="MuseCanvas"
@@ -26,15 +26,15 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       <div className="w-full max-w-dialog-narrow rounded-card bg-surface p-6 shadow-soft sm:p-8">{children}</div>
 
       <p className="mt-8 max-w-dialog-narrow text-center text-xs text-muted-foreground [text-wrap:pretty]">
-        登录即代表你已阅读并同意
+        By logging in, you confirm you have read and agree to the
         <Link href="/terms" className="rounded-control underline underline-offset-2 hover:text-foreground">
-          用户协议
+          Terms of Use
         </Link>
-        与
+        and
         <Link href="/privacy" className="rounded-control underline underline-offset-2 hover:text-foreground">
-          隐私政策
+          Privacy Policy
         </Link>
-        。
+        .
       </p>
     </div>
   )

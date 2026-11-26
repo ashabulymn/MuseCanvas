@@ -1,154 +1,154 @@
 # MuseCanvas
 
-**Platforma kreasi multi-model gambar (image generation)**
+**Multi-model image generation creation platform**
 
-MuseCanvas adalah platform kreasi untuk banyak model image generation. Platform ini menyatukan kreasi pengguna, konfigurasi model, kredensial supplier, preprocessing prompt, antrean tugas, dan riwayat karya dalam satu alur kerja. Backend mengurus autentikasi, enkripsi kredensial, persistensi tugas, dan pemrosesan asinkron; frontend hanya memakai data antarmuka yang sudah difilter keamanannya.
+MuseCanvas is a creation platform for many image generation models. The platform brings together user creation, model configuration, supplier credentials, prompt preprocessing, task queues, and work history in a single workflow. The backend handles authentication, credential encryption, task persistence, and asynchronous processing; the frontend only uses interface data that has already been security-filtered.
 
-> Fork terjemahan Bahasa Indonesia dari [nextroad-dev/MuseCanvas](https://github.com/nextroad-dev/MuseCanvas) (commit upstream `a1ad6d8`). Logika tidak diubah — hanya teks/dokumentasi yang diterjemahkan. File upstream berbahasa Mandarin masih tersimpan sebagai `readme.md`.
+> English-translation fork of [nextroad-dev/MuseCanvas](https://github.com/nextroad-dev/MuseCanvas) (upstream commit `a1ad6d8`). Logic unchanged — only text/documentation translated. The upstream Mandarin file is still kept as `readme.md`.
 
-## Kemampuan saat ini
+## Current capabilities
 
-- Login OTP email, pendaftaran undangan, login GitHub / Google OAuth, serta binding/unbinding akun pihak ketiga.
-- Meja kreasi pengguna, progres tugas generate, riwayat, dan detail hasil.
-- Admin panel: manajemen pengguna, konfigurasi OAuth Provider, manajemen model, manajemen kredensial supplier, dan melihat tugas.
-- Adapter multi-supplier image generation; API Key supplier, Base URL, dan protokol model dikonfigurasi lewat admin panel, field sensitif hanya bisa ditulis, tidak bisa dibaca kembali.
-- Template preprocessing prompt berbasis LLM, dibaca saat runtime oleh API / Worker dari indeks template eksternal.
-- PostgreSQL untuk persistensi data inti, Redis untuk status antrean, rate limit, dan cache sementara, object storage yang kompatibel S3 untuk menyimpan hasil generate.
-- Docker Compose untuk menjalankan full-stack secara lokal, deploy image GHCR, dan pipeline build image GitHub Actions.
+- Email OTP login, invitation-based registration, GitHub / Google OAuth login, and binding/unbinding third-party accounts.
+- User creation desk, generation task progress, history, and result details.
+- Admin panel: user management, OAuth Provider configuration, model management, supplier credential management, and task viewing.
+- Multi-supplier image generation adapters; supplier API Key, Base URL, and model protocol are configured via the admin panel, and sensitive fields are write-only — they cannot be read back.
+- LLM-based prompt preprocessing templates, read at runtime by the API / Worker from an external template index.
+- PostgreSQL for core data persistence, Redis for queue status, rate limiting, and temporary cache, S3-compatible object storage for storing generation results.
+- Docker Compose for running the full stack locally, GHCR image deployment, and a GitHub Actions image build pipeline.
 
-## Teknologi
+## Technologies
 
-- Frontend: Next.js 15 (App Router, React 19), Zustand, TanStack Query, Tailwind CSS, rendering campuran SSR guard + Client Islands.
+- Frontend: Next.js 15 (App Router, React 19), Zustand, TanStack Query, Tailwind CSS, mixed rendering of SSR guard + Client Islands.
 - API: Next.js API Routes, TypeScript, PostgreSQL, Redis.
-- Worker: proses TypeScript mandiri, mengonsumsi antrean generate dan tugas latar.
-- Infrastruktur: Docker Compose, Nginx, GitHub Actions, GitHub Container Registry, object storage kompatibel S3.
+- Worker: standalone TypeScript process, consuming the generation queue and background tasks.
+- Infrastructure: Docker Compose, Nginx, GitHub Actions, GitHub Container Registry, S3-compatible object storage.
 
-## Struktur direktori
+## Directory structure
 
 ```text
 apps/
-  web-next/  Aplikasi frontend Next.js 15 (React 19)
-  api/       Aplikasi API Next.js
-  worker/    Worker tugas latar
+  web-next/  Next.js 15 frontend app (React 19)
+  api/       API app (Next.js)
+  worker/    Background task worker
 packages/
-  config/    Pembacaan dan validasi environment variable sisi server
-  contracts/ DTO, tipe bersama, dan kode error yang aman dipakai browser
-  database/  Migration, transaksi, dan akses data
-  domain/    Aturan bisnis dan state machine yang tidak bergantung framework
-  providers/ Plugin image/video generation dan enkripsi kredensial (client object storage ada di apps/worker, SMTP ada di apps/api)
-docs/        Desain fitur, catatan implementasi, dan design system
-deploy/      Orkestrasi Compose, Dockerfile, dan konfigurasi Nginx
-scripts/     Script bantuan lokal dan deploy
-.github/     Workflow GitHub Actions
+  config/    Server-side environment variable reading and validation
+  contracts/ DTOs, shared types, and browser-safe error codes
+  database/  Migrations, transactions, and data access
+  domain/    Business rules and state machines independent of any framework
+  providers/ Image/video generation plugins and credential encryption (the object storage client lives in apps/worker, SMTP lives in apps/api)
+docs/        Feature designs, implementation notes, and design system
+deploy/      Compose orchestration, Dockerfiles, and Nginx configuration
+scripts/     Local and deploy helper scripts
+.github/     GitHub Actions workflows
 ```
 
-## Panduan pengembangan plugin
+## Plugin development guide
 
-Spesifikasi pengembangan plugin supplier model (gambar / video) dikelola terpisah di repo [MuseCanvas-Connector](https://github.com/nextroad-dev/MuseCanvas-Connector), repo utama tidak lagi menyimpan salinan `wiki/`:
+The development specification for model supplier plugins (image / video) is maintained separately in the [MuseCanvas-Connector](https://github.com/nextroad-dev/MuseCanvas-Connector) repo; the main repo no longer keeps a copy of `wiki/`:
 
-- [Spesifikasi plugin media](https://github.com/nextroad-dev/MuseCanvas-Connector/blob/main/wiki/video-plugin-spec.md): kontrak inti media provider, lifecycle plugin dan state machine, kontrak output, batas keamanan, model error, validasi parameter, dan gerbang pengujian.
-- [Indeks spesifikasi dan ruang lingkup](https://github.com/nextroad-dev/MuseCanvas-Connector/blob/main/wiki/README.md): penjelasan repo dan panduan implementasi referensi.
+- [Media plugin specification](https://github.com/nextroad-dev/MuseCanvas-Connector/blob/main/wiki/video-plugin-spec.md): core media provider contract, plugin lifecycle and state machine, output contract, security boundaries, error model, parameter validation, and testing gates.
+- [Specification index and scope](https://github.com/nextroad-dev/MuseCanvas-Connector/blob/main/wiki/README.md): repo overview and reference implementation guide.
 
-Sebelum mengubah `packages/providers/src/core/` atau `packages/providers/src/plugins/*`, baca dulu spesifikasi tersebut; perubahan yang melanggar gerbang kontrak (`tests/integration/media-provider-contract.test.ts`) tidak akan digabung.
+Before changing `packages/providers/src/core/` or `packages/providers/src/plugins/*`, read those specifications first; changes that violate the contract gates (`tests/integration/media-provider-contract.test.ts`) will not be merged.
 
-## Penjelasan file Docker / Compose
+## Docker / Compose files explained
 
-| File | Kegunaan |
+| File | Purpose |
 | --- | --- |
-| `deploy/compose.yaml` | Lingkungan full-stack lokal default, build dari source untuk `api`, `worker`, `web-next`, `nginx`, plus PostgreSQL, Redis, MinIO, Mailpit; saat pertama jalan, nilai default Mailpit / MinIO bawaan otomatis ditulis ke database (sudah terkonfigurasi, belum terverifikasi), halaman panduan langsung terisi. |
-| `deploy/compose.dev.yaml` | Pintu masuk lingkungan dev, dipakai dengan perintah eksplisit `docker compose --project-directory . --env-file .env -f deploy/compose.dev.yaml`, juga untuk pengembangan lokal. |
-| `deploy/compose.prod.yaml` | Template deploy dari source, TIDAK berisi MinIO / Mailpit, TIDAK memberi nilai default SMTP / S3 apa pun, semua konfigurasi aplikasi lewat halaman panduan `/setup` dan ditulis ke database. |
-| `deploy/compose.images.yaml` | Deploy memakai image GHCR yang sudah di-build, TIDAK berisi MinIO / Mailpit, default mengekspos Nginx lewat `18080:80`, konfigurasi aplikasi juga sama-sama tidak terisi. |
-| `deploy/docker/*.Dockerfile` | Definisi empat image: `api`, `worker`, `web-next`, `nginx`. |
+| `deploy/compose.yaml` | Default local full-stack environment, builds from source for `api`, `worker`, `web-next`, `nginx`, plus PostgreSQL, Redis, MinIO, Mailpit; on first run, the built-in default Mailpit / MinIO values are automatically written to the database (already configured, not yet verified), and the setup guide page is pre-filled. |
+| `deploy/compose.dev.yaml` | Entry point for the dev environment, used with the explicit command `docker compose --project-directory . --env-file .env -f deploy/compose.dev.yaml`, also for local development. |
+| `deploy/compose.prod.yaml` | Template for deploying from source, does NOT include MinIO / Mailpit, does NOT provide any default SMTP / S3 values; all application configuration is done via the `/setup` guide page and written to the database. |
+| `deploy/compose.images.yaml` | Deployment using pre-built GHCR images, does NOT include MinIO / Mailpit, by default exposes Nginx via `18080:80`, and application configuration is likewise not pre-filled. |
+| `deploy/docker/*.Dockerfile` | Definitions of the four images: `api`, `worker`, `web-next`, `nginx`. |
 
-> MinIO dan Mailpit hanya untuk pengembangan lokal, untuk simulasi object storage dan pengiriman email. Deploy publik atau produksi JANGAN memakai MinIO / Mailpit bawaan; sambungkan S3 yang kompatibel dan layanan SMTP asli di halaman panduan `/setup`.
+> MinIO and Mailpit are for local development only, to simulate object storage and email delivery. For public or production deployments, do NOT use the built-in MinIO / Mailpit; connect a compatible S3 and a real SMTP service on the `/setup` guide page.
 
-## Menjalankan secara lokal
+## Running locally
 
-1. Instal dependensi:
+1. Install dependencies:
 
 ```bash
 corepack enable
 pnpm install
 ```
 
-2. Jalankan lingkungan lokal lengkap (saat pertama jalan, bootstrap key dan password acak dibuat otomatis):
+2. Run the complete local environment (on first run, bootstrap keys and random passwords are generated automatically):
 
 ```bash
 pnpm compose:up
 ```
 
-Setara dengan membuat/melengkapi `.env` otomatis (hanya `POSTGRES_PASSWORD`, `APP_MASTER_KEY`, `MINIO_ROOT_*`, nilai yang sudah ada tidak pernah diubah) → `docker compose --project-directory . --env-file .env -f deploy/compose.yaml up --build -d`.
+Equivalent to automatically creating/completing `.env` (only `POSTGRES_PASSWORD`, `APP_MASTER_KEY`, `MINIO_ROOT_*`; existing values are never changed) → `docker compose --project-directory . --env-file .env -f deploy/compose.yaml up --build -d`.
 
-3. Buka `http://localhost:8080`, browser otomatis masuk ke **halaman panduan inisialisasi**:
+3. Open `http://localhost:8080`; the browser automatically enters the **initialization setup guide page**:
 
-- Atur email admin (kode OTP dikirim ke Mailpit: `http://localhost:8025`)
-- SMTP dan object storage sudah terisi nilai bawaan Mailpit / MinIO, klik "Tes koneksi" untuk verifikasi
-- Opsional: konfigurasi kredensial supplier, model, dan login OAuth
-- Setelah panduan selesai, langsung bisa berkarya
+- Set the admin email (the OTP code is sent to Mailpit: `http://localhost:8025`)
+- SMTP and object storage are already pre-filled with the default Mailpit / MinIO values; click "Test connection" to verify
+- Optional: configure supplier credentials, models, and OAuth login
+- Once the guide is complete, you can start creating right away
 
-4. Layanan lain:
+4. Other services:
 
-| Layanan | Alamat | Kegunaan |
+| Service | Address | Purpose |
 | --- | --- | --- |
-| Web | `http://localhost:8080` | Aplikasi frontend |
-| Mailpit | `http://localhost:8025` | Penangkap email (kode verifikasi) |
+| Web | `http://localhost:8080` | Frontend app |
+| Mailpit | `http://localhost:8025` | Email catcher (verification codes) |
 | MinIO API | `http://localhost:9000` | Object storage |
-| MinIO Console | `http://localhost:9001` | Konsol manajemen object storage |
+| MinIO Console | `http://localhost:9001` | Object storage management console |
 
-> `.env` hanya berisi bootstrap key dan saklar deploy: `POSTGRES_PASSWORD`, `APP_MASTER_KEY`, `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`, serta saklar `ALLOW_INSECURE_*` yang defaultnya semua `false` (Compose bawaan sudah mengizinkan SMTP plaintext untuk Mailpit). SMTP, konfigurasi S3 aplikasi, alamat publik, OAuth, batas upload, dan template prompt semuanya konfigurasi database, diisi dan dites di halaman panduan, tidak lagi lewat environment variable. Key lama yang masih dalam masa transisi (`SESSION_SECRET`, `OAUTH_CREDENTIALS_ENCRYPTION_KEY`, `PROVIDER_CREDENTIALS_ENCRYPTION_KEY`) masih bisa dikirim ke container sebagai kompatibilitas read-only; instalasi baru tidak perlu mengisinya.
+> `.env` only contains bootstrap keys and deploy switches: `POSTGRES_PASSWORD`, `APP_MASTER_KEY`, `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`, and the `ALLOW_INSECURE_*` switches, all defaulting to `false` (the built-in Compose already allows plaintext SMTP for Mailpit). SMTP, application S3 configuration, public address, OAuth, upload limits, and prompt templates are all database configuration, filled in and tested on the setup guide page, no longer via environment variables. Legacy keys still in their transition period (`SESSION_SECRET`, `OAUTH_CREDENTIALS_ENCRYPTION_KEY`, `PROVIDER_CREDENTIALS_ENCRYPTION_KEY`) can still be passed to containers as read-only compatibility; new installations do not need to fill them in.
 
-Menghentikan lingkungan lokal:
+Stopping the local environment:
 
 ```bash
 pnpm compose:down
 ```
 
-## Persyaratan lingkungan deploy
+## Deploy environment requirements
 
-`deploy/compose.prod.yaml` dan `deploy/compose.images.yaml` tidak menyertakan S3 atau layanan email, dan tidak memberi nilai default apa pun di database. Sebelum deploy, siapkan saja bootstrap key dan saklar deploy:
+`deploy/compose.prod.yaml` and `deploy/compose.images.yaml` do not include S3 or email services, and do not provide any default values in the database. Before deploying, just prepare the bootstrap keys and deploy switches:
 
 ```bash
 POSTGRES_PASSWORD=
-APP_MASTER_KEY=   # 32 byte, 64 karakter hex atau base64/base64url
+APP_MASTER_KEY=   # 32 bytes, 64 hex characters or base64/base64url
 
-# Saklar keamanan default-ditolak (longgarkan bila perlu, default tetap false)
+# Security switches, default-deny (relax if needed, defaults stay false)
 ALLOW_INSECURE_SMTP=false
 ALLOW_INSECURE_PROVIDER_BASE_URL=false
 ALLOW_PRIVATE_PROVIDER_BASE_URL=false
-# Admin mengunggah paket kode plugin provider; bila diaktifkan, file .mjs yang diunggah
-# akan dieksekusi dengan hak proses worker (bisa membaca semua kredensial supplier
-# turunan APP_MASTER_KEY), hanya untuk admin yang saling dipercaya.
+# Admins upload provider plugin code packages; when enabled, uploaded .mjs files
+# will be executed with worker process privileges (can read all supplier credentials
+# derived from APP_MASTER_KEY), only for mutually trusted admins.
 ALLOW_PLUGIN_UPLOAD=false
-# Direktori cache lokal worker untuk artefak plugin yang dimaterialisasi, harus
-# direktori sementara yang bisa ditulis, jangan taruh di /app (layer image sementara).
+# Local worker cache directory for materialized plugin artifacts, must be a
+# writable temporary directory, do not place it under /app (temporary image layer).
 PLUGIN_CACHE_DIR=/tmp/musecanvas-plugin-cache
 
-# Kompatibilitas read-only masa transisi (opsional, hanya satu versi): key lama masih
-# bisa dipakai, data terenkripsi lama tetap bisa dibaca, semua penulisan baru hanya
-# memakai key turunan APP_MASTER_KEY. Instalasi baru biarkan kosong.
+# Read-only transition-period compatibility (optional, single version only): legacy keys can
+# still be used, legacy encrypted data can still be read, all new writes use only
+# keys derived from APP_MASTER_KEY. New installations leave these empty.
 # SESSION_SECRET=
 # OAUTH_CREDENTIALS_ENCRYPTION_KEY=
 # PROVIDER_CREDENTIALS_ENCRYPTION_KEY=
 ```
 
-Konfigurasi aplikasi lainnya (SMTP pengirim, object storage kompatibel S3, alamat publik, login OAuth, batas upload, template prompt) diisi di halaman panduan `/setup` saat pertama dibuka, lalu klik "Tes koneksi" untuk verifikasi, ditulis ke database secara terenkripsi, tidak lagi lewat environment variable.
+Other application configuration (sender SMTP, S3-compatible object storage, public address, OAuth login, upload limits, prompt templates) is filled in on the `/setup` guide page when first opened, then click "Test connection" to verify; it is written to the database encrypted, no longer via environment variables.
 
-> Catatan upgrade: sisa key lama di `.env` (`SESSION_SECRET`, `*_ENCRYPTION_KEY`, `SMTP_*`, `S3_*`, `ADMIN_EMAIL`, `PROMPT_TEMPLATE_*`, dll) akan diabaikan oleh Compose baru (tidak lagi wajib, tidak lagi error), `generate-env` hanya melengkapi `APP_MASTER_KEY` / `MINIO_ROOT_*` yang hilang, tidak pernah mengubah nilai yang ada. Admin dan konfigurasi yang sudah tertulis di database tidak terpengaruh.
+> Upgrade note: leftover legacy keys in `.env` (`SESSION_SECRET`, `*_ENCRYPTION_KEY`, `SMTP_*`, `S3_*`, `ADMIN_EMAIL`, `PROMPT_TEMPLATE_*`, etc.) will be ignored by the new Compose (no longer required, no longer an error), `generate-env` only completes missing `APP_MASTER_KEY` / `MINIO_ROOT_*` values and never changes existing values. Admins and configuration already written to the database are unaffected.
 
-Semua key hanya boleh ditaruh di environment variable sisi server atau konfigurasi admin yang terenkripsi, dilarang ditulis ke kode frontend.
+All keys may only be placed in server-side environment variables or encrypted admin configuration; they must never be written into frontend code.
 
-### Persyaratan CORS bucket S3 eksternal
+### External S3 bucket CORS requirements
 
-Agar browser frontend bisa langsung mengunggah gambar referensi lewat Presigned POST, bucket S3 / Cloudflare R2 / MinIO eksternal harus mengonfigurasi aturan CORS:
+So the frontend browser can upload reference images directly via Presigned POST, an external S3 / Cloudflare R2 / MinIO bucket must be configured with CORS rules:
 
-- **AllowedOrigins**: origin tempat frontend di-deploy, misalnya `https://studio.example.com` (untuk pengembangan lokal yang memakai bucket eksternal, pakai `http://localhost:8080`, dll).
-- **AllowedMethods**: `POST`, `GET`, `HEAD` (upload langsung lewat form presigned wajib mengizinkan `POST`).
-- **AllowedHeaders**: `*` (mencakup semua header yang dibawa form upload).
+- **AllowedOrigins**: the origin where the frontend is deployed, e.g. `https://studio.example.com` (for local development using an external bucket, use `http://localhost:8080`, etc.).
+- **AllowedMethods**: `POST`, `GET`, `HEAD` (direct upload via a presigned form requires `POST` to be allowed).
+- **AllowedHeaders**: `*` (covers all headers carried by the upload form).
 - **ExposeHeaders**: `ETag`, `Location`.
 - **MaxAgeSeconds**: `3600`.
 
-Contoh konfigurasi JSON bucket AWS S3 / yang kompatibel:
+Example JSON configuration for an AWS S3 / compatible bucket:
 
 ```json
 [
@@ -162,7 +162,7 @@ Contoh konfigurasi JSON bucket AWS S3 / yang kompatibel:
 ]
 ```
 
-Contoh konfigurasi XML MinIO / S3:
+Example XML configuration for MinIO / S3:
 
 ```xml
 <CORSConfiguration>
@@ -179,9 +179,9 @@ Contoh konfigurasi XML MinIO / S3:
 </CORSConfiguration>
 ```
 
-## Deploy memakai image GHCR
+## Deploying with GHCR images
 
-Setiap push ke branch `main`, `.github/workflows/docker-image.yml` akan mem-build dan memublikasikan empat image:
+Every push to the `main` branch, `.github/workflows/docker-image.yml` builds and publishes four images:
 
 ```text
 ghcr.io/nextroad-dev/musecanvas-api:latest
@@ -190,54 +190,54 @@ ghcr.io/nextroad-dev/musecanvas-web-next:latest
 ghcr.io/nextroad-dev/musecanvas-nginx:latest
 ```
 
-Mesin deploy bisa memakai `deploy/compose.images.yaml`:
+A deploy machine can use `deploy/compose.images.yaml`:
 
 ```bash
 docker compose --project-directory . --env-file .env -f deploy/compose.images.yaml pull
 docker compose --project-directory . --env-file .env -f deploy/compose.images.yaml up -d
 ```
 
-Variabel opsional:
+Optional variables:
 
 ```bash
 MUSECANVAS_IMAGE_TAG=latest
 MUSECANVAS_HTTP_PORT=18080
 ```
 
-Jika Package GHCR belum bersifat publik, login dulu di server:
+If the GHCR package is not yet public, log in on the server first:
 
 ```bash
 echo GITHUB_TOKEN | docker login ghcr.io -u nextroad-dev --password-stdin
 ```
 
-> ⚠️ **Dokploy LABS (ARM64): JANGAN pakai jalur image ini.** Workflow upstream tidak mengatur `platforms:`, jadi image GHCR hanya di-build untuk `amd64`. Di host ARM64, pakai jalur build dari source di bawah (`deploy/compose.prod.yaml`). Lihat `DOKPLOY.md`.
+> ⚠️ **Dokploy LABS (ARM64): do NOT use this image path.** The upstream workflow does not set `platforms:`, so the GHCR images are only built for `amd64`. On an ARM64 host, use the build-from-source path below (`deploy/compose.prod.yaml`). See `DOKPLOY.md`.
 
-## Deploy dari source (build sendiri)
+## Deploying from source (self-build)
 
-Jika mesin deploy perlu mem-build image langsung dari source repo, pakai:
+If the deploy machine needs to build images directly from the repo source, use:
 
 ```bash
 docker compose --project-directory . --env-file .env -f deploy/compose.prod.yaml up --build -d
 ```
 
-Jalur ini juga hanya membutuhkan bootstrap key (lihat atas), sedangkan SMTP / S3 / domain / OAuth dikonfigurasi di halaman panduan `/setup`. `deploy/compose.prod.yaml` hanya mengatur orkestrasi aplikasi, Nginx, PostgreSQL, dan Redis; MinIO atau Mailpit tidak dijalankan.
+This path also only needs the bootstrap keys (see above), while SMTP / S3 / domain / OAuth are configured on the `/setup` guide page. `deploy/compose.prod.yaml` only orchestrates the app, Nginx, PostgreSQL, and Redis; MinIO or Mailpit are not run.
 
-## Perintah yang sering dipakai
+## Commonly used commands
 
 ```bash
-pnpm dev                  # Menjalankan layanan dev di apps secara paralel
-pnpm build                # Build rekursif
-pnpm lint                 # Menjalankan lint rekursif
-pnpm typecheck            # Pemeriksaan tipe rekursif
-pnpm test                 # Menjalankan test rekursif
-pnpm test:e2e:admin       # Script verifikasi end-to-end admin panel
+pnpm dev                  # Run dev services in apps in parallel
+pnpm build                # Recursive build
+pnpm lint                 # Run recursive lint
+pnpm typecheck            # Recursive type check
+pnpm test                 # Run recursive tests
+pnpm test:e2e:admin       # Admin panel end-to-end verification script
 pnpm compose:up
 pnpm compose:down
 ```
 
-> `scripts/prepare-prompt-templates.mjs` (`pnpm prepare:prompt-templates`) hanya pintu masuk kompatibilitas manual untuk deploy lama yang masih me-mount direktori template eksternal; tidak lagi dijalankan otomatis oleh `compose:up` atau file Compose mana pun; sumber runtime template adalah kumpulan template berversi yang ditulis lewat halaman panduan ke database.
+> `scripts/prepare-prompt-templates.mjs` (`pnpm prepare:prompt-templates`) is only a manual compatibility entry point for old deployments that still mount an external template directory; it is no longer run automatically by `compose:up` or any Compose file; the runtime source of templates is the versioned template collection written to the database via the setup guide page.
 
-Menjalankan satu aplikasi saja:
+Running a single app only:
 
 ```bash
 pnpm --filter @musecanvas/web-next dev
@@ -245,9 +245,9 @@ pnpm --filter @musecanvas/api dev
 pnpm --filter @musecanvas/worker dev
 ```
 
-## Verifikasi sebelum commit
+## Verification before commit
 
-Sesuai cakupan perubahan, jalankan minimal perintah terkait:
+Depending on the scope of the change, run at least the relevant commands:
 
 ```bash
 pnpm typecheck
@@ -257,4 +257,4 @@ pnpm build
 docker compose --project-directory . --env-file .env -f deploy/compose.yaml ps
 ```
 
-Untuk perubahan tampilan visual, interaksi, atau komponen frontend, lihat dulu `docs/design-system.md`. Untuk fitur yang punya `docs/{nomor}-{nama-fitur}/design.md`, file `impl.md` dan `result.md` di direktori yang sama juga termasuk deliverable.
+For visual appearance, interaction, or frontend component changes, first consult `docs/design-system.md`. For features that have a `docs/{number}-{feature-name}/design.md`, the `impl.md` and `result.md` files in the same directory are also deliverables.

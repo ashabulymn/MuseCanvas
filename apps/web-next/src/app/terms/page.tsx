@@ -5,171 +5,171 @@ import { Alert } from '@/shared/components/ui/alert'
 export const dynamic = 'force-static'
 
 export const metadata = {
-  title: '用户协议 - MuseCanvas',
-  description: 'MuseCanvas 用户协议与服务条款',
+  title: 'Terms of Service - MuseCanvas',
+  description: 'MuseCanvas Terms of Service and service terms',
 }
 
 const termsSections: LegalSection[] = [
-  { id: 'notice', title: '适用对象与地域限制' },
-  { id: 'section-1', title: '一、服务说明' },
-  { id: 'section-2', title: '二、账户与注册' },
-  { id: 'section-3', title: '三、用户输入内容' },
-  { id: 'section-4', title: '四、第三方服务与数据共享' },
-  { id: 'section-5', title: '五、生成内容的使用' },
-  { id: 'section-6', title: '六、用户行为规范' },
-  { id: 'section-7', title: '七、知识产权' },
-  { id: 'section-8', title: '八、服务变更与终止' },
-  { id: 'section-9', title: '九、免责声明' },
-  { id: 'section-10', title: '十、其他' },
+  { id: 'notice', title: 'Scope & Regional Restrictions' },
+  { id: 'section-1', title: '1. Service Description' },
+  { id: 'section-2', title: '2. Accounts & Registration' },
+  { id: 'section-3', title: '3. User Input' },
+  { id: 'section-4', title: '4. Third-Party Services & Data Sharing' },
+  { id: 'section-5', title: '5. Use of Generated Content' },
+  { id: 'section-6', title: '6. User Conduct' },
+  { id: 'section-7', title: '7. Intellectual Property' },
+  { id: 'section-8', title: '8. Service Changes & Termination' },
+  { id: 'section-9', title: '9. Disclaimer' },
+  { id: 'section-10', title: '10. Miscellaneous' },
 ]
 
 export default function TermsPage() {
   return (
-    <LegalShell title="用户协议" updatedAt="2026-06-25" current="terms" sections={termsSections}>
+    <LegalShell title="Terms of Service" updatedAt="2026-06-25" current="terms" sections={termsSections}>
       <div id="notice" className="scroll-mt-20">
         <Alert tone="warning">
-          <h2>适用对象与地域限制</h2>
+          <h2>Scope &amp; Regional Restrictions</h2>
           <p>
-            <strong>本服务不面向中国大陆用户。</strong>我们不向位于中国大陆境内的用户提供本服务，亦不接受来自中国大陆的注册、访问与使用。
+            <strong>This service is not available to users in mainland China.</strong> We do not provide this service to users located in mainland China, nor do we accept registrations, access, or use from mainland China.
           </p>
           <p>
-            如你位于中国大陆，请勿注册、登录、访问或使用本服务；如你在使用过程中所在地变更为中国大陆，或我们合理判断你属于中国大陆用户，我们可拒绝提供服务、限制访问或终止账户。
+            If you are located in mainland China, please do not register for, log in to, access, or use this service. If your location changes to mainland China while you are using the service, or if we reasonably determine that you are a mainland China user, we may refuse to provide the service, restrict access, or terminate your account.
           </p>
         </Alert>
       </div>
 
       <section id="section-1" className="scroll-mt-20">
-        <h2>一、服务说明</h2>
+        <h2>1. Service Description</h2>
         <p>
-          MuseCanvas（以下简称“本服务”）是一款基于人工智能技术的图像生成平台。你可通过本服务提交提示词、参数及其他内容，调用我们接入的模型与配套能力生成图像及相关输出。
+          MuseCanvas (hereinafter referred to as “the Service”) is an AI-powered image generation platform. Through the Service, you may submit prompts, parameters, and other content to invoke the models and supporting capabilities we have connected, in order to generate images and related output.
         </p>
         <p>
-          本服务可能包含账户注册与登录、图像生成、结果展示、历史记录、账户设置，以及我们不时上线的其他功能。不同功能的开放范围、可用性、处理时效、输出质量与费用安排，均以届时页面说明和实际提供情况为准。
+          The Service may include account registration and login, image generation, result display, history records, account settings, and other features we launch from time to time. The availability, scope, processing time, output quality, and pricing of each feature are as stated on the relevant pages at the time and as actually provided.
         </p>
         <p>
-          注册、登录、访问或使用本服务，即表示你已阅读、理解并同意接受本协议及与本服务相关的页面规则、公告和政策文件。
+          By registering, logging in, accessing, or using the Service, you confirm that you have read, understood, and agree to be bound by these Terms, as well as the page rules, announcements, and policy documents related to the Service.
         </p>
       </section>
 
       <section id="section-2" className="scroll-mt-20">
-        <h2>二、账户与注册</h2>
+        <h2>2. Accounts &amp; Registration</h2>
         <p>
-          本服务的注册模式可能为开放注册或邀请注册，具体以注册页面和系统当前配置为准。在开放注册模式下，新用户可按页面流程直接完成注册；在邀请注册模式下，新用户除完成相应注册流程外，还需提供有效的邀请码，邀请码可能具有次数、期限或一次性使用限制。
+          The Service may operate under either open registration or invitation-only registration, as stated on the registration page and in the system&apos;s current configuration. Under open registration, new users may complete registration directly by following the on-page flow. Under invitation-only registration, new users must, in addition to completing the registration flow, provide a valid invitation code; an invitation code may be subject to limits on the number of uses, an expiry period, or single-use restrictions.
         </p>
-        <p>你可通过以下路径注册或登录：</p>
+        <p>You may register or log in through the following methods:</p>
         <ul>
-          <li>邮箱路径：提交有效邮箱地址，完成验证码校验，并按页面要求完成注册或登录；</li>
-          <li>OAuth 路径：使用我们届时支持的第三方账号登录，并授权我们获取完成身份识别所必要的信息。</li>
+          <li>Email: submit a valid email address, complete the verification-code check, and follow the on-page instructions to complete registration or login;</li>
+          <li>OAuth: log in with a third-party account we support at the time, and authorize us to obtain the information necessary to identify you.</li>
         </ul>
         <p>
-          如你通过 OAuth 路径首次使用本服务，而系统当时处于邀请注册模式，你仍需按页面提示补充有效邀请码后方可完成账户创建。无论采用何种路径，你都应确保所提供信息真实、准确、完整且持续有效。
+          If you use the Service for the first time via OAuth while the system is in invitation-only registration mode, you must still provide a valid invitation code as prompted on the page before your account can be created. Whichever method you use, you must ensure that the information you provide is true, accurate, complete, and kept up to date.
         </p>
         <p>
-          你应妥善保管邮箱、验证码、第三方账号授权状态及其他账户凭证，并对账户项下发生的一切活动负责。发现账户被盗用、凭证泄露或存在未经授权的访问时，你应立即通知我们并采取必要措施。我们可基于安全、合规或风控需要，要求补充验证、限制登录、拒绝注册或暂停账户。
+          You are responsible for safeguarding your email address, verification codes, third-party account authorization status, and other account credentials, and for all activities that occur under your account. If you discover that your account has been compromised, your credentials have been leaked, or there has been unauthorized access, you should notify us immediately and take the necessary steps. We may, for security, compliance, or risk-control reasons, require additional verification, restrict login, refuse registration, or suspend an account.
         </p>
       </section>
 
       <section id="section-3" className="scroll-mt-20">
-        <h2>三、用户输入内容</h2>
+        <h2>3. User Input</h2>
         <p>
-          你提交至本服务的提示词、参数、上传素材、文字说明及其他内容，统称为“用户输入”。你对用户输入享有合法权利或已取得充分授权，并对其真实性、合法性、准确性和适用性承担全部责任。
+          The prompts, parameters, uploaded materials, text descriptions, and other content you submit to the Service are collectively referred to as “User Input.” You hold the lawful rights to User Input or have obtained sufficient authorization for it, and you bear full responsibility for its authenticity, legality, accuracy, and suitability.
         </p>
         <p>
-          你保证用户输入不违反适用法律法规，不侵犯任何第三方的知识产权、人格权、隐私权、商业秘密或其他合法权益，也不包含可能导致我们或第三方承担法律责任、合规风险或安全风险的内容。
+          You warrant that User Input does not violate applicable laws and regulations, does not infringe any third party&apos;s intellectual property rights, personality rights, privacy rights, trade secrets, or other lawful rights and interests, and does not contain content that could expose us or any third party to legal liability, compliance risk, or security risk.
         </p>
         <p>
-          为提供、维护、排查、审计和改进本服务，你同意我们在必要范围内存储、处理、传输和展示用户输入；但除法律法规要求、你另行授权或本协议另有约定外，我们不会主张取得你对用户输入本身的所有权。
+          To provide, maintain, troubleshoot, audit, and improve the Service, you agree that we may store, process, transmit, and display User Input to the extent necessary. Except where required by law, where you have separately authorized it, or where these Terms provide otherwise, we will not claim ownership of User Input itself.
         </p>
       </section>
 
       <section id="section-4" className="scroll-mt-20">
-        <h2>四、第三方服务与数据共享</h2>
+        <h2>4. Third-Party Services &amp; Data Sharing</h2>
         <p>
-          本服务的图像生成能力由我们合作的第三方模型与服务供应商提供，<strong>包括但不限于 OpenAI、火山引擎等</strong>。为完成你的生成请求：
+          The image generation capabilities of the Service are provided by third-party model and service providers we work with, <strong>including but not limited to OpenAI, Volcano Engine, and others</strong>. To fulfil your generation request:
         </p>
         <ul>
-          <li>你的用户输入及相关数据将被传输至上述第三方进行处理；</li>
-          <li>上述第三方可能在其服务条款与隐私政策允许的范围内，<strong>将收到的数据用于其自身服务改进或模型训练</strong>；</li>
-          <li>数据在第三方处的收集、使用与处理，以相应第三方的隐私政策与服务条款为准，我们无法完全控制。</li>
+          <li>your User Input and related data will be transmitted to the above third parties for processing;</li>
+          <li>the above third parties may, to the extent permitted by their own terms of service and privacy policies, <strong>use the data they receive to improve their own services or train models</strong>;</li>
+          <li>the collection, use, and processing of data by those third parties is governed by the relevant third party&apos;s privacy policy and terms of service, which we cannot fully control.</li>
         </ul>
-        <p>你理解并同意上述数据共享安排。如不接受，请勿使用本服务。相关个人信息的处理细节，详见《隐私政策》。</p>
+        <p>You understand and agree to the data-sharing arrangement described above. If you do not accept it, please do not use the Service. For details on how personal information is handled, see the Privacy Policy.</p>
       </section>
 
       <section id="section-5" className="scroll-mt-20">
-        <h2>五、生成内容的使用</h2>
+        <h2>5. Use of Generated Content</h2>
         <p>
-          本服务基于用户输入和模型处理结果生成图像及其他输出内容，统称为“生成内容”。你可在遵守适用法律法规、本协议、第三方权利及模型供应商使用规则的前提下使用生成内容。
+          Images and other output generated by the Service based on User Input and model processing are collectively referred to as “Generated Content.” You may use Generated Content provided you comply with applicable laws and regulations, these Terms, third-party rights, and the usage rules of the model providers.
         </p>
         <p>
-          你理解并同意，生成内容系人工智能技术产出，可能存在不准确、不完整、不一致、不可用、与预期不符、重复或涉及第三方既有表达的情形。你应自行判断生成内容是否适合用于发布、商用、训练、传播、备案或其他特定用途，并自行承担由此产生的风险与责任。
+          You understand and agree that Generated Content is produced by AI technology and may be inaccurate, incomplete, inconsistent, unavailable, different from what you expected, repetitive, or similar to pre-existing third-party expression. You are responsible for deciding for yourself whether Generated Content is suitable for publication, commercial use, training, distribution, filing, or any other specific purpose, and you bear the resulting risks and responsibilities.
         </p>
         <p>
-          如生成内容涉及人物肖像、商标、作品风格、受保护元素或其他可能引发争议的内容，你应在使用前自行完成权利核查、事实核验与合规评估；未经充分授权，不得将生成内容宣称为真实事实、官方立场、他人原创作品或经任何权利人认可。
+          If Generated Content involves a person&apos;s likeness, a trademark, a work&apos;s style, protected elements, or any other content that could give rise to a dispute, you should carry out your own rights check, factual verification, and compliance assessment before using it. Without sufficient authorization, you must not present Generated Content as fact, as an official position, as someone else&apos;s original work, or as endorsed by any rights holder.
         </p>
       </section>
 
       <section id="section-6" className="scroll-mt-20">
-        <h2>六、用户行为规范</h2>
-        <p>使用本服务时，你不得：</p>
+        <h2>6. User Conduct</h2>
+        <p>When using the Service, you must not:</p>
         <ul>
-          <li>上传或输入违法、有害、侵权、诽谤、骚扰或侵犯他人隐私的内容；</li>
-          <li>冒充他人或伪造身份信息；</li>
-          <li>使用自动化手段、脚本、批量请求或其他方式绕过配额、频率限制、访问控制或风控措施；</li>
-          <li>反向工程、抓取、复制、转售、出租、转授权或以其他未经授权的方式利用本服务、接口、模型输出或相关数据；</li>
-          <li>干扰、破坏服务的正常运行，或试图未经授权访问系统；</li>
-          <li>将本服务用于非法目的，或以违反本协议、页面规则、第三方条款或公序良俗的方式使用。</li>
+          <li>upload or enter content that is unlawful, harmful, infringing, defamatory, harassing, or invasive of another person&apos;s privacy;</li>
+          <li>impersonate another person or falsify identity information;</li>
+          <li>use automated means, scripts, bulk requests, or other methods to bypass quotas, rate limits, access controls, or risk-control measures;</li>
+          <li>reverse engineer, scrape, copy, resell, rent, sublicense, or otherwise exploit the Service, its interfaces, model output, or related data without authorization;</li>
+          <li>interfere with or disrupt the normal operation of the Service, or attempt to access the system without authorization;</li>
+          <li>use the Service for unlawful purposes, or in any way that violates these Terms, page rules, third-party terms, or public order and good morals.</li>
         </ul>
         <p>
-          如我们合理判断你的行为可能违反上述要求、影响服务安全稳定、损害其他用户或第三方权益，或使我们面临合规风险，我们有权采取删除内容、限制功能、暂停任务、封禁账户、撤销邀请码或其他必要措施。
+          If we reasonably determine that your conduct may violate the above requirements, affect the security and stability of the Service, harm other users or third parties, or expose us to compliance risk, we may take measures including removing content, restricting features, suspending tasks, banning accounts, revoking invitation codes, or other necessary actions.
         </p>
       </section>
 
       <section id="section-7" className="scroll-mt-20">
-        <h2>七、知识产权</h2>
+        <h2>7. Intellectual Property</h2>
         <p>
-          本服务的软件、界面、标识、文案、编排、技术实现及其他相关内容的知识产权，归我们或相应权利人所有。除非取得书面授权，你不得复制、修改、传播、公开展示、反向工程或以其他方式使用前述内容。
+          The intellectual property rights in the Service&apos;s software, interface, logos, copy, layout, technical implementation, and other related content belong to us or to the respective rights holders. Unless you have obtained written authorization, you must not copy, modify, distribute, publicly display, reverse engineer, or otherwise use the foregoing content.
         </p>
         <p>
-          用户输入的知识产权归你或相应权利人所有。为提供本服务，你授予我们一项非独占、可转委托、范围限于服务提供所必需的使用许可，以便我们及相关第三方服务供应商处理用户输入并返回生成结果。
+          The intellectual property rights in User Input belong to you or to the respective rights holders. To provide the Service, you grant us a non-exclusive, sublicensable licence, limited to what is necessary to provide the Service, so that we and the relevant third-party service providers may process User Input and return the generated results.
         </p>
         <p>
-          生成内容的权利归属、可保护性、独占性及是否构成著作权法或其他法律意义上的可保护客体，受适用法律、司法实践及第三方规则约束。除非法律另有明确规定，我们不就生成内容的权属、可注册性、可维权性或不侵权性作任何承诺或保证。
+          The ownership, protectability, exclusivity, and status of Generated Content as a protectable subject matter under copyright law or other laws are subject to applicable law, judicial practice, and third-party rules. Unless the law expressly provides otherwise, we make no commitment or warranty regarding the ownership, registrability, enforceability, or non-infringement of Generated Content.
         </p>
       </section>
 
       <section id="section-8" className="scroll-mt-20">
-        <h2>八、服务变更与终止</h2>
+        <h2>8. Service Changes &amp; Termination</h2>
         <p>
-          我们可基于业务安排、合规要求、安全风控、第三方能力变化、运营策略或其他合理原因，随时变更、升级、限制、暂停或终止本服务的全部或部分功能，包括调整注册模式、可用模型、处理规则、账户权限或页面内容。
+          We may, based on business arrangements, compliance requirements, security and risk control, changes in third-party capabilities, operational strategy, or other reasonable grounds, change, upgrade, restrict, suspend, or terminate all or part of the Service at any time, including adjusting the registration mode, available models, processing rules, account permissions, or page content.
         </p>
         <p>
-          如法律法规要求、监管指令、第三方停止支持、系统故障或其他不可控原因导致服务需中断或下线，我们可在合理范围内采取紧急措施而不另行逐一通知。对于一般性条款更新，我们将通过页面公告、更新时间标注或其他适当方式提示；更新后的条款自公布之日起生效。
+          If the Service must be interrupted or taken offline due to legal requirements, regulatory instructions, a third party ceasing support, system failure, or other circumstances beyond our control, we may take emergency measures within a reasonable scope without notifying each user individually. For general updates to the Terms, we will notify you through a page announcement, an updated timestamp, or another appropriate means; the updated Terms take effect from the date of publication.
         </p>
-        <p>如你不同意更新后的条款，应停止使用本服务。你继续访问或使用本服务的，视为接受更新后的条款。</p>
+        <p>If you do not agree to the updated Terms, you should stop using the Service. If you continue to access or use the Service, you will be deemed to have accepted the updated Terms.</p>
       </section>
 
       <section id="section-9" className="scroll-mt-20">
-        <h2>九、免责声明</h2>
+        <h2>9. Disclaimer</h2>
         <p>
-          本服务按“现状”和“可提供”状态提供。在法律允许的最大范围内，我们不就本服务的连续性、稳定性、准确性、及时性、安全性、特定目的适用性、无错误性、无中断性或生成结果质量作任何明示或默示保证。
+          The Service is provided on an “as is” and “as available” basis. To the maximum extent permitted by law, we make no express or implied warranty regarding the continuity, stability, accuracy, timeliness, security, fitness for a particular purpose, error-free nature, uninterrupted nature, or quality of generated results of the Service.
         </p>
         <p>
-          你理解并同意，人工智能服务具有概率性与不确定性，生成内容不当然代表事实、专业建议或我们的观点。对你基于本服务所作出的创作、发布、交易、传播、合规申报、医疗、法律、金融或其他决策，均应自行判断并承担责任。
+          You understand and agree that AI services are probabilistic and uncertain, and that Generated Content does not necessarily represent facts, professional advice, or our views. For any creative work, publication, transaction, distribution, compliance filing, medical, legal, financial, or other decision you make based on the Service, you must exercise your own judgment and bear responsibility.
         </p>
         <p>
-          在适用法律允许的范围内，对于因你使用或无法使用本服务、第三方服务中断、网络故障、数据丢失、生成内容瑕疵、权利争议或其他间接、附带、特殊、惩罚性损失所造成的后果，我们不承担责任；但因我们依法不得免责的情形除外。
+          To the extent permitted by applicable law, we are not liable for consequences arising from your use of, or inability to use, the Service, interruptions to third-party services, network failures, data loss, defects in Generated Content, rights disputes, or other indirect, incidental, special, or punitive losses; except in circumstances where we cannot be exempted from liability by law.
         </p>
       </section>
 
       <section id="section-10" className="scroll-mt-20">
-        <h2>十、其他</h2>
+        <h2>10. Miscellaneous</h2>
         <p>
-          本协议的订立、效力、解释、履行及争议解决，适用中华人民共和国法律，但不包括其冲突规范。因本协议或本服务引起的争议，双方应先友好协商；协商不成的，提交我们所在地有管辖权的人民法院处理。
+          The formation, validity, interpretation, performance, and dispute resolution of these Terms are governed by the laws of the People&apos;s Republic of China, excluding its conflict-of-laws rules. Any dispute arising from these Terms or the Service shall first be resolved through friendly consultation between the parties; if consultation fails, the dispute shall be submitted to the People&apos;s Court with jurisdiction in the place where we are located.
         </p>
         <p>
-          如本协议任何条款被认定为无效或不可执行，不影响其他条款的效力。我们未行使或延迟行使本协议项下的任何权利，不构成对该等权利的放弃。
+          If any provision of these Terms is held invalid or unenforceable, the validity of the remaining provisions shall not be affected. Our failure or delay in exercising any right under these Terms does not constitute a waiver of that right.
         </p>
-        <p>如对本协议或本服务有任何问题，可通过本服务公布的官方渠道联系我们。</p>
+        <p>If you have any questions about these Terms or the Service, please contact us through the official channels published by the Service.</p>
       </section>
     </LegalShell>
   )

@@ -53,7 +53,7 @@ export function Alert({
   children,
   action,
   onDismiss,
-  dismissLabel = '关闭提示',
+  dismissLabel = 'Dismiss alert',
   icon,
   role = 'status',
   className,

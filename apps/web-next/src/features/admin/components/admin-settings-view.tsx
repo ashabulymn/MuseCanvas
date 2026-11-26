@@ -65,13 +65,13 @@ function SettingsSectionFeedback({ feedback, newerRevision, dirty, busy, onReloa
   const [confirmReload, setConfirmReload] = useState(false)
   return <>
     {feedback && <Alert tone={feedback.ok ? 'success' : 'danger'} role={feedback.ok ? 'status' : 'alert'}>{feedback.msg}</Alert>}
-    {newerRevision && <Alert tone="info" title="服务端配置已更新" action={
-      <Button variant="secondary" disabled={busy} onClick={() => { if (dirty) setConfirmReload(true); else onReload() }}>重新载入本分区</Button>
-    }>当前草稿与已载入基线均保留。重新载入才会采用服务端新版本，并清空本分区的敏感输入。</Alert>}
-    <Dialog open={confirmReload} onClose={() => setConfirmReload(false)} title="放弃草稿并重新载入？" size="narrow" panelClassName="max-h-[90dvh] max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_button]:min-w-[var(--control-lg)]" footer={<>
-      <Button variant="ghost" disabled={busy} onClick={() => setConfirmReload(false)}>保留草稿</Button>
-      <Button variant="danger" disabled={busy} onClick={() => { onReload(); setConfirmReload(false) }}>放弃草稿并载入</Button>
-    </>}><p className="text-sm">本分区尚有未保存内容。重新载入会替换此草稿，密钥输入也会清空；其它分区不受影响。</p></Dialog>
+    {newerRevision && <Alert tone="info" title="Server configuration updated" action={
+      <Button variant="secondary" disabled={busy} onClick={() => { if (dirty) setConfirmReload(true); else onReload() }}>Reload this section</Button>
+    }>The current draft and the loaded baseline are both kept. Reloading adopts the new server version and clears sensitive inputs in this section.</Alert>}
+    <Dialog open={confirmReload} onClose={() => setConfirmReload(false)} title="Discard draft and reload?" size="narrow" panelClassName="max-h-[90dvh] max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_button]:min-w-[var(--control-lg)]" footer={<>
+      <Button variant="ghost" disabled={busy} onClick={() => setConfirmReload(false)}>Keep draft</Button>
+      <Button variant="danger" disabled={busy} onClick={() => { onReload(); setConfirmReload(false) }}>Discard draft and load</Button>
+    </>}><p className="text-sm">This section still has unsaved content. Reloading replaces this draft and clears secret inputs; other sections are unaffected.</p></Dialog>
   </>
 }
 
@@ -90,15 +90,15 @@ const sectionGroups: Array<{
   title: string
   items: Array<{ id: SectionId; label: string; icon: typeof Globe }>
 }> = [
-  { title: '站点', items: [{ id: 'site', label: '站点信息', icon: Globe }] },
+  { title: 'Site', items: [{ id: 'site', label: 'Site information', icon: Globe }] },
   {
-    title: '外部服务',
+    title: 'External services',
     items: [
-      { id: 'smtp', label: 'SMTP 邮件服务', icon: Mail },
-      { id: 'storage', label: '对象存储', icon: Database },
+      { id: 'smtp', label: 'SMTP email service', icon: Mail },
+      { id: 'storage', label: 'Object storage', icon: Database },
     ],
   },
-  { title: '运行参数', items: [{ id: 'runtime', label: '运行时限制', icon: SlidersHorizontal }] },
+  { title: 'Runtime parameters', items: [{ id: 'runtime', label: 'Runtime limits', icon: SlidersHorizontal }] },
 ]
 
 const connectionStatusTone: Record<SmtpConnectionStatus | StorageConnectionStatus, BadgeTone> = {
@@ -109,10 +109,10 @@ const connectionStatusTone: Record<SmtpConnectionStatus | StorageConnectionStatu
 }
 
 const connectionStatusLabel: Record<SmtpConnectionStatus | StorageConnectionStatus, string> = {
-  not_configured: '未配置',
-  configured: '已保存待验证',
-  verified: '已验证',
-  error: '连接异常',
+  not_configured: 'Not configured',
+  configured: 'Saved, pending verification',
+  verified: 'Verified',
+  error: 'Connection error',
 }
 
 // Empty inputs are omitted so the server keeps the stored value instead of clearing it.
@@ -157,11 +157,11 @@ function SectionHeader({
 function DangerZone({ description, children }: { description: string; children: React.ReactNode }) {
   return (
     <section
-      aria-label="危险操作"
+      aria-label="Danger zone"
       className="flex flex-col gap-4 rounded-card border border-danger-border bg-danger-soft p-4"
     >
       <div className="flex flex-col gap-1">
-        <h3 className="text-module text-danger">危险操作</h3>
+        <h3 className="text-module text-danger">Danger zone</h3>
         <p className="max-w-reading text-sm text-muted-foreground">{description}</p>
       </div>
       <div className="flex flex-wrap items-center gap-3">{children}</div>
@@ -188,13 +188,13 @@ function SaveBar({
 }) {
   return (
     <div className="sticky bottom-0 z-sticky flex flex-wrap items-center justify-between gap-3 rounded-card bg-surface p-4 shadow-soft">
-      <p className="text-sm text-muted-foreground">{busy ? '本分区操作中，表单已锁定。' : dirty ? '有未保存的更改。' : '当前没有可提交的更改。'}</p>
+      <p className="text-sm text-muted-foreground">{busy ? 'A section operation is in progress; the form is locked.' : dirty ? 'There are unsaved changes.' : 'There are no changes to submit.'}</p>
       <div className="flex flex-wrap items-center gap-2">
         <Button type="button" variant="ghost" className="min-h-[var(--control-lg)] md:min-h-[var(--control-md)]" disabled={busy} onClick={onCancel}>
-          取消
+          Cancel
         </Button>
         <Button type="submit" className="min-h-[var(--control-lg)] md:min-h-[var(--control-md)]" form={formId} loading={saving} disabled={busy || !dirty}>
-          保存
+          Save
         </Button>
       </div>
     </div>
@@ -209,7 +209,7 @@ const FORM_ID = {
 } as const
 
 const updatedAtStatus = (updatedAt: string) => (
-  <p className="text-xs text-muted-foreground">更新于 {updatedAt.slice(0, 10)}</p>
+  <p className="text-xs text-muted-foreground">Updated {updatedAt.slice(0, 10)}</p>
 )
 
 function SiteSection({
@@ -233,17 +233,17 @@ function SiteSection({
         siteName: siteName.trim(),
         siteUrl: siteUrl.trim() || null,
       }
-      if (!body.siteName) throw new Error('请输入站点名称')
+      if (!body.siteName) throw new Error('Please enter a site name')
       const res = await api<SiteSettingsDto>(API_ENDPOINTS.setup.site, { method: 'POST', body })
-      if (!res.success) throw new Error(res.error?.message || '保存站点配置失败')
-      return requireAdminData(res, '保存响应缺少配置数据')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to save site settings')
+      return requireAdminData(res, 'Save response is missing configuration data')
     },
     onSuccess: async (data) => {
       loadSettings(data)
-      setFeedback({ ok: true, msg: '站点配置已保存' })
+      setFeedback({ ok: true, msg: 'Site settings saved' })
       await queryClient.invalidateQueries({ queryKey: settingsQueryKey })
     },
-    onError: (err: Error) => setFeedback({ ok: false, msg: err.message || '保存站点配置失败' }),
+    onError: (err: Error) => setFeedback({ ok: false, msg: err.message || 'Failed to save site settings' }),
   })
 
   function reset() {
@@ -266,8 +266,8 @@ function SiteSection({
       <SettingsSectionFeedback feedback={feedback} newerRevision={hasNewerAdminSettingsRevision(settings, latestSettings)} dirty={dirty} busy={busy} onReload={() => loadSettings(latestSettings)} />
       <Card className="gap-6">
         <SectionHeader
-          title="站点信息"
-          description="用于邮件、OAuth 回调与分享链接中的实例公开地址。"
+          title="Site information"
+          description="The instance public URL used in emails, OAuth callbacks, and share links."
           status={updatedAtStatus(settings.updatedAt)}
         />
         <form
@@ -279,12 +279,12 @@ function SiteSection({
         >
           <fieldset disabled={busy} className="min-w-0">
             <FieldGroup>
-              <FormField label="站点名称" required hint="显示在标题、邮件与页面元信息中，最长 120 字符。">
+              <FormField label="Site name" required hint="Shown in the title, emails, and page metadata; max 120 characters.">
                 <Input type="text" maxLength={120} value={siteName} onChange={(e) => setSiteName(e.target.value)} />
               </FormField>
               <FormField
-                label="站点地址（可选）"
-                hint="必须是 HTTPS 根地址，不能带路径、查询参数或认证信息；留空则回退到服务端环境变量推导的地址。"
+                label="Site URL (optional)"
+                hint="Must be an HTTPS root URL without a path, query parameters, or credentials; leave empty to fall back to the address derived from server environment variables."
               >
                 <Input
                   type="text"
@@ -340,15 +340,15 @@ function SmtpSection({
   const save = useMutation({
     mutationFn: async () => {
       const res = await api<SmtpSettingsDto>(API_ENDPOINTS.setup.smtp, { method: 'POST', body: toInput() })
-      if (!res.success) throw new Error(res.error?.message || '保存 SMTP 设置失败')
-      return requireAdminData(res, '保存响应缺少配置数据')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to save SMTP settings')
+      return requireAdminData(res, 'Save response is missing configuration data')
     },
     onSuccess: async (data) => {
       loadSettings(data)
-      setFeedback({ ok: true, msg: 'SMTP 设置已保存，建议验证连接；保存本身不代表可以投递邮件。' })
+      setFeedback({ ok: true, msg: 'SMTP settings saved; verifying the connection is recommended — saving alone does not mean mail can be delivered.' })
       await queryClient.invalidateQueries({ queryKey: settingsQueryKey })
     },
-    onError: (err: Error) => setFeedback({ ok: false, msg: err.message || '保存 SMTP 设置失败' }),
+    onError: (err: Error) => setFeedback({ ok: false, msg: err.message || 'Failed to save SMTP settings' }),
   })
 
   const test = useMutation({
@@ -357,14 +357,14 @@ function SmtpSection({
         method: 'POST',
         body: toInput(),
       })
-      return requireVerifiedAdminSettings(res, 'SMTP 连接验证未通过或响应缺少设置数据')
+      return requireVerifiedAdminSettings(res, 'SMTP connection verification failed or the response is missing settings data')
     },
     onSuccess: async (data) => {
       loadSettings(data)
-      setFeedback({ ok: true, msg: '当前草稿的 SMTP 连接验证通过，设置已保存；此测试不发送邮件，也不保证邮件投递。' })
+      setFeedback({ ok: true, msg: 'The current draft passed SMTP connection verification and the settings were saved; this test sends no email and does not guarantee delivery.' })
       await queryClient.invalidateQueries({ queryKey: settingsQueryKey })
     },
-    onError: (err: Error) => setFeedback({ ok: false, msg: err.message || 'SMTP 连通性测试未通过' }),
+    onError: (err: Error) => setFeedback({ ok: false, msg: err.message || 'SMTP connectivity test failed' }),
   })
 
   function reset() {
@@ -397,8 +397,8 @@ function SmtpSection({
       <SettingsSectionFeedback feedback={feedback} newerRevision={hasNewerAdminSettingsRevision(settings, latestSettings)} dirty={dirty} busy={busy} onReload={() => loadSettings(latestSettings)} />
       <Card className="gap-6">
         <SectionHeader
-          title="SMTP 邮件服务"
-          description="用于发送登录验证码与通知邮件。"
+          title="SMTP email service"
+          description="Used to send login verification codes and notification emails."
           status={<ConnectionBadge status={settings.status} />}
         />
         <form
@@ -410,10 +410,10 @@ function SmtpSection({
         >
           <fieldset disabled={busy} className="min-w-0">
             <div className="grid gap-6 sm:grid-cols-2">
-              <FormField label="发信服务器" hint="留空表示保持当前值不变。">
+              <FormField label="SMTP server" hint="Leave empty to keep the current value.">
                 <Input type="text" placeholder="smtp.example.com" value={host} onChange={(e) => setHost(e.target.value)} />
               </FormField>
-              <FormField label="端口">
+              <FormField label="Port">
                 <Input
                   type="number"
                   min={1}
@@ -423,14 +423,14 @@ function SmtpSection({
                   onChange={(e) => setPort(e.target.value)}
                 />
               </FormField>
-              <FormField label="加密方式">
+              <FormField label="Encryption">
                 <Select value={tlsMode} onChange={(e) => setTlsMode(e.target.value as SmtpTlsMode)}>
-                  <option value="implicit_tls">隐式 TLS（465）</option>
-                  <option value="starttls">STARTTLS（587）</option>
-                  <option value="none">不加密</option>
+                  <option value="implicit_tls">Implicit TLS (465)</option>
+                  <option value="starttls">STARTTLS (587)</option>
+                  <option value="none">No encryption</option>
                 </Select>
               </FormField>
-              <FormField label="登录用户名">
+              <FormField label="Login username">
                 <Input
                   type="text"
                   autoComplete="off"
@@ -439,21 +439,21 @@ function SmtpSection({
                 />
               </FormField>
               <FormField
-                label="登录密码 / 授权码"
-                hint={settings.hasSecret ? '已配置密钥，留空则保持不变。' : '密钥仅写入，不会回显。'}
+                label="Login password / authorization code"
+                hint={settings.hasSecret ? 'A secret is configured; leave empty to keep it.' : 'Secrets are write-only and are never shown again.'}
               >
                 <Input
                   type="password"
                   autoComplete="new-password"
-                  placeholder={settings.hasSecret ? '••••••••' : '未设置'}
+                  placeholder={settings.hasSecret ? '••••••••' : 'Not set'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </FormField>
-              <FormField label="发件地址">
+              <FormField label="From address">
                 <Input type="email" value={fromAddress} onChange={(e) => setFromAddress(e.target.value)} />
               </FormField>
-              <FormField label="发件人名称">
+              <FormField label="From name">
                 <Input type="text" maxLength={120} value={fromName} onChange={(e) => setFromName(e.target.value)} />
               </FormField>
             </div>
@@ -461,9 +461,9 @@ function SmtpSection({
         </form>
       </Card>
 
-      <DangerZone description="验证当前草稿的 SMTP 连接，不发送邮件；连接成功后才保存设置，连接失败不保存。测试会真实连接外部服务；成功保存后登录密钥可能被覆盖，旧值无法取回。">
+      <DangerZone description="Verifies the current draft's SMTP connection without sending email; settings are saved only if the connection succeeds, and not saved if it fails. The test really connects to the external service; after a successful save, the login secret may be overwritten and the old value cannot be retrieved.">
         <Button variant="secondary" loading={test.isPending} disabled={busy} onClick={() => { if (!busy) test.mutate() }}>
-          验证 SMTP 连接
+          Verify SMTP connection
         </Button>
       </DangerZone>
 
@@ -507,15 +507,15 @@ function StorageSection({
   const save = useMutation({
     mutationFn: async () => {
       const res = await api<StorageSettingsDto>(API_ENDPOINTS.setup.storage, { method: 'POST', body: toInput() })
-      if (!res.success) throw new Error(res.error?.message || '保存对象存储设置失败')
-      return requireAdminData(res, '保存响应缺少配置数据')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to save object storage settings')
+      return requireAdminData(res, 'Save response is missing configuration data')
     },
     onSuccess: async (data) => {
       loadSettings(data)
-      setFeedback({ ok: true, msg: '对象存储设置已保存，建议执行连通性测试完成验证。' })
+      setFeedback({ ok: true, msg: 'Object storage settings saved; run a connectivity test to complete verification.' })
       await queryClient.invalidateQueries({ queryKey: settingsQueryKey })
     },
-    onError: (err: Error) => setFeedback({ ok: false, msg: err.message || '保存对象存储设置失败' }),
+    onError: (err: Error) => setFeedback({ ok: false, msg: err.message || 'Failed to save object storage settings' }),
   })
 
   const test = useMutation({
@@ -524,14 +524,14 @@ function StorageSection({
         method: 'POST',
         body: toInput(),
       })
-      return requireVerifiedAdminSettings(res, '对象存储连通性测试未通过或响应缺少设置数据')
+      return requireVerifiedAdminSettings(res, 'Object storage connectivity test failed or the response is missing settings data')
     },
     onSuccess: async (data) => {
       loadSettings(data)
-      setFeedback({ ok: true, msg: '当前草稿的对象存储连通性测试通过，设置已保存并标记为已验证。' })
+      setFeedback({ ok: true, msg: 'The current draft passed the object storage connectivity test; the settings were saved and marked as verified.' })
       await queryClient.invalidateQueries({ queryKey: settingsQueryKey })
     },
-    onError: (err: Error) => setFeedback({ ok: false, msg: err.message || '对象存储连通性测试未通过' }),
+    onError: (err: Error) => setFeedback({ ok: false, msg: err.message || 'Object storage connectivity test failed' }),
   })
 
   function reset() {
@@ -564,8 +564,8 @@ function StorageSection({
       <SettingsSectionFeedback feedback={feedback} newerRevision={hasNewerAdminSettingsRevision(settings, latestSettings)} dirty={dirty} busy={busy} onReload={() => loadSettings(latestSettings)} />
       <Card className="gap-6">
         <SectionHeader
-          title="对象存储"
-          description="S3 兼容存储（含 MinIO / OSS / COS / R2），用于持久化生成的图像与视频资产。"
+          title="Object storage"
+          description="S3-compatible storage (including MinIO / OSS / COS / R2) for persisting generated image and video assets."
           status={<ConnectionBadge status={settings.status} />}
         />
         <form
@@ -577,7 +577,7 @@ function StorageSection({
         >
           <fieldset disabled={busy} className="min-w-0">
             <div className="grid gap-6 sm:grid-cols-2">
-              <FormField label="服务端点" hint="必须为 HTTP(S) 地址，不能带查询参数。">
+              <FormField label="Server endpoint" hint="Must be an HTTP(S) URL without query parameters.">
                 <Input
                   type="text"
                   placeholder="https://minio.internal:9000"
@@ -585,7 +585,7 @@ function StorageSection({
                   onChange={(e) => setEndpoint(e.target.value)}
                 />
               </FormField>
-              <FormField label="公网访问端点（可选）">
+              <FormField label="Public access endpoint (optional)">
                 <Input
                   type="text"
                   placeholder="https://cdn.example.com"
@@ -593,7 +593,7 @@ function StorageSection({
                   onChange={(e) => setPublicEndpoint(e.target.value)}
                 />
               </FormField>
-              <FormField label="区域" hint="仅小写字母、数字与连字符，最长 32 字符。">
+              <FormField label="Region" hint="Only lowercase letters, digits, and hyphens; max 32 characters.">
                 <Input
                   type="text"
                   maxLength={32}
@@ -602,7 +602,7 @@ function StorageSection({
                   onChange={(e) => setRegion(e.target.value)}
                 />
               </FormField>
-              <FormField label="存储桶" hint="3-63 字符，仅小写字母、数字、连字符与点。">
+              <FormField label="Bucket" hint="3–63 characters; only lowercase letters, digits, hyphens, and dots.">
                 <Input type="text" value={bucket} onChange={(e) => setBucket(e.target.value)} />
               </FormField>
               <FormField label="Access Key ID">
@@ -615,17 +615,17 @@ function StorageSection({
               </FormField>
               <FormField
                 label="Secret Access Key"
-                hint={settings.hasSecret ? '已配置密钥，留空则保持不变。' : '密钥仅写入，不会回显。'}
+                hint={settings.hasSecret ? 'A secret is configured; leave empty to keep it.' : 'Secrets are write-only and are never shown again.'}
               >
                 <Input
                   type="password"
                   autoComplete="new-password"
-                  placeholder={settings.hasSecret ? '••••••••' : '未设置'}
+                  placeholder={settings.hasSecret ? '••••••••' : 'Not set'}
                   value={secretAccessKey}
                   onChange={(e) => setSecretAccessKey(e.target.value)}
                 />
               </FormField>
-              <FormField label="签名 URL 有效期（秒）" hint="允许范围 60 - 3600。">
+              <FormField label="Signed URL TTL (seconds)" hint="Allowed range: 60–3600.">
                 <Input
                   type="number"
                   min={60}
@@ -639,9 +639,9 @@ function StorageSection({
         </form>
       </Card>
 
-      <DangerZone description="测试当前草稿，会真实读写存储桶中的测试对象；测试成功后才保存设置，失败不保存。成功保存后 Secret Access Key 可能被覆盖，旧值无法取回。">
+      <DangerZone description="Tests the current draft by actually reading and writing a test object in the bucket; settings are saved only if the test succeeds, and not saved if it fails. After a successful save, the Secret Access Key may be overwritten and the old value cannot be retrieved.">
         <Button variant="secondary" loading={test.isPending} disabled={busy} onClick={() => { if (!busy) test.mutate() }}>
-          运行连通性测试
+          Run connectivity test
         </Button>
       </DangerZone>
 
@@ -656,14 +656,14 @@ const runtimeFields: Array<{
   min: number
   max: number
 }> = [
-  { key: 'uploadTtlSeconds', label: '上传暂存有效期（秒）', min: 300, max: 604800 },
-  { key: 'signedUrlTtlSeconds', label: '签名 URL 有效期（秒）', min: 60, max: 3600 },
-  { key: 'maxImageBytes', label: '单图大小上限（字节）', min: 1, max: 100000000 },
-  { key: 'maxTotalBytes', label: '单次上传总大小上限（字节）', min: 1, max: 200000000 },
-  { key: 'maxInputs', label: '单次生成参考图上限（张）', min: 1, max: 32 },
-  { key: 'providerTimeoutMs', label: '上游请求超时（毫秒）', min: 1, max: 3600000 },
-  { key: 'maxOutputBytes', label: '生成结果大小上限（字节）', min: 1, max: 100000000 },
-  { key: 'jobLeaseMs', label: '任务租约时长（毫秒）', min: 1, max: 3600000 },
+  { key: 'uploadTtlSeconds', label: 'Upload staging TTL (seconds)', min: 300, max: 604800 },
+  { key: 'signedUrlTtlSeconds', label: 'Signed URL TTL (seconds)', min: 60, max: 3600 },
+  { key: 'maxImageBytes', label: 'Max single image size (bytes)', min: 1, max: 100000000 },
+  { key: 'maxTotalBytes', label: 'Max total upload size per request (bytes)', min: 1, max: 200000000 },
+  { key: 'maxInputs', label: 'Max reference images per generation', min: 1, max: 32 },
+  { key: 'providerTimeoutMs', label: 'Upstream request timeout (milliseconds)', min: 1, max: 3600000 },
+  { key: 'maxOutputBytes', label: 'Max generated result size (bytes)', min: 1, max: 100000000 },
+  { key: 'jobLeaseMs', label: 'Job lease duration (milliseconds)', min: 1, max: 3600000 },
 ]
 
 type RuntimeDraft = Record<keyof RuntimeSettingsInput, string>
@@ -718,18 +718,18 @@ function RuntimeSection({
     mutationFn: async () => {
       const values = toValues()
       if (values.maxTotalBytes < values.maxImageBytes) {
-        throw new Error('总大小上限不能小于单图大小上限')
+        throw new Error('Total size limit cannot be smaller than the single image size limit')
       }
       const res = await api<RuntimeSettingsDto>(API_ENDPOINTS.setup.runtime, { method: 'POST', body: values })
-      if (!res.success) throw new Error(res.error?.message || '保存运行时限制失败')
-      return requireAdminData(res, '保存响应缺少配置数据')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to save runtime limits')
+      return requireAdminData(res, 'Save response is missing configuration data')
     },
     onSuccess: async (data) => {
       loadSettings(data)
-      setFeedback({ ok: true, msg: '运行时限制已保存，Worker 将在缓存刷新后生效。' })
+      setFeedback({ ok: true, msg: 'Runtime limits saved; the Worker will apply them after its cache refreshes.' })
       await queryClient.invalidateQueries({ queryKey: settingsQueryKey })
     },
-    onError: (err: Error) => setFeedback({ ok: false, msg: err.message || '保存运行时限制失败' }),
+    onError: (err: Error) => setFeedback({ ok: false, msg: err.message || 'Failed to save runtime limits' }),
   })
 
   function loadSettings(next: RuntimeSettingsDto) {
@@ -746,8 +746,8 @@ function RuntimeSection({
       <SettingsSectionFeedback feedback={feedback} newerRevision={hasNewerAdminSettingsRevision(settings, latestSettings)} dirty={dirty} busy={busy} onReload={() => loadSettings(latestSettings)} />
       <Card className="gap-6">
         <SectionHeader
-          title="运行时限制"
-          description="上传、生成任务与上游调用的护栏参数，留空的字段保持原值。"
+          title="Runtime limits"
+          description="Guardrail parameters for uploads, generation jobs, and upstream calls; empty fields keep their current values."
           status={updatedAtStatus(settings.updatedAt)}
         />
         <form
@@ -764,7 +764,7 @@ function RuntimeSection({
                   key={key}
                   label={label}
                   error={
-                    key === 'maxTotalBytes' && totalBelowImage ? '总大小上限不能小于单图大小上限。' : undefined
+                    key === 'maxTotalBytes' && totalBelowImage ? 'Total size limit cannot be smaller than the single image size limit.' : undefined
                   }
                 >
                   <Input
@@ -852,7 +852,7 @@ export function AdminSettingsView() {
     queryKey: settingsQueryKey,
     queryFn: async () => {
       const res = await api<SetupConfigResponse>(API_ENDPOINTS.setup.config)
-      if (!res.success || !res.data) throw new Error(res.error?.message || '读取系统配置失败')
+      if (!res.success || !res.data) throw new Error(res.error?.message || 'Failed to read system configuration')
       return res.data
     },
   })
@@ -868,8 +868,8 @@ export function AdminSettingsView() {
       <PageHeader
         className="min-w-0 [overflow-wrap:anywhere]"
         actionsClassName="max-w-full min-w-0 max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_a]:min-h-[var(--control-lg)]"
-        title="系统配置"
-        description="实例初始化后的站点、邮件、存储与运行时参数维护入口。"
+        title="System settings"
+        description="Maintenance entry point for site, email, storage, and runtime parameters after instance setup."
         actions={
           <Button
             variant="secondary"
@@ -878,21 +878,21 @@ export function AdminSettingsView() {
             disabled={anyBusy}
             icon={<RefreshCw weight="bold" aria-hidden="true" className={iconSize.sm} />}
           >
-            刷新
+            Refresh
           </Button>
         }
       />
 
-      <Dialog open={refreshConfirm} onClose={() => setRefreshConfirm(false)} title="有未保存草稿，仍要刷新？" size="narrow" panelClassName="max-h-[90dvh] max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_button]:min-w-[var(--control-lg)]" footer={<>
-        <Button variant="ghost" onClick={() => setRefreshConfirm(false)}>取消刷新</Button>
-        <Button variant="secondary" disabled={anyBusy || isFetching} onClick={() => { setRefreshConfirm(false); void refetch() }}>获取服务端最新配置</Button>
+      <Dialog open={refreshConfirm} onClose={() => setRefreshConfirm(false)} title="There are unsaved drafts. Refresh anyway?" size="narrow" panelClassName="max-h-[90dvh] max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_button]:min-w-[var(--control-lg)]" footer={<>
+        <Button variant="ghost" onClick={() => setRefreshConfirm(false)}>Cancel refresh</Button>
+        <Button variant="secondary" disabled={anyBusy || isFetching} onClick={() => { setRefreshConfirm(false); void refetch() }}>Fetch latest server configuration</Button>
       </>}>
-        <p className="text-sm">刷新仅获取服务端状态，不会覆盖任何分区草稿。检测到新版本后，可在对应分区确认放弃草稿并重新载入。</p>
+        <p className="text-sm">Refreshing only fetches server state and will not overwrite any section draft. If a newer version is detected, you can confirm discarding the draft and reloading in the relevant section.</p>
       </Dialog>
 
       {isLoading ? (
         <div role="status" aria-busy="true">
-          <span className="sr-only">正在加载系统配置</span>
+          <span className="sr-only">Loading system settings</span>
           <SettingsSkeleton />
         </div>
       ) : null}
@@ -901,21 +901,21 @@ export function AdminSettingsView() {
         <Alert
           tone="danger"
           role="alert"
-          title={config ? '系统配置刷新失败' : '无法加载系统配置'}
+          title={config ? 'System settings refresh failed' : 'Unable to load system settings'}
           action={
             <Button variant="secondary" size="sm" loading={isFetching} disabled={anyBusy} onClick={requestRefresh}>
-              刷新重试
+              Refresh and retry
             </Button>
           }
         >
-          {error instanceof Error ? error.message : '读取系统配置失败'}。{config ? '已保留载入的配置和当前草稿。' : '请稍后重试。'}
+          {error instanceof Error ? error.message : 'Failed to read system configuration'}.{config ? 'The loaded configuration and current draft have been kept.' : 'Please try again later.'}
         </Alert>
       ) : null}
 
       {config ? (
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-8 md:flex-row md:items-start">
-            <nav aria-label="设置分组" className="hidden shrink-0 flex-col gap-6 md:flex md:w-settings-nav">
+            <nav aria-label="Settings sections" className="hidden shrink-0 flex-col gap-6 md:flex md:w-settings-nav">
               {sectionGroups.map((group) => (
                 <div key={group.title} className="flex flex-col gap-1">
                   <h2 className="px-3 text-overline text-muted-foreground">{group.title}</h2>
@@ -955,13 +955,13 @@ export function AdminSettingsView() {
                 Hidden tab labels still name desktop panels via aria-labelledby. */}
             <Tabs
               variant="segment" value={active} onValueChange={(id) => setActive(id as SectionId)} lazy={false}
-              aria-label="设置分组" className="w-full max-w-form min-w-0 flex-1"
+              aria-label="Settings sections" className="w-full max-w-form min-w-0 flex-1"
               listClassName="max-w-full overflow-x-auto md:hidden"
               tabs={[
-                { id: 'site', label: '站点信息', content: <div className="flex flex-col gap-6"><SiteSection settings={config.site} onStateChange={reportSectionState} /></div> },
-                { id: 'smtp', label: 'SMTP 邮件服务', content: <div className="flex flex-col gap-6"><SmtpSection settings={config.smtp} onStateChange={reportSectionState} /></div> },
-                { id: 'storage', label: '对象存储', content: <div className="flex flex-col gap-6"><StorageSection settings={config.storage} onStateChange={reportSectionState} /></div> },
-                { id: 'runtime', label: '运行时限制', content: <div className="flex flex-col gap-6"><RuntimeSection settings={config.runtime} onStateChange={reportSectionState} /></div> },
+                { id: 'site', label: 'Site information', content: <div className="flex flex-col gap-6"><SiteSection settings={config.site} onStateChange={reportSectionState} /></div> },
+                { id: 'smtp', label: 'SMTP email service', content: <div className="flex flex-col gap-6"><SmtpSection settings={config.smtp} onStateChange={reportSectionState} /></div> },
+                { id: 'storage', label: 'Object storage', content: <div className="flex flex-col gap-6"><StorageSection settings={config.storage} onStateChange={reportSectionState} /></div> },
+                { id: 'runtime', label: 'Runtime limits', content: <div className="flex flex-col gap-6"><RuntimeSection settings={config.runtime} onStateChange={reportSectionState} /></div> },
               ]}
             />
           </div>

@@ -6,7 +6,7 @@ import type { AdminJob } from '@/shared/types'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: '系统概览 - MuseCanvas 管理后台',
+  title: 'System Overview - MuseCanvas Admin',
 }
 
 interface DashboardMetrics {

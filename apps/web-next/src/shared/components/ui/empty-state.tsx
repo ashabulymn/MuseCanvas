@@ -22,34 +22,34 @@ const presets: Record<EmptyStateVariant, Preset> = {
   'first-use': {
     icon: Inbox,
     iconClass: 'text-muted-foreground',
-    title: (name) => `欢迎使用${name}`,
-    description: (name) => `在这里你可以创建、编辑和管理${name}。点击下方按钮开始。`,
-    actionLabel: (name) => `创建第一个${name}`,
+    title: (name) => `Welcome to ${name}`,
+    description: (name) => `Here you can create, edit, and manage ${name}. Click the button below to start.`,
+    actionLabel: (name) => `Create your first ${name}`,
     actionVariant: 'primary',
   },
   'no-results': {
     icon: Search,
     iconClass: 'text-muted-foreground',
-    title: (name, keyword) => (keyword ? `找不到与“${keyword}”相关的${name}` : `没有符合当前筛选条件的${name}`),
+    title: (name, keyword) => (keyword ? `No ${name} found for "${keyword}"` : `No ${name} match the current filters`),
     description: (_name, keyword) =>
-      keyword ? '请尝试检查拼写，或使用更宽泛的搜索词。' : '尝试调整或清除筛选条件以查看更多内容。',
-    actionLabel: () => '清除筛选',
+      keyword ? 'Try checking the spelling, or use a broader search term.' : 'Try adjusting or clearing the filters to see more.',
+    actionLabel: () => 'Clear filters',
     actionVariant: 'secondary',
   },
   'no-permission': {
     icon: Lock,
     iconClass: 'text-muted-foreground',
-    title: () => '暂无访问权限',
-    description: (name) => `你需要请求管理员授予访问${name}的权限。`,
-    actionLabel: () => '请求权限',
+    title: () => 'No access yet',
+    description: (name) => `You need to ask an administrator to grant access to ${name}.`,
+    actionLabel: () => 'Request access',
     actionVariant: 'secondary',
   },
   error: {
     icon: TriangleAlert,
     iconClass: 'text-danger',
-    title: () => '无法加载内容',
-    description: () => '加载数据时出现问题，请稍后重试。',
-    actionLabel: () => '刷新重试',
+    title: () => 'Could not load content',
+    description: () => 'Something went wrong while loading the data. Please try again later.',
+    actionLabel: () => 'Retry refresh',
     actionVariant: 'secondary',
   },
   /**
@@ -63,9 +63,9 @@ const presets: Record<EmptyStateVariant, Preset> = {
   'capability-unavailable': {
     icon: CircleSlash,
     iconClass: 'text-muted-foreground',
-    title: (name) => `${name}暂不可用`,
-    description: (name) => `${name}需要实例侧先启用对应的模型或完成配置，完成后刷新即可继续使用。`,
-    actionLabel: () => '刷新',
+    title: (name) => `${name} is unavailable for now`,
+    description: (name) => `${name} needs the instance to enable the matching model or finish setup first. Refresh after that to continue.`,
+    actionLabel: () => 'Refresh',
     actionVariant: 'secondary',
   },
 }
@@ -101,7 +101,7 @@ export interface EmptyStateProps {
  */
 export function EmptyState({
   variant = 'first-use',
-  objectName = '这里的内容',
+  objectName = 'this content',
   keyword,
   title,
   description,

@@ -15,16 +15,16 @@ export function ServiceUnavailable() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-canvas p-4 text-foreground sm:p-8">
       <div className="w-full max-w-dialog-narrow rounded-card bg-surface p-8 text-center shadow-soft">
-        <h1 className="text-module font-normal">服务暂时不可用</h1>
+        <h1 className="text-module font-normal">Service Temporarily Unavailable</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          暂时无法连接 MuseCanvas 服务，可能正在启动或维护中，请稍后重试。
+          The MuseCanvas service cannot be reached right now. It may be starting up or under maintenance — please try again later.
         </p>
         <button
           type="button"
           onClick={retry}
           className="mt-6 inline-flex min-h-[var(--control-md)] items-center justify-center rounded-control bg-primary px-4 text-sm font-medium text-on-primary hover:bg-primary-hover active:bg-primary-active motion-press"
         >
-          刷新重试
+          Refresh &amp; Retry
         </button>
       </div>
     </main>

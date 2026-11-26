@@ -25,12 +25,12 @@ const SLOT_ORDER: Record<string, number> = {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  first_frame: '首帧',
-  last_frame: '尾帧',
-  reference_image: '参考图',
-  prompt_image: '提示图',
-  source_video: '源视频',
-  mask: '选区遮罩',
+  first_frame: 'First frame',
+  last_frame: 'Last frame',
+  reference_image: 'Reference image',
+  prompt_image: 'Prompt image',
+  source_video: 'Source video',
+  mask: 'Selection mask',
 }
 
 /** Roles never renderable as staged images: the upload endpoint accepts only
@@ -129,14 +129,14 @@ export function firstLastFrameViolations(
     if (img.role === 'first_frame') firstIdx.push(i)
     if (img.role === 'last_frame') lastIdx.push(i)
   })
-  if (firstIdx.length > 1) errors.push('只能设置一张首帧图片')
-  if (lastIdx.length > 1) errors.push('只能设置一张尾帧图片')
-  if (firstIdx.length === 1 && firstIdx[0] !== 0) errors.push('首帧图片必须放在第一位')
-  if (lastIdx.length === 1 && lastIdx[0] !== staged.length - 1) errors.push('尾帧图片必须放在最后一位')
+  if (firstIdx.length > 1) errors.push('Only one first-frame image can be set')
+  if (lastIdx.length > 1) errors.push('Only one last-frame image can be set')
+  if (firstIdx.length === 1 && firstIdx[0] !== 0) errors.push('The first-frame image must be in the first position')
+  if (lastIdx.length === 1 && lastIdx[0] !== staged.length - 1) errors.push('The last-frame image must be in the last position')
   if (firstIdx.length === 1 && lastIdx.length === 1 && staged.length < 2) {
-    errors.push('首帧与尾帧不能是同一张图片')
+    errors.push('The first and last frames cannot be the same image')
   }
-  if (lastIdx.length > 0 && firstIdx.length === 0) errors.push('设置尾帧前请先设置首帧')
+  if (lastIdx.length > 0 && firstIdx.length === 0) errors.push('Set a first frame before setting a last frame')
   if (plan) errors.push(...roleCountViolations(staged, plan))
   return errors
 }
@@ -155,12 +155,12 @@ function roleCountViolations(
     const slot = plan.slots.find((candidate) => candidate.role === role)
     const label = slot?.label ?? ROLE_LABELS[role] ?? role
     if (!slot) {
-      errors.push(`当前模型不支持${label}，请移除该图片`)
+      errors.push(`The current model does not support ${label} — remove that image`)
       continue
     }
     // A single first/last frame is already covered by the dedicated rules above.
     if ((role === 'first_frame' || role === 'last_frame') && slot.maxCount <= 1) continue
-    if (count > slot.maxCount) errors.push(`${label}最多设置 ${slot.maxCount} 张（当前 ${count} 张）`)
+    if (count > slot.maxCount) errors.push(`${label} allows at most ${slot.maxCount} image${slot.maxCount === 1 ? '' : 's'} (currently ${count})`)
   }
   return errors
 }
@@ -174,8 +174,8 @@ export function inputPlanViolations(
   if (staged.length > plan.capacity) {
     errors.push(
       plan.capacity === 0
-        ? '当前模型不支持输入图片，请切换到支持图片输入的模型'
-        : `当前模型最多接受 ${plan.capacity} 张输入图片（已暂存 ${staged.length} 张）`,
+        ? 'The current model does not support input images — switch to a model that supports image input'
+        : `The current model accepts at most ${plan.capacity} input image${plan.capacity === 1 ? '' : 's'} (${staged.length} staged)`,
     )
   }
   for (const message of firstLastFrameViolations(staged, plan)) errors.push(message)

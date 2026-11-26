@@ -89,7 +89,7 @@ const setupRoute = (path: (typeof SETUP_POST_PATHS)[number]): Route => ({
   access: 'public',
   // `handleSetupPost` returns null for a path it does not own, which the old
   // handler turned into a 404; that distinction is preserved.
-  handler: context => handleSetupPost(context.request, path).then(response => response ?? fail('NOT_FOUND', '接口不存在', 404)),
+  handler: context => handleSetupPost(context.request, path).then(response => response ?? fail('NOT_FOUND', 'Endpoint not found', 404)),
 })
 
 export const GET_ROUTES: Route[] = [

@@ -9,8 +9,8 @@ import { fail } from '../shared/http'
  */
 export async function requireActor(request: NextRequest, admin = false): Promise<Actor | NextResponse> {
   const actor = await actorFrom(request)
-  if (!actor) return fail('UNAUTHORIZED', '请先登录', 401)
-  if (admin && actor.role !== 'admin') return fail('FORBIDDEN', '无权执行该操作', 403)
+  if (!actor) return fail('UNAUTHORIZED', 'Please log in first', 401)
+  if (admin && actor.role !== 'admin') return fail('FORBIDDEN', 'You do not have permission to perform this action', 403)
   return actor
 }
 

@@ -62,8 +62,8 @@ import {
 } from '@/shared/components/ui'
 
 const MEDIA_KIND_LABEL: Record<'image' | 'video', string> = {
-  image: '图像',
-  video: '视频',
+  image: 'Image',
+  video: 'Video',
 }
 
 export function AdminMediaModelsView() {
@@ -91,7 +91,7 @@ export function AdminMediaModelsView() {
     queryKey: ['admin', 'models'],
     queryFn: async () => {
       const res = await api<AdminModel[]>(API_ENDPOINTS.admin.models)
-      return requireAdminData(res, '加载模型列表失败')
+      return requireAdminData(res, 'Failed to load model list')
     },
   })
 
@@ -99,7 +99,7 @@ export function AdminMediaModelsView() {
     queryKey: ['admin', 'model-presets'],
     queryFn: async () => {
       const res = await api<ModelPreset[]>(API_ENDPOINTS.admin.modelPresets)
-      return requireAdminData(res, '加载模型预设失败')
+      return requireAdminData(res, 'Failed to load model presets')
     },
   })
 
@@ -113,7 +113,7 @@ export function AdminMediaModelsView() {
     queryKey: ['admin', 'provider-credentials'],
     queryFn: async () => {
       const res = await api<ProviderCredential[]>(API_ENDPOINTS.admin.providerCredentials)
-      return requireAdminData(res, '加载凭据列表失败')
+      return requireAdminData(res, 'Failed to load credential list')
     },
     // Connectivity tests settle in the worker; poll only while one is open.
     refetchInterval: (query) => (query.state.data?.some((c) => c.lastTestStatus === 'pending') ? 2000 : false),
@@ -128,7 +128,7 @@ export function AdminMediaModelsView() {
     queryKey: ['admin', 'provider-templates'],
     queryFn: async () => {
       const res = await api<{ templates: BuiltinProviderTemplate[] }>(API_ENDPOINTS.admin.providerTemplates)
-      return requireAdminData(res, '加载供应商插件失败').templates
+      return requireAdminData(res, 'Failed to load provider plugins').templates
     },
   })
 
@@ -160,10 +160,10 @@ export function AdminMediaModelsView() {
     if (presetUnavailable) {
       setSelectedPresetId('')
       setSelectedCredentialId('')
-      setActionError('所选预设已不在当前可用目录中（插件可能已停用或删除），已清除选择。请重新选择预设。')
+      setActionError('The selected preset is no longer in the current available directory (the plugin may have been disabled or deleted); the selection has been cleared. Please select a preset again.')
     } else if (credentialUnavailable) {
       setSelectedCredentialId('')
-      setActionError('所选凭据已不可用或不再匹配当前预设，已清除选择。请重新选择凭据。')
+      setActionError('The selected credential is no longer available or no longer matches the current preset; the selection has been cleared. Please select a credential again.')
     }
   }, [presetUnavailable, credentialUnavailable])
 
@@ -181,7 +181,7 @@ export function AdminMediaModelsView() {
         method: 'PATCH',
         body: { enabled },
       })
-      if (!res.success) throw new Error(res.error?.message || '更新状态失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to update status')
       return res.data
     },
     onSuccess: async () => {
@@ -192,7 +192,7 @@ export function AdminMediaModelsView() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await api(API_ENDPOINTS.admin.model(id), { method: 'DELETE' })
-      if (!res.success) throw new Error(res.error?.message || '删除模型失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to delete model')
       return res.data
     },
     onSuccess: async () => {
@@ -203,7 +203,7 @@ export function AdminMediaModelsView() {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (concurrencyValidation.value === undefined) throw new Error(concurrencyValidation.error)
-      if (!selectedPreset) throw new Error('请选择模型预设')
+      if (!selectedPreset) throw new Error('Please select a model preset')
       const res = await api<AdminModel>(API_ENDPOINTS.admin.models, {
         method: 'POST',
         body: {
@@ -213,7 +213,7 @@ export function AdminMediaModelsView() {
           enabled: true,
         },
       })
-      if (!res.success) throw new Error(res.error?.message || '创建模型失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to create model')
       return res.data
     },
     onSuccess: () => {
@@ -224,7 +224,7 @@ export function AdminMediaModelsView() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'models'] })
     },
     onError: (err: Error) => {
-      setActionError(err.message || '创建模型失败')
+      setActionError(err.message || 'Failed to create model')
     },
   })
 
@@ -242,7 +242,7 @@ export function AdminMediaModelsView() {
     setDeleteTarget(model)
   }
   function toggleModel(model: AdminModel, enabled: boolean) {
-    return actions.run(model.id, model.displayName, () => toggleMutation.mutateAsync({ id: model.id, enabled }), enabled ? '模型已启用' : '模型已停用', 'toggle')
+    return actions.run(model.id, model.displayName, () => toggleMutation.mutateAsync({ id: model.id, enabled }), enabled ? 'Model enabled' : 'Model disabled', 'toggle')
   }
 
   return (
@@ -250,8 +250,8 @@ export function AdminMediaModelsView() {
       <PageHeader
         className="min-w-0 [overflow-wrap:anywhere]"
         actionsClassName="max-w-full min-w-0 max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_a]:min-h-[var(--control-lg)]"
-        title="媒体模型"
-        description="配置图像与视频模型、供应商插件目录与媒体凭据；语言模型请在「语言模型」页配置。"
+        title="Media model"
+        description="Configure image and video models, the provider plugin directory, and media credentials; configure language models on the “Language Models” page."
         actions={
           <>
             <Button
@@ -261,7 +261,7 @@ export function AdminMediaModelsView() {
               }}
               icon={<Plus weight="bold" aria-hidden="true" />}
             >
-              创建模型
+              Create model
             </Button>
             <Button
               variant="secondary"
@@ -273,39 +273,39 @@ export function AdminMediaModelsView() {
               }}
               icon={<RefreshCw weight="bold" aria-hidden="true" className={modelsLoading ? 'motion-spin' : undefined} />}
             >
-              刷新
+              Refresh
             </Button>
           </>
         }
       />
 
-      {modelsData !== undefined && <AdminQueryFeedback error={modelsQueryError} hasData label="媒体模型" onRetry={() => refetchModels()} />}
-      <AdminQueryFeedback error={presetsError} hasData={presetsData !== undefined} label="模型预设" onRetry={() => refetchPresets()} />
-      {credentialsData !== undefined && <AdminQueryFeedback error={credentialsQueryError} hasData label="媒体凭据" onRetry={() => refetchCredentials()} />}
-      {templatesData !== undefined && <AdminQueryFeedback error={templatesError} hasData label="供应商插件" onRetry={() => refetchTemplates()} />}
+      {modelsData !== undefined && <AdminQueryFeedback error={modelsQueryError} hasData label="Media model" onRetry={() => refetchModels()} />}
+      <AdminQueryFeedback error={presetsError} hasData={presetsData !== undefined} label="Model presets" onRetry={() => refetchPresets()} />
+      {credentialsData !== undefined && <AdminQueryFeedback error={credentialsQueryError} hasData label="Media credential" onRetry={() => refetchCredentials()} />}
+      {templatesData !== undefined && <AdminQueryFeedback error={templatesError} hasData label="Provider plugin" onRetry={() => refetchTemplates()} />}
 
       <AdminActionErrors errors={actions.errors} />
 
-      <div ref={recordListRef} tabIndex={-1} role="region" aria-label="媒体模型列表" className="flex min-w-0 flex-col gap-4">
+      <div ref={recordListRef} tabIndex={-1} role="region" aria-label="Media model list" className="flex min-w-0 flex-col gap-4">
       <AdminMobileRecords records={models} loading={modelsLoading}
-        error={modelsError && modelsData === undefined ? modelsQueryError?.message || '加载模型失败' : null}
+        error={modelsError && modelsData === undefined ? modelsQueryError?.message || 'Failed to load models' : null}
         onRetry={() => { void refetchModels() }}
-        empty={<><span>创建模型前请先准备可用预设与凭据。</span><Button variant="secondary" onClick={() => { setActionError(''); setCreateModalOpen(true) }}>创建模型</Button></>}
+        empty={<><span>Prepare an available preset and credential before creating a model.</span><Button variant="secondary" onClick={() => { setActionError(''); setCreateModalOpen(true) }}>Create model</Button></>}
         title={(model) => model.displayName}
-        status={(model) => <Badge tone={model.enabled ? 'success' : 'neutral'}>{model.enabled ? '已启用' : '已停用'}</Badge>}
-        summary={(model) => <><span className="font-mono">{model.vendorModelId || model.name || '—'}</span> · 并发 {model.concurrencyLimit}</>}
+        status={(model) => <Badge tone={model.enabled ? 'success' : 'neutral'}>{model.enabled ? 'Enabled' : 'Disabled'}</Badge>}
+        summary={(model) => <><span className="font-mono">{model.vendorModelId || model.name || '—'}</span> · Concurrency {model.concurrencyLimit}</>}
         onDetails={setDetailModel}
       />
 
-      <DataTable cardClassName="hidden md:block" caption="图像与视频模型列表" columns={7}>
+      <DataTable cardClassName="hidden md:block" caption="Image and video model list" columns={7}>
         <TableHead>
-          <TableHeadCell>模型名称</TableHeadCell>
-          <TableHeadCell>类型</TableHeadCell>
-          <TableHeadCell>绑定插件</TableHeadCell>
-          <TableHeadCell>关联凭据</TableHeadCell>
-          <TableHeadCell align="right">并发上限</TableHeadCell>
-          <TableHeadCell>状态</TableHeadCell>
-          <TableHeadCell align="right">操作</TableHeadCell>
+          <TableHeadCell>Model name</TableHeadCell>
+          <TableHeadCell>Type</TableHeadCell>
+          <TableHeadCell>Bound plugin</TableHeadCell>
+          <TableHeadCell>Linked credential</TableHeadCell>
+          <TableHeadCell align="right">Concurrency limit</TableHeadCell>
+          <TableHeadCell>Status</TableHeadCell>
+          <TableHeadCell align="right">Actions</TableHeadCell>
         </TableHead>
         <TableBody busy={modelsLoading}>
           {modelsLoading ? (
@@ -328,10 +328,10 @@ export function AdminMediaModelsView() {
               <EmptyState
                 variant="error"
                 density="compact"
-                objectName="媒体模型"
-                title="无法加载媒体模型"
-                description={`${modelsQueryError?.message || '加载模型列表时出现问题'}。请检查后端服务状态后重试。`}
-                action={<Button variant="secondary" onClick={() => refetchModels()}>刷新重试</Button>}
+                objectName="Media model"
+                title="Unable to load media models"
+                description={`${modelsQueryError?.message || 'There was a problem loading the model list'}. Please check the backend service status and retry.`}
+                action={<Button variant="secondary" onClick={() => refetchModels()}>Refresh and retry</Button>}
               />
             </TableStateRow>
           ) : models.length > 0 ? (
@@ -353,7 +353,7 @@ export function AdminMediaModelsView() {
                   {m.providerCredentialName ? (
                     <span>{m.providerCredentialName}</span>
                   ) : (
-                    <Badge tone="danger">未关联凭据</Badge>
+                    <Badge tone="danger">No credential linked</Badge>
                   )}
                 </TableCell>
                 <TableCell align="right" mono tabular>{m.concurrencyLimit}</TableCell>
@@ -365,9 +365,9 @@ export function AdminMediaModelsView() {
                       checked={m.enabled}
                       disabled={actions.isToggleBlocked(m.id)}
                       onCheckedChange={(enabled) => toggleModel(m, enabled)}
-                      aria-label={`模型 ${m.displayName} 启用状态`}
+                      aria-label={`Model ${m.displayName} enabled state`}
                     />
-                    <span className="text-xs text-muted-foreground">{m.enabled ? '已启用' : '已停用'}</span>
+                    <span className="text-xs text-muted-foreground">{m.enabled ? 'Enabled' : 'Disabled'}</span>
                   </div>
                 </TableCell>
                 <TableCell align="right">
@@ -376,7 +376,7 @@ export function AdminMediaModelsView() {
                     size="sm"
                     disabled={actions.isPending(m.id)}
                     onClick={() => requestDeleteModel(m)}
-                    aria-label={`删除模型 ${m.displayName}`}
+                    aria-label={`Delete model ${m.displayName}`}
                     icon={<Trash2 weight="bold" aria-hidden="true" />}
                   />
                 </TableCell>
@@ -387,9 +387,9 @@ export function AdminMediaModelsView() {
               <EmptyState
                 variant="first-use"
                 density="compact"
-                objectName="媒体模型"
-                title="还没有配置媒体模型"
-                description="在这里可以创建、启停和删除图像与视频模型。点击右上角「创建模型」开始。"
+                objectName="Media model"
+                title="No media models configured yet"
+                description="Create, enable/disable, and delete image and video models here. Click “Create model” at the top right to start."
                 action={
                   <Button
                     onClick={() => {
@@ -397,7 +397,7 @@ export function AdminMediaModelsView() {
                       setCreateModalOpen(true)
                     }}
                   >
-                    创建第一个模型
+                    Create first model
                   </Button>
                 }
               />
@@ -411,13 +411,13 @@ export function AdminMediaModelsView() {
         <SectionHeader
         className="min-w-0 [overflow-wrap:anywhere] max-md:[&_button]:min-h-[var(--control-lg)]"
           id="plugin-directory-heading"
-          title="供应商插件目录"
-          description="由 provider registry 提供的内置图像 / 视频插件。凭据属于供应商账号：从卡片「创建凭据」时按该插件声明的格式与端点校验，同一账号下的其它插件也可以使用。"
+          title="Provider plugin directory"
+          description="Built-in image / video plugins provided by the provider registry. Credentials belong to provider accounts: when creating a credential from a card's “Create credential”, it is validated against that plugin's declared format and endpoints, and other plugins under the same account can also use it."
         />
 
         {templatesLoading ? (
           <div className="grid gap-4 lg:grid-cols-2" role="status" aria-busy="true">
-            <span className="sr-only">正在加载供应商插件目录</span>
+            <span className="sr-only">Loading provider plugin directory</span>
             {Array.from({ length: 2 }, (_, index) => (
               <Card key={index} density="compact" aria-hidden="true" className="h-full gap-4">
                 <div className="flex items-start justify-between gap-3">
@@ -436,23 +436,23 @@ export function AdminMediaModelsView() {
           <Alert
             tone="danger"
             role="alert"
-            title="无法加载供应商插件"
+            title="Unable to load provider plugins"
             action={
               <Button variant="secondary" size="sm" onClick={() => refetchTemplates()}>
-                刷新重试
+                Refresh and retry
               </Button>
             }
           >
-            {templatesError.message || '加载供应商插件失败'}。请检查后端服务状态后重试。
+            {templatesError.message || 'Failed to load provider plugins'}. Please check the backend service status and retry.
           </Alert>
         ) : templates.length === 0 ? (
           <Card density="compact">
             <EmptyState
               variant="first-use"
               density="compact"
-              objectName="供应商插件"
-              title="暂无已注册的供应商插件"
-              description="内置插件由服务端 provider registry 注册；如需扩展，请在下方「已安装媒体插件」上传自定义插件。"
+              objectName="Provider plugin"
+              title="No registered provider plugins yet"
+              description="Built-in plugins are registered by the server-side provider registry; to extend them, upload a custom plugin under “Installed media plugins” below."
             />
           </Card>
         ) : (
@@ -474,9 +474,9 @@ export function AdminMediaModelsView() {
                       </p>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
-                      <Badge tone="neutral">{t.modality === 'video' ? '视频' : '图像'}</Badge>
+                      <Badge tone="neutral">{t.modality === 'video' ? 'Video' : 'Image'}</Badge>
                       <Badge tone={configured > 0 ? 'success' : 'danger'}>
-                        {configured > 0 ? `已配置 ${configured} 个凭据` : '未配置凭据'}
+                        {configured > 0 ? `${configured} credentials configured` : 'No credentials configured'}
                       </Badge>
                     </div>
                   </div>
@@ -484,11 +484,11 @@ export function AdminMediaModelsView() {
                   {t.description && <p className="text-sm text-muted-foreground">{t.description}</p>}
 
                   <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-xs">
-                    <dt className="text-muted-foreground">供应商</dt>
+                    <dt className="text-muted-foreground">Provider</dt>
                     <dd className="font-mono">{t.providerId}</dd>
                     <dt className="text-muted-foreground">Base URL</dt>
                     <dd className="break-all font-mono">{t.baseUrl}</dd>
-                    <dt className="text-muted-foreground">凭据</dt>
+                    <dt className="text-muted-foreground">Credential</dt>
                     <dd>
                       {t.credential.label}
                       <span className="ml-1 font-mono text-muted-foreground">
@@ -499,7 +499,7 @@ export function AdminMediaModelsView() {
 
                   <div className="flex flex-col gap-1">
                     <p className="text-overline text-muted-foreground">
-                      支持模型（<span className="font-mono tabular-nums">{t.models.length}</span>）
+                      Supported models (<span className="font-mono tabular-nums">{t.models.length}</span>)
                     </p>
                     <div className="flex flex-wrap gap-1">
                       {t.models.map((model) => (
@@ -512,7 +512,7 @@ export function AdminMediaModelsView() {
 
                   {t.presetIds.length > 0 && (
                     <p className="text-xs text-muted-foreground">
-                      关联预设：<span className="font-mono">{t.presetIds.join(', ')}</span>
+                      Linked presets: <span className="font-mono">{t.presetIds.join(', ')}</span>
                     </p>
                   )}
 
@@ -523,7 +523,7 @@ export function AdminMediaModelsView() {
                     onClick={() => openCreateDialog(t)}
                     icon={<Plus weight="bold" aria-hidden="true" />}
                   >
-                    创建凭据
+                    Create credential
                   </Button>
                 </Card>
               )
@@ -538,15 +538,15 @@ export function AdminMediaModelsView() {
         <SectionHeader
         className="min-w-0 [overflow-wrap:anywhere] max-md:[&_button]:min-h-[var(--control-lg)]"
           id="media-credentials-heading"
-          title="媒体凭据"
-          description="从插件模板创建的图像 / 视频凭据。语言模型与自定义凭据在「语言模型」页配置。"
+          title="Media credential"
+          description="Image / video credentials created from plugin templates. Language model and custom credentials are configured on the “Language Models” page."
           actions={
             <Button
               variant="secondary"
               onClick={() => openCreateDialog(null)}
               icon={<Plus weight="bold" aria-hidden="true" />}
             >
-              创建凭据
+              Create credential
             </Button>
           }
         />
@@ -556,14 +556,14 @@ export function AdminMediaModelsView() {
           isLoading={credentialsLoading}
           variant="media"
           linkedModels={linkedModelsByCredential}
-          emptyText="在这里可以创建、启停、连通测试和删除媒体凭据。请从上方插件目录为指定插件创建凭据。"
-          error={credentialsError && credentialsData === undefined ? credentialsQueryError?.message || '加载凭据列表失败' : null}
+          emptyText="Create, enable/disable, test connectivity for, and delete media credentials here. Create credentials for a specific plugin from the plugin directory above."
+          error={credentialsError && credentialsData === undefined ? credentialsQueryError?.message || 'Failed to load credential list' : null}
           onRetry={() => refetchCredentials()}
         />
         {allCredentials.some(isCustomCredential) && (
           <p className="text-xs text-muted-foreground">
-            另有 <span className="font-mono tabular-nums">{allCredentials.filter(isCustomCredential).length}</span>{' '}
-            个未经插件模板创建的自定义 / 语言模型凭据，由「语言模型」页管理。
+            There are also <span className="font-mono tabular-nums">{allCredentials.filter(isCustomCredential).length}</span>{' '}
+             custom / language model credentials created without a plugin template, managed on the "Language Models" page.
           </p>
         )}
       </section>
@@ -571,12 +571,12 @@ export function AdminMediaModelsView() {
       <Dialog
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
-        title="创建媒体模型"
+        title="Create media model"
         panelClassName="max-w-form max-h-[90dvh] max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_button]:min-w-[var(--control-lg)]"
         footer={
           <>
             <Button variant="ghost" onClick={() => setCreateModalOpen(false)}>
-              取消
+              Cancel
             </Button>
             <Button
               type="submit"
@@ -584,23 +584,23 @@ export function AdminMediaModelsView() {
               disabled={!selectedPreset || credentialUnavailable || !!concurrencyValidation.error}
               form="admin-create-media-model-form"
             >
-              创建模型
+              Create model
             </Button>
           </>
         }
       >
         <form id="admin-create-media-model-form" className="flex flex-col gap-6" onSubmit={(event) => { event.preventDefault(); if (!createMutation.isPending && concurrencyValidation.value !== undefined) createMutation.mutate() }}>
           {actionError && (
-            <Alert tone="danger" role="alert" title="无法创建模型">
-              {actionError}。请选择预设并确认凭据可用后重试。
+            <Alert tone="danger" role="alert" title="Unable to create model">
+              {actionError}. Please select a preset, confirm a credential is available, and retry.
             </Alert>
           )}
 
           <FieldGroup>
             <FormField
-              label="选择预设"
+              label="Select a preset"
               required
-              hint={presets.length === 0 ? '当前没有可用的图像或视频预设。' : '预设由服务端注册，决定可调用的模型标识与参数。'}
+              hint={presets.length === 0 ? 'No image or video presets are currently available.' : 'Presets are registered by the server and determine the callable model IDs and parameters.'}
             >
               <Select
                 value={selectedPresetId}
@@ -609,27 +609,27 @@ export function AdminMediaModelsView() {
                   setSelectedCredentialId('')
                 }}
               >
-                <option value="">请选择预设</option>
+                <option value="">Please select a preset</option>
                 {presets.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.displayName} ({p.vendorModelId}) · {p.modelKind === 'video' ? '视频' : '图像'}
+                    {p.displayName} ({p.vendorModelId}) · {p.modelKind === 'video' ? 'Video' : 'Image'}
                   </option>
                 ))}
               </Select>
             </FormField>
 
             <FormField
-              label="关联供应商凭据"
+              label="Link a provider credential"
               hint={
                 selectedPreset ? (
                   <>
                     {selectedPresetPluginKey ? (
-                      <>需要供应商 <span className="font-mono text-foreground">{selectedPreset.providerId || '-'}</span> 的凭据（插件 <span className="font-mono text-foreground">{selectedPresetPluginKey}</span>）</>
+                      <>Requires a credential from provider <span className="font-mono text-foreground">{selectedPreset.providerId || '-'}</span> (plugin <span className="font-mono text-foreground">{selectedPresetPluginKey}</span>)</>
                     ) : (
-                      <>按适配协议 <span className="font-mono text-foreground">{selectedPreset.adapter || '-'}</span> 匹配凭据</>
+                      <>Match credentials by adapter protocol <span className="font-mono text-foreground">{selectedPreset.adapter || '-'}</span></>
                     )}
                     {matchingCredentials.length === 0
-                      ? '，当前无可用凭据，请在下方「供应商插件目录」创建凭据'
+                      ? '; no credentials are currently available, please create one in the "Provider plugin directory" below'
                       : ''}
                   </>
                 ) : undefined
@@ -640,7 +640,7 @@ export function AdminMediaModelsView() {
                 onChange={(e) => setSelectedCredentialId(e.target.value)}
                 disabled={!selectedPreset}
               >
-                <option value="">{selectedPreset ? '未关联（任务将因缺少凭据失败）' : '请先选择预设'}</option>
+                <option value="">{selectedPreset ? 'Not linked (jobs will fail without a credential)' : 'Please select a preset first'}</option>
                 {matchingCredentials.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.displayName} ({c.providerId || c.adapter})
@@ -650,9 +650,9 @@ export function AdminMediaModelsView() {
             </FormField>
 
             <FormField
-              label="并发执行限制"
+              label="Concurrency limit"
               error={concurrencyValidation.error}
-              hint="同时运行的该模型任务数量上限，取值范围 1–50。"
+              hint="Maximum number of concurrent jobs for this model, from 1 to 50."
             >
               <Input
                 type="number"
@@ -668,19 +668,19 @@ export function AdminMediaModelsView() {
         </form>
       </Dialog>
 
-      <AdminRecordDetailDialog open={currentDetailModel !== null || deleteTarget !== null} onClose={() => { setDetailModel(null); setDeleteTarget(null) }} title="模型详情"
+      <AdminRecordDetailDialog open={currentDetailModel !== null || deleteTarget !== null} onClose={() => { setDetailModel(null); setDeleteTarget(null) }} title="Model details"
         listFocusRef={recordListRef}
         confirmation={deleteTarget ? {
-          objectName: `${deleteTarget.displayName}（${deleteTarget.id}）`,
-          impact: '删除后无法再通过此模型配置创建新任务；关联凭据及历史任务的处理、引用限制以服务端规则为准。此操作不可撤销。',
+          objectName: `${deleteTarget.displayName} (${deleteTarget.id})`,
+          impact: 'After deletion, no new jobs can be created with this model configuration; linked credentials, history jobs, and reference limits follow server rules. This action cannot be undone.',
           pending: actions.isPending(deleteTarget.id),
           error: actions.errors[deleteTarget.id],
-          cancelLabel: currentDetailModel ? '返回详情' : '取消',
+          cancelLabel: currentDetailModel ? 'Back to details' : 'Cancel',
           onCancel: () => setDeleteTarget(null),
           onConfirm: () => {
             if (!deleteTarget || actions.isPending(deleteTarget.id)) return
             const target = deleteTarget
-            void actions.run(target.id, target.displayName, () => deleteMutation.mutateAsync(target.id), '模型已删除', 'delete')
+            void actions.run(target.id, target.displayName, () => deleteMutation.mutateAsync(target.id), 'Model deleted', 'delete')
               .then(() => {
                 setDeleteTarget((current) => current?.id === target.id ? null : current)
                 setDetailModel((current) => current?.id === target.id ? null : current)
@@ -688,17 +688,17 @@ export function AdminMediaModelsView() {
           },
         } : undefined}
         actions={currentDetailModel && <><Switch checked={currentDetailModel.enabled} disabled={actions.isToggleBlocked(currentDetailModel.id)}
-          onCheckedChange={(enabled) => toggleModel(currentDetailModel, enabled)} aria-label={`模型 ${currentDetailModel.displayName} 启用状态`} /><span>启用模型</span></>}
-        danger={currentDetailModel && <Button variant="danger-ghost" disabled={actions.isPending(currentDetailModel.id)} onClick={() => requestDeleteModel(currentDetailModel)}>删除模型</Button>}>
+          onCheckedChange={(enabled) => toggleModel(currentDetailModel, enabled)} aria-label={`Model ${currentDetailModel.displayName} enabled state`} /><span>Enable model</span></>}
+        danger={currentDetailModel && <Button variant="danger-ghost" disabled={actions.isPending(currentDetailModel.id)} onClick={() => requestDeleteModel(currentDetailModel)}>Delete model</Button>}>
         {currentDetailModel && <>
           <AdminRecordFields fields={[
-            { label: '模型名称', value: currentDetailModel.displayName },
-            { label: '供应商模型标识', value: <span className="font-mono">{currentDetailModel.vendorModelId || currentDetailModel.name || '—'}</span> },
-            { label: '类型', value: MEDIA_KIND_LABEL[mediaKind(currentDetailModel)] },
-            { label: '绑定插件', value: <span className="font-mono">{currentDetailModel.pluginId && currentDetailModel.pluginVersion ? `${currentDetailModel.pluginId}@${currentDetailModel.pluginVersion}` : '—'}</span> },
-            { label: '关联凭据', value: currentDetailModel.providerCredentialName || '未关联凭据' },
-            { label: '并发上限', value: currentDetailModel.concurrencyLimit },
-            { label: '状态', value: currentDetailModel.enabled ? '已启用' : '已停用' },
+            { label: 'Model name', value: currentDetailModel.displayName },
+            { label: 'Provider model ID', value: <span className="font-mono">{currentDetailModel.vendorModelId || currentDetailModel.name || '—'}</span> },
+            { label: 'Type', value: MEDIA_KIND_LABEL[mediaKind(currentDetailModel)] },
+            { label: 'Bound plugin', value: <span className="font-mono">{currentDetailModel.pluginId && currentDetailModel.pluginVersion ? `${currentDetailModel.pluginId}@${currentDetailModel.pluginVersion}` : '—'}</span> },
+            { label: 'Linked credential', value: currentDetailModel.providerCredentialName || 'No credential linked' },
+            { label: 'Concurrency limit', value: currentDetailModel.concurrencyLimit },
+            { label: 'Status', value: currentDetailModel.enabled ? 'Enabled' : 'Disabled' },
           ]} />
           {actions.errors[currentDetailModel.id] && <Alert tone="danger" role="alert">{actions.errors[currentDetailModel.id]}</Alert>}
         </>}

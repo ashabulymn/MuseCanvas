@@ -196,8 +196,8 @@ function stagedObjectKey(actorId: string, uploadId: string, mimeType: string): s
 /** Byte-length and dimension failures from `inspectInputImage`, coded the way the upload route codes them. */
 function sourceImageFailure(error: unknown): NextResponse {
   const message = error instanceof Error ? error.message : ''
-  if (message === 'INVALID_INPUT_IMAGE_SIZE') return fail('INVALID_INPUT_IMAGE_SIZE', '图片尺寸或大小超出限制', 400)
-  return fail('INVALID_INPUT_IMAGE', '源图无效或不受支持，仅支持 PNG 与 JPEG 图片', 400)
+  if (message === 'INVALID_INPUT_IMAGE_SIZE') return fail('INVALID_INPUT_IMAGE_SIZE', 'Image dimensions or size exceed the limit', 400)
+  return fail('INVALID_INPUT_IMAGE', 'Source image is invalid or unsupported; only PNG and JPEG images are supported', 400)
 }
 
 /** A mask failure from `normalizeAlphaMask` / `createEditMask`: readable and Chinese, never a raw vendor dump. */
@@ -205,15 +205,15 @@ function maskFailure(error: unknown): NextResponse {
   const message = error instanceof Error ? error.message : ''
   const code = message.split(':')[0]
   if (code === 'MASK_BYTE_LIMIT_EXCEEDED') {
-    return fail('INVALID_INPUT_IMAGE_SIZE', `遮罩文件过大，上限为 ${MAX_MASK_BYTES} 字节`, 400)
+    return fail('INVALID_INPUT_IMAGE_SIZE', `Mask file is too large; the limit is ${MAX_MASK_BYTES} bytes`, 400)
   }
   if (code === 'MASK_ALPHA_MISSING' || code === 'MASK_FORMAT_INVALID') {
-    return fail('INVALID_INPUT_IMAGE', '遮罩必须是带 alpha 通道的 PNG 图片（透明处即要修改的区域）', 400)
+    return fail('INVALID_INPUT_IMAGE', 'The mask must be a PNG image with an alpha channel (transparent areas are the regions to edit)', 400)
   }
   if (code === 'MASK_TARGET_DIMENSIONS_EXCEEDED') {
-    return fail('INVALID_INPUT_IMAGE_SIZE', '图片尺寸过大，无法生成遮罩', 400)
+    return fail('INVALID_INPUT_IMAGE_SIZE', 'Image is too large to generate a mask', 400)
   }
-  return fail('INVALID_INPUT_IMAGE', '遮罩无效，请重新框选或重新绘制选区', 400)
+  return fail('INVALID_INPUT_IMAGE', 'Invalid mask. Please re-select or redraw the region.', 400)
 }
 
 /** The body, read as exactly one value per allowed field — or the response that refused it. */
@@ -229,13 +229,13 @@ type EditForm =
 function readEditForm(form: FormData): EditForm {
   const unexpected = [...form.keys()].filter(key => !ALLOWED_EDIT_FIELD_SET.has(key))
   if (unexpected.length > 0) {
-    return { ok: false, response: fail('INVALID_INPUT', `局部修改请求包含不允许的字段：${unexpected.join(', ')}`) }
+    return { ok: false, response: fail('INVALID_INPUT', `Local edit request contains disallowed fields: ${unexpected.join(', ')}`) }
   }
   const fields: Record<string, FormDataEntryValue | undefined> = {}
   for (const key of ALLOWED_EDIT_FIELDS) {
     const values = form.getAll(key)
     if (values.length > 1) {
-      return { ok: false, response: fail('INVALID_INPUT', `${key} 字段只能出现一次`) }
+      return { ok: false, response: fail('INVALID_INPUT', `The ${key} field can only appear once`) }
     }
     fields[key] = values[0]
   }
@@ -255,14 +255,14 @@ export async function editImage(
   // `POST /api/generations`, because this *is* a generation. An edit that skipped
   // the check would simply be a way to buy extra rate with a different URL.
   if (await ports.limited(`gen:create:${actor.id}`, 20, 300)) {
-    return fail('RATE_LIMITED', '请求过于频繁，请稍后再试', 429)
+    return fail('RATE_LIMITED', 'Too many requests. Please try again later.', 429)
   }
 
   let form: FormData
   try {
     form = await request.formData()
   } catch {
-    return fail('INVALID_INPUT', '局部修改请求必须使用 multipart/form-data 编码')
+    return fail('INVALID_INPUT', 'Local edit requests must use multipart/form-data encoding')
   }
   const parsed = readEditForm(form)
   if (!parsed.ok) return parsed.response
@@ -270,11 +270,11 @@ export async function editImage(
 
   const modelId = textOf(fields, 'modelId')
   const prompt = typeof fields.prompt === 'string' ? fields.prompt : ''
-  if (!UUID_PATTERN.test(modelId)) return fail('INVALID_INPUT', '模型参数无效')
+  if (!UUID_PATTERN.test(modelId)) return fail('INVALID_INPUT', 'Invalid model parameter')
   // `create.ts`'s sanity rules, verbatim: same prompt field of the same job,
   // arriving in a different container.
   if (prompt.trim().length < 1 || prompt.length > 4000 || hasControlChars(prompt)) {
-    return fail('INVALID_INPUT', '生成参数无效')
+    return fail('INVALID_INPUT', 'Invalid generation parameters')
   }
 
   const assetId = textOf(fields, 'assetId')
@@ -295,20 +295,20 @@ export async function editImage(
     try {
       parsedParameters = JSON.parse(parametersText)
     } catch {
-      return fail('INVALID_INPUT', 'parameters 必须是合法的 JSON 对象')
+      return fail('INVALID_INPUT', 'parameters must be a valid JSON object')
     }
     if (typeof parsedParameters !== 'object' || parsedParameters === null || Array.isArray(parsedParameters)) {
-      return fail('INVALID_INPUT', 'parameters 必须是 JSON 对象')
+      return fail('INVALID_INPUT', 'parameters must be a JSON object')
     }
     clientParameters = parsedParameters as Record<string, unknown>
   }
   const imagePart = isFilePart(fields.image) ? fields.image : undefined
   const maskPart = isFilePart(fields.mask) ? fields.mask : undefined
-  if (assetId && imagePart) return fail('INVALID_INPUT', '源图只能提供 assetId 或 image 文件其中一种')
-  if (!assetId && !imagePart) return fail('INVALID_INPUT', '缺少源图：请提供 assetId 或 image 文件')
-  if (regionText && maskPart) return fail('INVALID_INPUT', '选区只能提供 region 矩形或 mask 遮罩文件其中一种')
-  if (!regionText && !maskPart) return fail('INVALID_INPUT', '缺少选区：请提供 region 矩形或 mask 遮罩文件')
-  if (assetId && !UUID_PATTERN.test(assetId)) return fail('INVALID_INPUT', 'assetId 格式无效')
+  if (assetId && imagePart) return fail('INVALID_INPUT', 'Provide either an assetId or an image file as the source image, not both')
+  if (!assetId && !imagePart) return fail('INVALID_INPUT', 'Missing source image: please provide an assetId or an image file')
+  if (regionText && maskPart) return fail('INVALID_INPUT', 'Provide either a region rectangle or a mask file as the selection, not both')
+  if (!regionText && !maskPart) return fail('INVALID_INPUT', 'Missing selection: please provide a region rectangle or a mask file')
+  if (assetId && !UUID_PATTERN.test(assetId)) return fail('INVALID_INPUT', 'Invalid assetId format')
 
   // The model decides whether a mask is even accepted and which `size` is legal, so
   // it is read ahead of any storage work: a refusal here must not leave an object
@@ -320,9 +320,9 @@ export async function editImage(
     [modelId],
   )
   const model = modelResult.rows[0]
-  if (!model) return fail('MODEL_NOT_AVAILABLE', '模型当前不可用', 404)
+  if (!model) return fail('MODEL_NOT_AVAILABLE', 'Model is currently unavailable', 404)
   if (String(model.model_kind || '') !== 'image') {
-    return fail('MODEL_NOT_AVAILABLE', '局部修改仅支持图片生成模型', 400)
+    return fail('MODEL_NOT_AVAILABLE', 'Local edit only supports image generation models', 400)
   }
   const capabilities = capabilitiesFromRow(model)
   // The server-side twin of a greyed-out button. An undeclared contract is not a
@@ -334,7 +334,7 @@ export async function editImage(
   if (!maskCapable) {
     return fail(
       'MODEL_MASK_NOT_SUPPORTED',
-      '当前模型不支持局部修改（未声明选区遮罩输入），请更换支持局部修改的图片模型',
+      'The current model does not support local edit (no selection mask input declared). Please switch to an image model that supports local edit.',
       409,
       { parameter: 'modelId', value: modelId },
     )
@@ -359,17 +359,17 @@ export async function editImage(
       [assetId, actor.id],
     )
     const asset = owned.rows[0]
-    if (!asset) return fail('NOT_FOUND', '图库作品不存在或无权访问', 404)
+    if (!asset) return fail('NOT_FOUND', 'Library artwork not found or inaccessible', 404)
     // Only PNG and JPEG bytes survive the worker's `inspectInputImage`, so only
     // those can be sent to a vendor at all — say it here, in a form error.
     if (String(asset.media_kind || 'image') !== 'image' || !ALLOWED_MIME_TYPES[String(asset.mime_type || '')]) {
-      return fail('INVALID_INPUT_IMAGE', '局部修改仅支持 PNG 或 JPEG 图片', 400)
+      return fail('INVALID_INPUT_IMAGE', 'Local edit only supports PNG or JPEG images', 400)
     }
     let assetBytes: Buffer
     try {
       assetBytes = await ports.readObjectBytes(String(asset.object_key))
     } catch {
-      return fail('INPUT_IMAGE_UNAVAILABLE', '图库作品文件读取失败，请稍后重试', 400)
+      return fail('INPUT_IMAGE_UNAVAILABLE', 'Failed to read the library artwork file. Please try again later.', 400)
     }
     let inspectedSource: { width: number; height: number; mimeType: 'image/png' | 'image/jpeg' }
     try {
@@ -383,7 +383,7 @@ export async function editImage(
     // The worker re-checks the object it fetches against the row it joins on, so a
     // mismatch here is a job that fails minutes later on a vendor error nobody read.
     if (inspectedSource.mimeType !== String(asset.mime_type || '')) {
-      return fail('INVALID_INPUT_IMAGE', '图库作品的实际格式与其记录不符，无法用于局部修改', 400)
+      return fail('INVALID_INPUT_IMAGE', 'The library artwork's actual format does not match its record and cannot be used for local edit', 400)
     }
     source = { width: inspectedSource.width, height: inspectedSource.height }
     // Referenced, not mirrored: no upload row, and never the asset's object key in
@@ -391,9 +391,9 @@ export async function editImage(
     sourceInput = { assetId: String(asset.id), role: 'reference_image', position: 0 }
   } else {
     const bytes = Buffer.from(await imagePart!.arrayBuffer())
-    if (bytes.length === 0) return fail('INVALID_INPUT_IMAGE', '源图内容为空', 400)
+    if (bytes.length === 0) return fail('INVALID_INPUT_IMAGE', 'Source image is empty', 400)
     if (bytes.length > limits.maxImageBytes) {
-      return fail('INVALID_INPUT_IMAGE_SIZE', `源图不能超过 ${limits.maxImageBytes} 字节`, 400)
+      return fail('INVALID_INPUT_IMAGE_SIZE', `Source image cannot exceed ${limits.maxImageBytes} bytes`, 400)
     }
     // The mime type is what the bytes decode as, not what the part declared: the
     // row and the worker's re-check must agree, and the browser is not authoritative.
@@ -426,7 +426,7 @@ export async function editImage(
       // compensating delete. An orphaned key in a private bucket is an acceptable
       // cost; a `ready` row pointing at bytes that never landed is not.
       await ports.deleteObject(objectKey).catch(() => { /* orphan accepted */ })
-      return fail('GENERATION_CREATE_FAILED', '源图存储失败，请稍后重试', 503)
+      return fail('GENERATION_CREATE_FAILED', 'Failed to store the source image. Please try again later.', 503)
     }
     sourceInput = { uploadId, role: 'reference_image', position: 0 }
   }
@@ -438,7 +438,7 @@ export async function editImage(
   // the user should get *before* the server paid for a rasterised mask.
   const size = pickClosestAllowedSize(declaredSizes, source.width, source.height)
   if (!size) {
-    return fail('INVALID_INPUT', '该模型未声明可用的输出尺寸，无法为局部修改确定尺寸', 400)
+    return fail('INVALID_INPUT', 'This model declares no usable output size, so a size cannot be determined for local edit', 400)
   }
 
   // --- the edit region ------------------------------------------------------
@@ -448,11 +448,11 @@ export async function editImage(
     try {
       regionJson = JSON.parse(regionText)
     } catch {
-      return fail('INVALID_INPUT', 'region 必须是 {x,y,width,height} 形式的 JSON 对象')
+      return fail('INVALID_INPUT', 'region must be a JSON object of the form {x,y,width,height}')
     }
     const region = parseRectangleRegion(regionJson)
     if (!region || region.type !== 'rectangle') {
-      return fail('INVALID_INPUT', 'region 必须是 {x,y,width,height} 形式的 JSON 对象')
+      return fail('INVALID_INPUT', 'region must be a JSON object of the form {x,y,width,height}')
     }
     // Clamped rather than trusted: a rectangle hanging off the edge is a visible
     // mistake, and a sub-`MIN_EDIT_SELECTION_PX` slip of the mouse would otherwise
@@ -465,7 +465,7 @@ export async function editImage(
     if (!selection) {
       return fail(
         'INVALID_INPUT',
-        `框选区域无效：必须落在图片（${source.width}×${source.height} 像素）范围内，且不小于 ${MIN_EDIT_SELECTION_PX}×${MIN_EDIT_SELECTION_PX} 像素`,
+        `Invalid selected region: it must fall within the image (${source.width}×${source.height} pixels) and be at least ${MIN_EDIT_SELECTION_PX}×${MIN_EDIT_SELECTION_PX} pixels`,
         400,
         { parameter: 'region', value: regionText.slice(0, 200) },
       )
@@ -506,7 +506,7 @@ export async function editImage(
     })
   } catch {
     await ports.deleteObject(maskObjectKey).catch(() => { /* orphan accepted */ })
-    return fail('GENERATION_CREATE_FAILED', '遮罩存储失败，请稍后重试', 503)
+    return fail('GENERATION_CREATE_FAILED', 'Failed to store the mask. Please try again later.', 503)
   }
   const maskInput: GenerationInputItem = { uploadId: maskUploadId, role: MASK_INPUT_ROLE, position: 1 }
 

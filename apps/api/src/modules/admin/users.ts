@@ -51,15 +51,15 @@ export async function setUserStatus(context: AuthedContext) {
   const { actor } = context
   const input = await context.json()
   const id = context.params.id
-  if (input.status !== 'active' && input.status !== 'disabled') return fail('INVALID_INPUT', '用户状态无效')
-  if (id === actor.id && input.status === 'disabled') return fail('INVALID_OPERATION', '不能停用当前管理员')
+  if (input.status !== 'active' && input.status !== 'disabled') return fail('INVALID_INPUT', 'Invalid user status')
+  if (id === actor.id && input.status === 'disabled') return fail('INVALID_OPERATION', 'Cannot disable the current admin')
   const updated = await transaction(async client => {
     const result = await client.query('UPDATE users SET status=$1,session_version=session_version+1,updated_at=now() WHERE id=$2 AND deleted_at IS NULL RETURNING *', [input.status, id])
     if (input.status === 'disabled') await client.query('UPDATE sessions SET revoked_at=now() WHERE user_id=$1 AND revoked_at IS NULL', [id])
     if (result.rows[0]) await writeAudit(client, actor.id, 'user.status', 'user', id, { status: input.status })
     return result.rows[0]
   })
-  return updated ? ok(userDto(updated)) : fail('NOT_FOUND', '用户不存在', 404)
+  return updated ? ok(userDto(updated)) : fail('NOT_FOUND', 'User not found', 404)
 }
 
 /**
@@ -71,7 +71,7 @@ export async function setUserStatus(context: AuthedContext) {
 export async function deleteUser(context: AuthedContext) {
   const { actor } = context
   const id = context.params.id
-  if (id === actor.id) return fail('INVALID_OPERATION', '不能删除当前管理员')
+  if (id === actor.id) return fail('INVALID_OPERATION', 'Cannot delete the current admin')
   const deleted = await transaction(async client => {
     const result = await client.query('UPDATE users SET deleted_at=now(),deletion_requested_at=now(),session_version=session_version+1,updated_at=now() WHERE id=$1 AND deleted_at IS NULL RETURNING id', [id])
     if (!result.rows[0]) return false
@@ -82,5 +82,5 @@ export async function deleteUser(context: AuthedContext) {
     await writeAudit(client, actor.id, 'user.delete', 'user', id)
     return true
   })
-  return deleted ? ok({ deleted: true }) : fail('NOT_FOUND', '用户不存在', 404)
+  return deleted ? ok({ deleted: true }) : fail('NOT_FOUND', 'User not found', 404)
 }

@@ -68,7 +68,7 @@ function asError<T>(value: T | InputError): value is InputError {
 
 async function noAdminGuard(): Promise<NextResponse | null> {
   const r = await db().query("SELECT count(*)::int AS cnt FROM users WHERE role='admin' AND deleted_at IS NULL")
-  if (r.rows[0].cnt > 0) return fail('SETUP_ALREADY_COMPLETE', '系统已初始化', 409)
+  if (r.rows[0].cnt > 0) return fail('SETUP_ALREADY_COMPLETE', 'System is already initialized', 409)
   return null
 }
 
@@ -98,7 +98,7 @@ export async function hasSetupAccess(request: NextRequest): Promise<boolean> {
 
 async function requireSetupAccess(request: NextRequest): Promise<NextResponse | null> {
   if (await hasSetupAccess(request)) return null
-  return fail('SETUP_SESSION_INVALID', '无初始化访问权限，请先验证一次性验证码', 401)
+  return fail('SETUP_SESSION_INVALID', 'No setup access. Please verify the one-time code first.', 401)
 }
 
 async function actorId(request: NextRequest): Promise<string | null> {
@@ -115,28 +115,28 @@ async function bootstrapDiagnostics(): Promise<BootstrapDiagnostics> {
     await db().query('SELECT 1')
     checks.push({ key: 'database', status: 'ok' })
   } catch {
-    checks.push({ key: 'database', status: 'error', message: '数据库连接失败' })
+    checks.push({ key: 'database', status: 'error', message: 'Database connection failed' })
   }
   if (await redisPing()) {
     checks.push({ key: 'redis', status: 'ok' })
   } else {
-    checks.push({ key: 'redis', status: 'error', message: '缓存服务连接失败' })
+    checks.push({ key: 'redis', status: 'error', message: 'Cache service connection failed' })
   }
   if (!process.env.APP_MASTER_KEY) {
-    checks.push({ key: 'masterKey', status: 'missing', message: '应用主密钥未配置' })
+    checks.push({ key: 'masterKey', status: 'missing', message: 'Application master key is not configured' })
   } else {
     try {
       derivePurposeKey('session-hmac')
       checks.push({ key: 'masterKey', status: 'ok' })
     } catch {
-      checks.push({ key: 'masterKey', status: 'error', message: '应用主密钥无效' })
+      checks.push({ key: 'masterKey', status: 'error', message: 'Invalid application master key' })
     }
   }
   const nodeEnv = process.env.NODE_ENV || 'development'
   if (nodeEnv === 'development' || nodeEnv === 'test' || nodeEnv === 'production') {
     checks.push({ key: 'runtime', status: 'ok' })
   } else {
-    checks.push({ key: 'runtime', status: 'error', message: '运行环境标识无效' })
+    checks.push({ key: 'runtime', status: 'error', message: 'Invalid runtime environment identifier' })
   }
   return { checks, ready: checks.every((check) => check.status === 'ok'), checkedAt: new Date().toISOString() }
 }
@@ -245,14 +245,14 @@ export async function setupStatus(): Promise<NextResponse> {
 
 export async function setupClaim(request: NextRequest, input: Record<string, unknown>): Promise<NextResponse> {
   const state = await getOnboardingState(db()).catch((): null => null)
-  if (state?.status === 'complete') return fail('SETUP_ALREADY_COMPLETE', '系统已初始化', 409)
+  if (state?.status === 'complete') return fail('SETUP_ALREADY_COMPLETE', 'System is already initialized', 409)
   const code = input.code
   if (typeof code !== 'string' || !code.trim() || code.length > 256) {
-    return fail('INVALID_INPUT', '验证码无效')
+    return fail('INVALID_INPUT', 'Invalid verification code')
   }
   const ip = clientIpFromRequest(request)
   if (await limited(`setup-claim:${ip}`, 10, 600)) {
-    return fail('RATE_LIMITED', '验证尝试过多，请稍后再试', 429)
+    return fail('RATE_LIMITED', 'Too many verification attempts. Please try again later.', 429)
   }
   // Atomic verify-and-consume: concurrent claims for the same code resolve to
   // exactly one winner inside verifyAndConsumeSetupClaim.
@@ -270,9 +270,9 @@ export async function setupClaim(request: NextRequest, input: Record<string, unk
       return issued
     })
   } catch {
-    return fail('SETUP_SESSION_INVALID', '验证码无效或已过期', 401)
+    return fail('SETUP_SESSION_INVALID', 'Invalid or expired verification code', 401)
   }
-  if (!token) return fail('SETUP_SESSION_INVALID', '验证码无效或已过期', 401)
+  if (!token) return fail('SETUP_SESSION_INVALID', 'Invalid or expired verification code', 401)
   const response = ok({
     claimed: true,
     expiresAt: new Date(Date.now() + SETUP_SESSION_TTL_SECONDS * 1000).toISOString(),
@@ -360,11 +360,11 @@ export async function setupSmtpTest(request: NextRequest, input: Record<string, 
     fromAddress: valid.fromAddress ?? current.fromAddress,
     fromName: valid.fromName ?? current.fromName,
   }
-  if (!merged.host || !merged.port) return fail('SMTP_TEST_FAILED', 'SMTP 服务器地址或端口尚未配置', 400)
+  if (!merged.host || !merged.port) return fail('SMTP_TEST_FAILED', 'SMTP server address or port is not configured yet', 400)
   try {
     await verifySmtpConnection(merged)
   } catch {
-    return fail('SMTP_TEST_FAILED', 'SMTP 连接测试失败，请检查配置', 400)
+    return fail('SMTP_TEST_FAILED', 'SMTP connection test failed. Please check the configuration.', 400)
   }
   // Persist only after a successful connection. Failed tests store nothing.
   try {
@@ -389,7 +389,7 @@ export async function setupSmtpTest(request: NextRequest, input: Record<string, 
     )
     await writeAudit(db(), null, 'setup.smtp.test', 'onboarding', 'singleton', { status: 'success' })
   } catch {
-    return fail('INTERNAL_ERROR', '保存 SMTP 设置失败', 500)
+    return fail('INTERNAL_ERROR', 'Failed to save SMTP settings', 500)
   }
   invalidateRuntimeSettings()
   return ok({ verified: true, settings: smtpSettingsDto(await resolveSmtpSettings()) })
@@ -440,7 +440,7 @@ export async function setupSmtp(request: NextRequest, input: Record<string, unkn
       fromAddress: saved.fromAddress, fromName: saved.fromName, status: saved.status,
     })
   } catch {
-    return fail('INTERNAL_ERROR', '保存 SMTP 设置失败', 500)
+    return fail('INTERNAL_ERROR', 'Failed to save SMTP settings', 500)
   }
   invalidateRuntimeSettings()
   return ok(smtpSettingsDto(await resolveSmtpSettings()))
@@ -467,12 +467,12 @@ export async function setupStorageTest(request: NextRequest, input: Record<strin
     signedUrlTtlSeconds: valid.signedUrlTtlSeconds ?? current.signedUrlTtlSeconds,
   }
   if (!merged.bucket || !merged.accessKeyId || !merged.secretAccessKey) {
-    return fail('STORAGE_TEST_FAILED', '对象存储访问信息尚未配置完整', 400)
+    return fail('STORAGE_TEST_FAILED', 'Object storage access information is incomplete', 400)
   }
   try {
     await testStorageConnection(merged)
   } catch {
-    return fail('STORAGE_TEST_FAILED', '对象存储连接测试失败，请检查配置', 400)
+    return fail('STORAGE_TEST_FAILED', 'Object storage connection test failed. Please check the configuration.', 400)
   }
   // Persist only after a successful round-trip. Failed tests store nothing.
   try {
@@ -499,7 +499,7 @@ export async function setupStorageTest(request: NextRequest, input: Record<strin
     )
     await writeAudit(db(), null, 'setup.storage.test', 'onboarding', 'singleton', { status: 'success' })
   } catch {
-    return fail('INTERNAL_ERROR', '保存对象存储设置失败', 500)
+    return fail('INTERNAL_ERROR', 'Failed to save object storage settings', 500)
   }
   invalidateRuntimeSettings()
   return ok({ verified: true, settings: storageSettingsDto(await resolveStorageSettings()) })
@@ -552,7 +552,7 @@ export async function setupStorage(request: NextRequest, input: Record<string, u
       bucket: saved.bucket, accessKeyId: saved.accessKeyId, status: saved.status,
     })
   } catch {
-    return fail('INTERNAL_ERROR', '保存对象存储设置失败', 500)
+    return fail('INTERNAL_ERROR', 'Failed to save object storage settings', 500)
   }
   invalidateRuntimeSettings()
   return ok(storageSettingsDto(await resolveStorageSettings()))
@@ -612,7 +612,7 @@ export async function setupComplete(request: NextRequest): Promise<NextResponse>
   // Transaction-scoped: the state row is locked and flips to complete only
   // when every required section is complete and an active admin exists.
   const outcome = await transaction(async (client) => tryCompleteOnboarding(client))
-  if (!outcome.completed) return fail('SETUP_INCOMPLETE', '仍有必填步骤未完成', 409)
+  if (!outcome.completed) return fail('SETUP_INCOMPLETE', 'Required steps are still incomplete', 409)
   invalidateRuntimeSettings()
   const raw = request.cookies.get(SETUP_COOKIE)?.value
   try {
@@ -641,12 +641,12 @@ export async function setupAdminRequest(request: NextRequest, input: Record<stri
   const access = await requireSetupAccess(request)
   if (access) return access
 
-  if (!emailValid(input.email)) return fail('INVALID_INPUT', '邮箱格式不正确')
+  if (!emailValid(input.email)) return fail('INVALID_INPUT', 'Invalid email format')
 
   const email = input.email.trim().toLowerCase()
   const ip = clientIpFromRequest(request)
   if (await limited(`setup:${email}:${ip}`, 5, 600)) {
-    return fail('RATE_LIMITED', '请求过于频繁，请稍后再试', 429)
+    return fail('RATE_LIMITED', 'Too many requests. Please try again later.', 429)
   }
 
   const code = randomInt(100000, 1000000).toString()
@@ -654,10 +654,10 @@ export async function setupAdminRequest(request: NextRequest, input: Record<stri
   await db().query("INSERT INTO otp_challenges(email,code_hash,expires_at) VALUES($1,$2,now()+interval '10 minutes')", [email, hashOtp(email, code)])
 
   try {
-    await sendMail(email, 'MuseCanvas 管理员设置验证码', `你的 MuseCanvas 管理后台验证码是：${code}。10 分钟内有效。`)
+    await sendMail(email, 'MuseCanvas admin setup verification code', `Your MuseCanvas admin verification code is: ${code}. Valid for 10 minutes.`)
   } catch (error) {
     console.error('setup otp delivery failed', { code: error instanceof Error ? error.message : 'SMTP_ERROR' })
-    return fail('EMAIL_DELIVERY_FAILED', '验证码发送失败，请稍后重试', 503)
+    return fail('EMAIL_DELIVERY_FAILED', 'Failed to send the verification code. Please try again later.', 503)
   }
 
   return ok({ accepted: true })
@@ -670,12 +670,12 @@ export async function setupAdminVerify(request: NextRequest, input: Record<strin
   if (access) return access
 
   if (!emailValid(input.email) || typeof input.code !== 'string' || !/^\d{6}$/.test(input.code)) {
-    return fail('INVALID_OTP', '验证码无效')
+    return fail('INVALID_OTP', 'Invalid verification code')
   }
 
   const email = input.email.trim().toLowerCase()
   if (await limited(`setup-verify:${email}`, 10, 600)) {
-    return fail('RATE_LIMITED', '验证尝试过多，请稍后再试', 429)
+    return fail('RATE_LIMITED', 'Too many verification attempts. Please try again later.', 429)
   }
 
   const result = await transaction(async (client) => {
@@ -704,7 +704,7 @@ export async function setupAdminVerify(request: NextRequest, input: Record<strin
     return { user, token }
   })
 
-  if (!result) return fail('INVALID_OTP', '验证码无效或已过期', 401)
+  if (!result) return fail('INVALID_OTP', 'Invalid or expired verification code', 401)
 
   const response = ok({ user: userDto(result.user) })
   response.cookies.set('muse_session', result.token, {

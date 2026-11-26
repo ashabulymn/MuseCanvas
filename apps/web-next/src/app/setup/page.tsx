@@ -4,8 +4,8 @@ import { Suspense } from 'react'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Panduan Instalasi Sistem - MuseCanvas',
-  description: 'Inisialisasi instance MuseCanvas dan konfigurasi lingkungan',
+  title: 'System Installation Guide - MuseCanvas',
+  description: 'Initialize the MuseCanvas instance and configure the environment',
 }
 
 export default function SetupPage() {

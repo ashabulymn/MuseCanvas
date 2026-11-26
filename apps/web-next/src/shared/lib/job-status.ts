@@ -23,12 +23,12 @@ export interface JobStatusMeta {
 }
 
 const JOB_STATUS_META: Record<JobStatus, JobStatusMeta> = {
-  queued: { label: '排队中', badge: 'bg-info-soft text-info', dot: 'bg-info' },
-  running: { label: '生成中', badge: 'bg-accent-soft text-accent-strong', dot: 'bg-accent' },
-  retry_wait: { label: '重试等待', badge: 'bg-warning-soft text-warning', dot: 'bg-warning' },
-  succeeded: { label: '已完成', badge: 'bg-success-soft text-success', dot: 'bg-success' },
-  failed: { label: '失败', badge: 'bg-danger-soft text-danger', dot: 'bg-danger' },
-  canceled: { label: '已取消', badge: 'bg-neutral-soft text-neutral-status', dot: 'bg-neutral-status' },
+  queued: { label: 'Queued', badge: 'bg-info-soft text-info', dot: 'bg-info' },
+  running: { label: 'Generating', badge: 'bg-accent-soft text-accent-strong', dot: 'bg-accent' },
+  retry_wait: { label: 'Waiting to retry', badge: 'bg-warning-soft text-warning', dot: 'bg-warning' },
+  succeeded: { label: 'Completed', badge: 'bg-success-soft text-success', dot: 'bg-success' },
+  failed: { label: 'Failed', badge: 'bg-danger-soft text-danger', dot: 'bg-danger' },
+  canceled: { label: 'Cancelled', badge: 'bg-neutral-soft text-neutral-status', dot: 'bg-neutral-status' },
 }
 
 export function jobStatusMeta(status: JobStatus): JobStatusMeta {
@@ -36,28 +36,28 @@ export function jobStatusMeta(status: JobStatus): JobStatusMeta {
 }
 
 const PHASE_LABEL: Record<string, string> = {
-  template_selecting: '挑选模板',
-  template_selected: '模板已选定',
-  template_skipped: '跳过模板',
-  template_failed: '模板不可用',
-  prompt_optimizing: '优化提示词',
-  prompt_ready: '提示词就绪',
-  optimization_failed: '提示词优化失败',
-  preprocessing: '预处理输入',
-  provider_submitting: '提交至生成服务',
-  provider_waiting: '等待返回',
-  provider_canceling: '取消中',
-  artifact_importing: '拉取产物',
-  asset_persisting: '保存素材',
-  image_generating: '生成图像',
-  generation_failed: '生成失败',
-  completed: '已完成',
+  template_selecting: 'Selecting template',
+  template_selected: 'Template selected',
+  template_skipped: 'Template skipped',
+  template_failed: 'Template unavailable',
+  prompt_optimizing: 'Optimizing prompt',
+  prompt_ready: 'Prompt ready',
+  optimization_failed: 'Prompt optimization failed',
+  preprocessing: 'Preprocessing input',
+  provider_submitting: 'Submitting to generation service',
+  provider_waiting: 'Waiting for response',
+  provider_canceling: 'Cancelling',
+  artifact_importing: 'Fetching outputs',
+  asset_persisting: 'Saving assets',
+  image_generating: 'Generating image',
+  generation_failed: 'Generation failed',
+  completed: 'Completed',
 }
 
 /** `phase` is the only truthful stage signal; `progress` is written as 0 or 100
  *  by the worker, so no percentage may be rendered from it. */
 export function phaseLabel(phase?: string | null): string {
-  return (phase && PHASE_LABEL[phase]) || '准备中'
+  return (phase && PHASE_LABEL[phase]) || 'Preparing'
 }
 
 /** `MM:SS` of work spent, measured from `startedAt` and falling back to submission. */

@@ -71,7 +71,7 @@ export async function createGenerationJob(cmd: CreateGenerationJobCommand): Prom
      WHERE m.id=$1 AND m.model_kind IN ('image','video') AND m.enabled=true AND m.deleted_at IS NULL`,
     [modelId],
   )
-  const model = modelResult.rows[0]; if (!model) return fail('MODEL_NOT_AVAILABLE', '模型当前不可用')
+  const model = modelResult.rows[0]; if (!model) return fail('MODEL_NOT_AVAILABLE', 'Model is currently unavailable')
   const mediaKind = ((model.model_kind as string) || 'image') as 'image' | 'video'
   const capabilities = capabilitiesFromRow(model)
   const defaults = defaultsFromRow(model) as Record<string, string | number | boolean>
@@ -83,7 +83,7 @@ export async function createGenerationJob(cmd: CreateGenerationJobCommand): Prom
   } else {
     rawParameters = {}
     if (typeof cmd.legacyParameters?.size === 'string') rawParameters.size = cmd.legacyParameters.size
-    else if (mediaKind === 'image') return fail('INVALID_INPUT', '生成参数无效')
+    else if (mediaKind === 'image') return fail('INVALID_INPUT', 'Invalid generation parameters')
     if (typeof cmd.legacyParameters?.quality === 'string') rawParameters.quality = cmd.legacyParameters.quality
     if (cmd.legacyParameters?.count !== undefined) rawParameters.count = Number(cmd.legacyParameters.count)
   }
@@ -119,7 +119,7 @@ export async function createGenerationJob(cmd: CreateGenerationJobCommand): Prom
     )
   } catch (err) {
     if (err instanceof GenerationInputError) return fail(err.code, err.message, err.status)
-    return fail('INVALID_INPUT', '参考图参数无效', 400)
+    return fail('INVALID_INPUT', 'Invalid reference image parameters', 400)
   }
   // Descriptor-driven validation via domain, for every media kind alike.
   //
@@ -140,7 +140,7 @@ export async function createGenerationJob(cmd: CreateGenerationJobCommand): Prom
   if (undeclared) {
     return fail(
       GenerationErrorCode.MODEL_CAPABILITIES_UNDECLARED,
-      '该模型尚未声明参数契约，无法校验生成参数，请管理员在模型设置中重新保存该模型',
+      'This model has not declared a parameter contract, so the generation parameters cannot be validated. Please ask an admin to re-save the model in the model settings.',
       409,
       { parameter: 'modelId', value: modelId },
     )
@@ -254,10 +254,10 @@ export async function createGenerationJob(cmd: CreateGenerationJobCommand): Prom
   } catch (error) {
     if (error instanceof GenerationInputError) return fail(error.code, error.message, error.status)
     if (error instanceof Error && error.message === 'MODEL_NOT_AVAILABLE') {
-      return fail('MODEL_NOT_AVAILABLE', '模型当前不可用', 409)
+      return fail('MODEL_NOT_AVAILABLE', 'Model is currently unavailable', 409)
     }
     const code = error instanceof Error && ['PROVIDER_NOT_CONFIGURED', 'PROMPT_MODEL_NOT_CONFIGURED'].includes(error.message) ? error.message : 'GENERATION_CREATE_FAILED'
-    return fail(code, code === 'PROMPT_MODEL_NOT_CONFIGURED' ? '提示词优化模型配置不完整' : code === 'PROVIDER_NOT_CONFIGURED' ? '生成供应商凭据未配置' : '创建生成任务失败', 503)
+    return fail(code, code === 'PROMPT_MODEL_NOT_CONFIGURED' ? 'Prompt optimization model configuration is incomplete' : code === 'PROVIDER_NOT_CONFIGURED' ? 'Generation provider credential is not configured' : 'Failed to create generation task', 503)
   }
   const responseRow = await db().query(`${userJobSelect} WHERE j.id=$1 AND j.created_by=$2`, [row.id, actor.id])
   const jobInputs = await loadSingleJobInputs(db(), row.id as string)

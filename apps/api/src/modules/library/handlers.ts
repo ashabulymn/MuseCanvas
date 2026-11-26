@@ -57,7 +57,7 @@ export async function listLibrary(context: AuthedContext) {
 /** GET /api/library/:id/download */
 export async function downloadAsset(context: AuthedContext) {
   const result = await db().query('SELECT id,object_key,media_kind,mime_type,duration_seconds FROM assets WHERE id=$1 AND created_by=$2 AND deleted_at IS NULL', [context.params.id, context.actor.id])
-  if (!result.rows[0]) return fail('NOT_FOUND', '资源不存在', 404)
+  if (!result.rows[0]) return fail('NOT_FOUND', 'Resource not found', 404)
   const row = result.rows[0]
   const url = await signedAssetUrl(row.object_key as string)
   return ok({ url, downloadUrl: url, mediaKind: (row.media_kind as string) || 'image', mimeType: row.mime_type })
@@ -72,7 +72,7 @@ export async function downloadAsset(context: AuthedContext) {
  */
 export async function deleteAsset(context: AuthedContext) {
   const owned = await db().query('SELECT job_id,deleted_at FROM assets WHERE id=$1 AND created_by=$2', [context.params.id, context.actor.id])
-  if (!owned.rows[0]) return fail('NOT_FOUND', '图片不存在', 404)
+  if (!owned.rows[0]) return fail('NOT_FOUND', 'Image not found', 404)
   if (owned.rows[0].deleted_at) return ok({ deleted: true })
   await deleteJobWithAssets(context.actor.id, owned.rows[0].job_id)
   return ok({ deleted: true })

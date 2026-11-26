@@ -59,7 +59,7 @@ export function AdminDashboardView({ initialMetrics, initialJobs = [] }: AdminDa
     queryKey: ['admin', 'dashboard'],
     queryFn: async () => {
       const res = await api<DashboardMetrics>(API_ENDPOINTS.admin.dashboard)
-      return requireAdminData(res, '加载汇总指标失败')
+      return requireAdminData(res, 'Failed to load summary metrics')
     },
     initialData: initialMetrics ?? undefined,
   })
@@ -77,7 +77,7 @@ export function AdminDashboardView({ initialMetrics, initialJobs = [] }: AdminDa
       const res = await api<{ items: AdminJob[] }>(API_ENDPOINTS.admin.jobs, {
         params: { limit: RECENT_JOB_LIMIT },
       })
-      return requireAdminData(res, '加载最近任务失败').items
+      return requireAdminData(res, 'Failed to load recent jobs').items
     },
     initialData: initialJobs.length ? initialJobs : undefined,
   })
@@ -98,8 +98,8 @@ export function AdminDashboardView({ initialMetrics, initialJobs = [] }: AdminDa
       <PageHeader
         className="min-w-0 [overflow-wrap:anywhere]"
         actionsClassName="max-w-full min-w-0 max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_a]:min-h-[var(--control-lg)]"
-        title="系统概览"
-        description="查看系统汇总指标和最近任务状态。"
+        title="System overview"
+        description="View system summary metrics and recent job status."
         actions={
           <Button
             variant="secondary"
@@ -107,7 +107,7 @@ export function AdminDashboardView({ initialMetrics, initialJobs = [] }: AdminDa
             onClick={handleRefresh}
             icon={<RefreshCw weight="bold" aria-hidden="true" />}
           >
-            刷新数据
+            Refresh data
           </Button>
         }
       />
@@ -115,61 +115,61 @@ export function AdminDashboardView({ initialMetrics, initialJobs = [] }: AdminDa
       {isMetricsError ? (
         <Alert
           tone="danger"
-          title={metrics ? '汇总指标刷新失败' : '无法加载汇总指标'}
+          title={metrics ? 'Summary metrics refresh failed' : 'Unable to load summary metrics'}
           action={
             <Button variant="secondary" size="sm" onClick={() => refetchMetrics()}>
-              刷新重试
+              Refresh and retry
             </Button>
           }
         >
-          {metricsError?.message ? `${metricsError.message}。` : '服务未返回统计数据。'}
-          {metrics ? '仍显示上次成功的数据，可能已过时。' : '请检查网络连接，或稍后重试。'}
+          {metricsError?.message ? `${metricsError.message}.` : 'The service returned no statistics.'}
+          {metrics ? 'Still showing the last successfully loaded data, which may be outdated.' : 'Please check your network connection, or try again later.'}
         </Alert>
       ) : null}
 
       {/* KPI grid — 4 columns (desktop) → 2 (tablet, ≥640px) → 1 (phone), gap 24px */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="用户总数" value={metrics?.totalUsers ?? '—'} loading={metricsPending} />
-        <StatCard label="任务总数" value={metrics?.totalJobs ?? '—'} loading={metricsPending} />
+        <StatCard label="Total users" value={metrics?.totalUsers ?? '—'} loading={metricsPending} />
+        <StatCard label="Total jobs" value={metrics?.totalJobs ?? '—'} loading={metricsPending} />
         <StatCard
-          label="7 天成功率"
+          label="7-day success rate"
           value={metrics?.successRate7d != null ? `${metrics.successRate7d}%` : '—'}
           loading={metricsPending}
           className="text-success"
         />
         <div className="flex min-w-0 flex-col gap-2">
           <StatCard
-            label="7 天失败任务数"
+            label="Failed jobs in 7 days"
             value={metrics?.failedJobs7d ?? '—'}
             loading={metricsPending}
             className="text-danger"
           />
-          <Link href="/admin/jobs?status=failed" className={buttonVariants({ variant: 'secondary' })}>查看所有失败任务</Link>
+          <Link href="/admin/jobs?status=failed" className={buttonVariants({ variant: 'secondary' })}>View all failed jobs</Link>
         </div>
       </div>
 
       {/* Recent jobs */}
       <section className="flex flex-col gap-4">
         <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-          <h2 className="text-subtitle font-normal text-foreground">最近任务</h2>
-          <Link href="/admin/jobs" className={buttonVariants({ variant: 'secondary' })}>查看全部任务</Link>
+          <h2 className="text-subtitle font-normal text-foreground">Recent jobs</h2>
+          <Link href="/admin/jobs" className={buttonVariants({ variant: 'secondary' })}>View all jobs</Link>
         </div>
-        {jobs !== undefined && <AdminQueryFeedback error={jobsError} hasData label="最近任务" onRetry={() => refetchJobs()} />}
+        {jobs !== undefined && <AdminQueryFeedback error={jobsError} hasData label="Recent jobs" onRetry={() => refetchJobs()} />}
         <AdminMobileRecords
           records={jobs ?? []} loading={jobsPending}
-          error={isJobsError && jobs === undefined ? jobsError?.message || '加载最近任务失败' : null}
-          onRetry={() => { void refetchJobs() }} empty={<>用户开始创作后，最近的任务会出现在这里。<Link href="/admin/jobs" className={buttonVariants({ variant: 'secondary' })}>查看全部任务</Link></>}
-          title={(job) => job.modelName || '未知模型'}
+          error={isJobsError && jobs === undefined ? jobsError?.message || 'Failed to load recent jobs' : null}
+          onRetry={() => { void refetchJobs() }} empty={<>Recent jobs will appear here once users start creating.<Link href="/admin/jobs" className={buttonVariants({ variant: 'secondary' })}>View all jobs</Link></>}
+          title={(job) => job.modelName || 'Unknown model'}
           status={(job) => <Badge className={jobStatusMeta(job.status).badge}>{jobStatusMeta(job.status).label}</Badge>}
           summary={(job) => <><span className="font-mono">{job.id.slice(0, 8)}…</span> · {formatLocalizedDateTime(job.createdAt)}</>}
           onDetails={setDetailJob}
         />
-        <DataTable cardClassName="hidden md:block" caption={`最近 ${RECENT_JOB_LIMIT} 条生成任务`} columns={4}>
+        <DataTable cardClassName="hidden md:block" caption={`Most recent ${RECENT_JOB_LIMIT} generation jobs`} columns={4}>
           <TableHead>
-            <TableHeadCell>任务 ID</TableHeadCell>
-            <TableHeadCell>模型</TableHeadCell>
-            <TableHeadCell>状态</TableHeadCell>
-            <TableHeadCell align="right">创建时间</TableHeadCell>
+            <TableHeadCell>Job ID</TableHeadCell>
+            <TableHeadCell>Model</TableHeadCell>
+            <TableHeadCell>Status</TableHeadCell>
+            <TableHeadCell align="right">Created at</TableHeadCell>
           </TableHead>
           <TableBody busy={jobsPending}>
             {jobsPending ? (
@@ -188,9 +188,9 @@ export function AdminDashboardView({ initialMetrics, initialJobs = [] }: AdminDa
               <TableStateRow>
                 <EmptyState
                   variant="error"
-                  objectName="最近任务"
+                  objectName="Recent jobs"
                   density="compact"
-                  actionLabel="刷新重试"
+                  actionLabel="Refresh and retry"
                   onAction={() => refetchJobs()}
                 />
               </TableStateRow>
@@ -199,9 +199,9 @@ export function AdminDashboardView({ initialMetrics, initialJobs = [] }: AdminDa
                 const status = jobStatusMeta(job.status)
                 return (
                   <TableRow key={job.id}>
-                    <TableCell mono tone="muted"><Button variant="ghost" size="sm" onClick={() => setDetailJob(job)} aria-label={`查看任务 ${job.id} 详情`}>{job.id.slice(0, 8)}…</Button></TableCell>
+                    <TableCell mono tone="muted"><Button variant="ghost" size="sm" onClick={() => setDetailJob(job)} aria-label={`View job ${job.id} details`}>{job.id.slice(0, 8)}…</Button></TableCell>
                     <TableCell tone="strong">
-                      {job.modelName || '未知模型'}
+                      {job.modelName || 'Unknown model'}
                     </TableCell>
                     <TableCell>
                       <Badge className={status.badge}>{status.label}</Badge>
@@ -216,13 +216,13 @@ export function AdminDashboardView({ initialMetrics, initialJobs = [] }: AdminDa
               <TableStateRow>
                 <EmptyState
                   variant="first-use"
-                  objectName="生成任务"
+                  objectName="Generation job"
                   density="compact"
-                  title="还没有生成任务"
-                  description="用户开始创作后，最近的任务会出现在这里。"
+                  title="No generation jobs yet"
+                  description="Recent jobs will appear here once users start creating."
                   action={
                     <Link href="/admin/jobs" className={buttonVariants({ variant: 'secondary' })}>
-                      查看全部任务
+                      View all jobs
                     </Link>
                   }
                 />
@@ -230,7 +230,7 @@ export function AdminDashboardView({ initialMetrics, initialJobs = [] }: AdminDa
             )}
           </TableBody>
         </DataTable>
-        <AdminRecordDetailDialog open={detailJob !== null} onClose={() => setDetailJob(null)} title="最近任务详情">
+        <AdminRecordDetailDialog open={detailJob !== null} onClose={() => setDetailJob(null)} title="Recent job details">
           {detailJob && <AdminJobDetail job={detailJob} />}
         </AdminRecordDetailDialog>
       </section>

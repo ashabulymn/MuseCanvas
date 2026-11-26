@@ -26,8 +26,8 @@ import { iconSize } from '@/shared/components/ui'
 export const dynamic = 'force-static'
 
 export const metadata = {
-  title: 'MuseCanvas - Merapikan inspirasi menjadi gambar yang bisa di-generate',
-  description: 'Meja kerja AI image generation untuk kreator: prompt, ukuran kanvas dan gambar referensi, antrean tugas, dan galeri karya tetap dalam satu jalur kreasi.',
+  title: 'MuseCanvas - Turn inspiration into images you can generate',
+  description: 'An AI image generation workspace for creators: prompts, canvas sizes and reference images, task queue, and work gallery — all in one creative flow.',
 }
 
 const heroPrimary = buttonVariants({ variant: 'primary', size: 'lg' })
@@ -35,65 +35,65 @@ const heroGhost = buttonVariants({ variant: 'ghost', size: 'lg' })
 
 const consoleSpecs: { label: string; value: string; mono?: boolean }[] = [
   // 断行策略：数字与单位、名与版本之间用不断行空格绑定；` / ` 与 ` · ` 两侧留普通空格，允许在分隔符处换行
-  { label: 'Model generate', value: 'GPT Image 2.5 / Seedream 4.5', mono: true },
-  { label: 'Ukuran kanvas', value: '1:1 · 16:9 · 9:16 · 4:3 · 3:4', mono: true },
-  { label: 'Jumlah sekali jalan', value: '1 / 2 / 4 gambar', mono: true },
-  { label: 'Gambar referensi', value: 'Maks. 4 gambar, PNG / JPEG', mono: true },
+  { label: 'Generation models', value: 'GPT Image 2.5 / Seedream 4.5', mono: true },
+  { label: 'Canvas sizes', value: '1:1 · 16:9 · 9:16 · 4:3 · 3:4', mono: true },
+  { label: 'Images per run', value: '1 / 2 / 4 images', mono: true },
+  { label: 'Reference images', value: 'Max. 4 images, PNG / JPEG', mono: true },
 ]
 
 const capabilities = [
   {
-    title: 'Prompt tidak perlu pakai template',
+    title: 'Prompts need no template',
     description:
-      'Cukup tulis subjek, suasana, material, pencahayaan, dan elemen yang ingin dihindari. Template gaya dikelola seragam dari sisi sistem, tidak perlu dipilih manual sebelum submit.',
+      'Just write the subject, mood, materials, lighting, and elements to avoid. Style templates are managed uniformly by the system — no manual selection before submit.',
     icon: WandSparkles,
   },
   {
-    title: 'Model, ukuran kanvas, dan gambar referensi',
+    title: 'Models, canvas sizes, and reference images',
     description:
-      'Ganti model, 5 ukuran kanvas, dan jumlah sekali jalan dalam satu panel yang sama, lalu unggah gambar referensi PNG atau JPEG sebagai acuan komposisi dan gaya.',
+      'Switch models, 5 canvas sizes, and images per run in a single panel, then upload PNG or JPEG reference images as guides for composition and style.',
     icon: Layers3,
   },
   {
-    title: 'Antre, retry, dan batal',
+    title: 'Queue, retry, and cancel',
     description:
-      'Setelah disubmit, tugas masuk antrean dan dieksekusi berurutan; bila gagal akan di-retry otomatis. Bisa juga menjalankan ulang manual hanya tugas yang gagal, atau membatalkan sebelum selesai.',
+      'After submit, tasks enter the queue and run in order; failures are retried automatically. You can also manually retry only the failed tasks, or cancel before they finish.',
     icon: Repeat,
   },
   {
-    title: 'Karya tersimpan otomatis',
+    title: 'Works save automatically',
     description:
-      'Hasil generate otomatis masuk ke galeri. Atur kerapatan grid, perbesar untuk membandingkan detail, unduh gambar asli, atau hapus versi yang tidak diinginkan — satu per satu atau sekaligus.',
+      'Generated results go straight into the gallery. Adjust the grid density, zoom in to compare details, download the original image, or delete unwanted versions — one by one or in bulk.',
     icon: Library,
   },
   {
-    title: 'Login pakai kode verifikasi',
+    title: 'Log in with a verification code',
     description:
-      'Terima kode 6 digit lewat email lalu langsung masuk, tidak perlu mengingat password lagi. Mendukung juga akun GitHub dan Google. Pihak yang men-deploy bisa menggantinya ke pendaftaran kode undangan.',
+      'Receive a 6-digit code by email and sign straight in — no password to remember. GitHub and Google accounts are supported too. Deployers can switch it to invitation-code registration.',
     icon: Mail,
   },
   {
-    title: 'Self-hosted dan admin panel',
+    title: 'Self-hosted with an admin panel',
     description:
-      'Selesaikan konfigurasi deploy lewat panduan inisialisasi; tugas, pengguna, model dan supplier, template prompt, dan OAuth masing-masing punya halaman pengelolaannya sendiri.',
+      'Finish the deployment setup through the initialization guide; tasks, users, models and providers, prompt templates, and OAuth each have their own management page.',
     icon: ShieldCheck,
   },
 ]
 
 const workflowSteps = [
   {
-    title: 'Tuliskan gambarnya',
-    description: 'Deskripsikan komposisi dan suasana dengan bahasa alami; bila ingin melanjutkan nuansa sebuah gambar, unggah gambar itu langsung sebagai gambar referensi.',
+    title: 'Describe the image',
+    description: 'Describe the composition and mood in natural language; to continue the feel of an existing image, upload it directly as a reference image.',
     icon: PenLine,
   },
   {
-    title: 'Tentukan output',
-    description: 'Pilih model, ukuran kanvas, dan jumlah sekali jalan; setelah disubmit, tugas masuk antrean dan status setiap tugas bisa diikuti dari meja kreasi.',
+    title: 'Choose the output',
+    description: 'Pick the model, canvas size, and images per run; after submit, tasks enter the queue and each task’s status can be followed from the creation console.',
     icon: SlidersHorizontal,
   },
   {
-    title: 'Lihat kembali dan unduh',
-    description: 'Setelah selesai, hasil otomatis muncul di galeri; lihat berdasarkan waktu, perbesar untuk membandingkan, unduh gambar asli, atau hapus versi yang kurang cocok.',
+    title: 'Review and download',
+    description: 'When done, results appear automatically in the gallery; browse by time, zoom in to compare, download the original image, or delete versions that don’t fit.',
     icon: Download,
   },
 ]
@@ -112,21 +112,21 @@ export default function HomePage() {
                 <h1 className="text-display text-foreground">MuseCanvas</h1>
                 {/* 副标题是 20px 的 subtitle + secondary 色，不再继承 Display */}
                 <p className="mt-4 text-subtitle text-muted-foreground [line-break:strict] [text-wrap:balance]">
-                  Merapikan inspirasi menjadi gambar yang bisa di-generate
+                  Turn inspiration into images you can generate
                 </p>
 
                 <p className="mt-6 max-w-xl text-base text-muted-foreground [text-wrap:pretty]">
-                  Dari prompt, model, dan ukuran kanvas, sampai antrean tugas dan galeri karya — setiap langkah dalam sekali generate tetap berada dalam satu jalur kreasi yang jelas.
+                  From prompt, model, and canvas size to task queue and work gallery — every step of a generation stays in one clear creative flow.
                 </p>
 
                 {/* CTA 成对：primary（墨色）+ ghost */}
                 <div className="mt-8 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
                   <Link href="/login" className={heroPrimary}>
-                    Mulai berkarya
+                    Start creating
                     <ArrowRight weight="bold" aria-hidden="true" />
                   </Link>
                   <Link href="#workflow" className={heroGhost}>
-                    Lihat alur kreasi
+                    See the creative flow
                   </Link>
                 </div>
               </div>
@@ -138,7 +138,7 @@ export default function HomePage() {
               >
                 <div className="flex items-baseline justify-between gap-4 px-6 pb-4 pt-5">
                   <h2 id="console-overview-title" className="whitespace-nowrap text-sm font-medium text-foreground">
-                    Sekilas meja kreasi
+                    Creation console at a glance
                   </h2>
                   <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">/generate</span>
                 </div>
@@ -171,12 +171,12 @@ export default function HomePage() {
           <Reveal>
             <div className="mx-auto w-full max-w-content px-4 py-16 sm:px-6 lg:py-24">
               <header className="max-w-3xl">
-                <h1 className="text-title text-foreground">Kemampuan produk</h1>
+                <h1 className="text-title text-foreground">Product capabilities</h1>
                 <h2
                   id="capabilities-title"
                   className="mt-3 text-section text-foreground [line-break:strict] [text-wrap:balance]"
                 >
-                  Semua langkah dalam sekali generate, terkumpul dalam satu meja kerja
+                  Every step of a generation, gathered in one workspace
                 </h2>
               </header>
 
@@ -207,15 +207,15 @@ export default function HomePage() {
           <Reveal>
             <div className="mx-auto grid w-full max-w-content gap-12 px-4 py-16 sm:px-6 md:grid-cols-[0.8fr_1fr] lg:py-24">
               <div className="max-w-xl">
-                <h1 className="text-title text-foreground">Alur kreasi</h1>
+                <h1 className="text-title text-foreground">Creative flow</h1>
                 <h2
                   id="workflow-title"
                   className="mt-3 text-section text-foreground [line-break:strict] [text-wrap:balance]"
                 >
-                  Inspirasi tidak dimasukkan ke formulir, melainkan ke dalam alur
+                  Inspiration goes into a flow, not a form
                 </h2>
                 <p className="mt-4 text-base text-muted-foreground [text-wrap:pretty]">
-                  Setelah login, yang terbuka bukan tumpukan fitur admin, melainkan ruang kerja generate yang fokus: mendeskripsikan gambar, menentukan output, melihat hasil — tiga langkah tanpa ada state perantara yang harus dipindah-pindah.
+                  After login, what opens is not a pile of admin features but a focused generation workspace: describe the image, choose the output, see the result — three steps with no intermediate state to move around.
                 </p>
               </div>
 
@@ -242,18 +242,18 @@ export default function HomePage() {
           <Reveal>
             <div className="mx-auto flex w-full max-w-content flex-col items-center gap-6 px-4 py-16 text-center sm:px-6 lg:py-24">
               <h2 id="cta-title" className="text-section text-foreground [line-break:strict] [text-wrap:balance]">
-                Siap membuat deskripsi pertamamu menjadi nyata?
+                Ready to turn your first description into reality?
               </h2>
               <p className="max-w-2xl text-base text-muted-foreground [text-wrap:pretty]">
-                Setelah login, langsung masuk ke meja kreasi: tulis prompt, pilih ukuran kanvas dan jumlahnya, dan karya yang dihasilkan langsung muncul di galerimu.
+                After login, go straight to the creation console: write a prompt, pick a canvas size and count, and your generated works appear in your gallery right away.
               </p>
               <div className="flex flex-col items-center gap-3 sm:flex-row">
                 <Link href="/login" className={heroPrimary}>
-                  Masuk ke MuseCanvas
+                  Enter MuseCanvas
                   <ArrowRight weight="bold" aria-hidden="true" />
                 </Link>
                 <Link href="/terms" className={heroGhost}>
-                  Baca syarat pengguna dulu
+                  Read the terms of use first
                 </Link>
               </div>
             </div>

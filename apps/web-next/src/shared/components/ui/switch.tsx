@@ -20,8 +20,8 @@ const TRACK_CLASS = 'inline-flex h-[var(--control-sm)] w-14 shrink-0 cursor-poin
 
 /** Appended to the accessible name after a rejected save: the control says out
  *  loud that nothing was persisted, instead of silently looking unchanged. */
-const FAILURE_SUFFIX = '，保存失败，设置未更改'
-const PENDING_SUFFIX = '，正在保存'
+const FAILURE_SUFFIX = ', save failed, setting unchanged'
+const PENDING_SUFFIX = ', saving'
 
 /**
  * Immediate-setting toggle: a tonal track that keeps a `border-control` outline so
@@ -58,7 +58,7 @@ export function Switch({ checked, onCheckedChange, disabled = false, ...aria }: 
   }
 
   const label = aria['aria-label']
-  const name = label ? `${label}，${checked ? '已开启' : '已关闭'}${pending ? PENDING_SUFFIX : ''}${failed ? FAILURE_SUFFIX : ''}` : undefined
+  const name = label ? `${label}, ${checked ? 'On' : 'Off'}${pending ? PENDING_SUFFIX : ''}${failed ? FAILURE_SUFFIX : ''}` : undefined
 
   return (
     <button

@@ -133,13 +133,13 @@ export function WorkspaceHeader({ initialUser }: WorkspaceHeaderProps) {
           <Link
             href={GENERATE_ROUTE}
             className="shrink-0 rounded-control text-subtitle font-medium tracking-tight text-foreground"
-            aria-label="MuseCanvas 创作台"
+            aria-label="MuseCanvas creation console"
           >
             MuseCanvas
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden items-center gap-1 md:flex" aria-label="主导航">
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
             {workspaceNavItems.map((item) => {
               const isActive = item.key === activeKey
               if (item.kind === 'route') {
@@ -161,7 +161,7 @@ export function WorkspaceHeader({ initialUser }: WorkspaceHeaderProps) {
                   key={item.key}
                   type="button"
                   disabled={submissionBusy}
-                  title={submissionBusy ? '正在提交，请稍候再切换模式' : undefined}
+                  title={submissionBusy ? 'Submitting — please wait before switching modes' : undefined}
                   onClick={() => handleModeSelect(item.mode)}
                   aria-current={isActive ? 'page' : undefined}
                   className={navItemClass(isActive)}
@@ -185,7 +185,7 @@ export function WorkspaceHeader({ initialUser }: WorkspaceHeaderProps) {
                 href={ADMIN_ROUTE}
                 className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'hidden md:inline-flex')}
               >
-                管理后台
+                Admin
               </Link>
             )}
 
@@ -194,22 +194,22 @@ export function WorkspaceHeader({ initialUser }: WorkspaceHeaderProps) {
             <DropdownMenu
               open={menuOpen}
               onOpenChange={setMenuOpen}
-              triggerLabel={`账户菜单：${initialUser.email || '当前用户'}`}
+              triggerLabel={`Account menu: ${initialUser.email || 'Current user'}`}
               trigger={<Avatar size="md" initial={userInitial} surface="transparent" />}
               triggerClassName={cn(
                 controlSquare.md,
                 'text-sm font-medium text-foreground',
                 menuOpen ? 'bg-tonal-selected' : 'bg-tonal hover:bg-tonal-hover active:bg-tonal-active',
               )}
-              menuLabel="账户菜单"
+              menuLabel="Account menu"
               header={
                 <p className="truncate px-3 py-2 text-xs text-muted-foreground">{initialUser.email}</p>
               }
               items={[
-                { id: 'account', label: '安全设置', href: ACCOUNT_ROUTE, icon: <Settings weight="bold" aria-hidden="true" /> },
+                { id: 'account', label: 'Security settings', href: ACCOUNT_ROUTE, icon: <Settings weight="bold" aria-hidden="true" /> },
                 {
                   id: 'logout',
-                  label: '退出登录',
+                  label: 'Log out',
                   icon: <LogOut weight="bold" aria-hidden="true" />,
                   danger: true,
                   loading: logoutMutation.isPending,
@@ -222,7 +222,7 @@ export function WorkspaceHeader({ initialUser }: WorkspaceHeaderProps) {
             <IconButton
               variant="ghost"
               className="md:hidden"
-              aria-label="打开导航菜单"
+              aria-label="Open navigation menu"
               onClick={() => {
                 setMenuOpen(false)
                 setDrawerOpen(true)
@@ -258,18 +258,18 @@ export function WorkspaceHeader({ initialUser }: WorkspaceHeaderProps) {
           >
             <div className="flex items-center justify-between">
               <h2 id={drawerLabelId} className="text-module text-foreground">
-                导航菜单
+                Navigation menu
               </h2>
               <IconButton
                 ref={drawerCloseButtonRef}
                 variant="ghost"
-                aria-label="关闭导航菜单"
+                aria-label="Close navigation menu"
                 onClick={closeDrawer}
                 icon={<X weight="bold" className={iconSize.md} aria-hidden="true" />}
               />
             </div>
 
-            <nav className="mt-6 flex flex-col gap-1" aria-label="抽屉导航">
+            <nav className="mt-6 flex flex-col gap-1" aria-label="Drawer navigation">
               {workspaceNavItems.map((item) => {
                 const isActive = item.key === activeKey
                 if (item.kind === 'route') {
@@ -292,7 +292,7 @@ export function WorkspaceHeader({ initialUser }: WorkspaceHeaderProps) {
                     key={item.key}
                     type="button"
                     disabled={submissionBusy}
-                    title={submissionBusy ? '正在提交，请稍候再切换模式' : undefined}
+                    title={submissionBusy ? 'Submitting — please wait before switching modes' : undefined}
                     onClick={() => handleModeSelect(item.mode)}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(navItemClass(isActive), 'w-full text-left')}
@@ -310,7 +310,7 @@ export function WorkspaceHeader({ initialUser }: WorkspaceHeaderProps) {
                   onClick={closeDrawer}
                   className={cn(buttonVariants({ variant: 'ghost' }), 'mt-6 w-full justify-start')}
                 >
-                  管理后台
+                  Admin
                 </Link>
               )}
             </nav>

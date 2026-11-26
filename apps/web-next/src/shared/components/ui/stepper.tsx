@@ -36,7 +36,7 @@ export function Stepper({
   size = 'md',
   orientation = 'auto',
   className,
-  'aria-label': ariaLabel = '步骤',
+  'aria-label': ariaLabel = 'Steps',
 }: StepperProps) {
   const radius = size === 'sm' ? 12 : 16
   const showVerticalTrack = orientation !== 'horizontal'
@@ -110,7 +110,7 @@ export function Stepper({
 
             <span className={cn('flex min-w-0 flex-col gap-0.5 text-left', orientation !== 'vertical' && 'sm:items-center sm:text-center')}>
               {/* The order is stated in words too, so it survives a lost connector line. */}
-              <span className="sr-only">{`第 ${index + 1} 步：`}</span>
+              <span className="sr-only">{`Step ${index + 1}:`}</span>
               {clickable ? (
                 <button
                   type="button"

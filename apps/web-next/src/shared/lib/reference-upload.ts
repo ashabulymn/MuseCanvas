@@ -115,7 +115,7 @@ function checkImageDimensions(
         resolve({
           width,
           height,
-          error: `分辨率须在 ${minDimension}~${maxDimension} 像素之间（当前 ${width}×${height}）`,
+          error: `Resolution must be between ${minDimension} and ${maxDimension} px (currently ${width}×${height})`,
         })
         return
       }
@@ -124,7 +124,7 @@ function checkImageDimensions(
         resolve({
           width,
           height,
-          error: `宽高比不能超过 ${maxAspectRatio}:1（当前 ${ratio.toFixed(1)}:1）`,
+          error: `Aspect ratio must not exceed ${maxAspectRatio}:1 (currently ${ratio.toFixed(1)}:1)`,
         })
         return
       }
@@ -132,7 +132,7 @@ function checkImageDimensions(
     }
     image.onerror = () => {
       URL.revokeObjectURL(url)
-      resolve({ width: 0, height: 0, error: '无法解析该图片文件' })
+      resolve({ width: 0, height: 0, error: 'Could not parse this image file' })
     }
     image.src = url
   })
@@ -148,7 +148,7 @@ export async function addReferenceFiles(
 
   const maxInputs = resolveMaxInputs(model)
   if (maxInputs === 0) {
-    setInlineError('当前模型不支持参考图，请切换到支持图生图的模型')
+    setInlineError('The current model does not support reference images — switch to a model that supports image-to-image')
     return
   }
 
@@ -156,21 +156,21 @@ export async function addReferenceFiles(
   for (const file of files) {
     const current = store().stagedImages
     if (current.length >= maxInputs) {
-      setInlineError(`最多支持添加 ${maxInputs} 张参考图`)
+      setInlineError(`At most ${maxInputs} reference images can be added`)
       break
     }
     if (!(ALLOWED_IMAGE_MIME_TYPES as readonly string[]).includes(file.type)) {
-      setInlineError(`「${file.name}」格式不支持，仅支持 PNG 或 JPEG 图片`)
+      setInlineError(`"${file.name}" has an unsupported format — only PNG or JPEG images are supported`)
       continue
     }
     if (file.size > UPLOAD_LIMITS.maxImageBytes) {
       setInlineError(
-        `「${file.name}」超过单张 ${formatSize(UPLOAD_LIMITS.maxImageBytes)} 限制（当前 ${formatSize(file.size)}）`,
+        `"${file.name}" exceeds the per-image limit of ${formatSize(UPLOAD_LIMITS.maxImageBytes)} (currently ${formatSize(file.size)})`,
       )
       continue
     }
     if (referenceImagesTotalBytes() + file.size > UPLOAD_LIMITS.maxTotalBytes) {
-      setInlineError(`参考图总大小不能超过 ${formatSize(UPLOAD_LIMITS.maxTotalBytes)}`)
+      setInlineError(`Reference images must not exceed ${formatSize(UPLOAD_LIMITS.maxTotalBytes)} in total`)
       break
     }
 
@@ -195,7 +195,7 @@ export async function addReferenceFiles(
     const dimensions = await checkImageDimensions(file)
     if (dimensions.error) {
       await removeReferenceImage(localId)
-      setInlineError(`「${file.name}」${dimensions.error}`)
+      setInlineError(`"${file.name}" — ${dimensions.error}`)
       return
     }
     if (!isStaged(localId)) return
@@ -228,11 +228,11 @@ function galleryGeometryError(asset: Pick<Asset, 'width' | 'height'>): string | 
   const height = asset.height
   if (!width || !height) return null
   if (width < minDimension || width > maxDimension || height < minDimension || height > maxDimension) {
-    return `分辨率须在 ${minDimension}~${maxDimension} 像素之间（当前 ${width}×${height}）`
+    return `Resolution must be between ${minDimension} and ${maxDimension} px (currently ${width}×${height})`
   }
   const ratio = Math.max(width / height, height / width)
   if (ratio > maxAspectRatio) {
-    return `宽高比不能超过 ${maxAspectRatio}:1（当前 ${ratio.toFixed(1)}:1）`
+    return `Aspect ratio must not exceed ${maxAspectRatio}:1 (currently ${ratio.toFixed(1)}:1)`
   }
   return null
 }
@@ -255,30 +255,30 @@ export async function addGalleryImage(
 
   const maxInputs = resolveMaxInputs(model)
   if (maxInputs === 0) {
-    setInlineError('当前模型不支持参考图，请切换到支持图生图的模型')
+    setInlineError('The current model does not support reference images — switch to a model that supports image-to-image')
     return false
   }
   const staged = store().stagedImages
   if (staged.length >= maxInputs) {
-    setInlineError(`最多支持添加 ${maxInputs} 张参考图`)
+    setInlineError(`At most ${maxInputs} reference images can be added`)
     return false
   }
   if (staged.some((image) => image.assetId === asset.id)) {
-    setInlineError('这张图库图片已经在输入列表里了')
+    setInlineError('This gallery image is already in the input list')
     return false
   }
   if (!isReferenceEligibleAsset(asset)) {
-    setInlineError('图库中仅 PNG 或 JPEG 图片可作为参考图')
+    setInlineError('Only PNG or JPEG images from the gallery can be used as reference images')
     return false
   }
   if (asset.sizeBytes > UPLOAD_LIMITS.maxImageBytes) {
     setInlineError(
-      `该图片超过单张 ${formatSize(UPLOAD_LIMITS.maxImageBytes)} 限制（当前 ${formatSize(asset.sizeBytes)}）`,
+      `This image exceeds the per-image limit of ${formatSize(UPLOAD_LIMITS.maxImageBytes)} (currently ${formatSize(asset.sizeBytes)})`,
     )
     return false
   }
   if (referenceImagesTotalBytes() + asset.sizeBytes > UPLOAD_LIMITS.maxTotalBytes) {
-    setInlineError(`参考图总大小不能超过 ${formatSize(UPLOAD_LIMITS.maxTotalBytes)}`)
+    setInlineError(`Reference images must not exceed ${formatSize(UPLOAD_LIMITS.maxTotalBytes)} in total`)
     return false
   }
   const geometry = galleryGeometryError(asset)
@@ -319,7 +319,7 @@ export async function refreshGalleryPreview(localId: string): Promise<void> {
   const staged = store().stagedImages.find((image) => image.localId === localId)
   if (!staged || staged.source !== 'gallery' || !staged.assetId) return
   if (previewRefreshed.has(localId)) {
-    setInlineError('图库图片预览仍无法加载，请移除后重新选择该图片')
+    setInlineError('The gallery image preview still cannot load. Remove it and select the image again.')
     return
   }
   previewRefreshed.add(localId)
@@ -329,12 +329,12 @@ export async function refreshGalleryPreview(localId: string): Promise<void> {
     const url = res.success ? res.data?.url : undefined
     if (!isStaged(localId)) return
     if (!url) {
-      setInlineError('图库图片预览链接已失效，请移除后重新选择该图片')
+      setInlineError('The gallery image preview link has expired. Remove it and select the image again.')
       return
     }
     patch(localId, { previewUrl: url, imageUrl: url })
   } catch {
-    if (isStaged(localId)) setInlineError('无法刷新图库图片预览，请检查网络后重试')
+    if (isStaged(localId)) setInlineError('Could not refresh the gallery image preview. Check your connection and try again')
   }
 }
 
@@ -352,7 +352,7 @@ async function startUpload(
     return
   }
   if (!presign.success || !presign.data) {
-    failUpload(localId, presign.error?.message || '获取上传地址失败')
+    failUpload(localId, presign.error?.message || 'Failed to get an upload URL')
     return
   }
 
@@ -372,14 +372,14 @@ async function startUpload(
     inflight.delete(localId)
     if (!isStaged(localId)) return
     if (xhr.status < 200 || xhr.status >= 300) {
-      failUpload(localId, `上传至存储服务失败（HTTP ${xhr.status}）`)
+      failUpload(localId, `Upload to the storage service failed (HTTP ${xhr.status})`)
       return
     }
     patch(localId, { progress: 100, status: 'processing' })
     const completed = await api.completeGenerationUpload(uploadId)
     if (!isStaged(localId)) return
     if (!completed.success || !completed.data) {
-      failUpload(localId, completed.error?.message || '上传确认失败')
+      failUpload(localId, completed.error?.message || 'Failed to confirm the upload')
       return
     }
     patch(localId, {
@@ -398,7 +398,7 @@ async function startUpload(
     // A multipart POST is a *simple* request: no preflight, so the bytes can already
     // be stored while the browser reports status 0 and refuses to read the response.
     // Never complete on this path — the server must only inspect bytes it accepted.
-    failUpload(localId, '无法读取存储服务响应，请检查跨域允许来源（MINIO_API_CORS_ALLOW_ORIGIN）或网络连接')
+    failUpload(localId, 'Could not read the storage service response. Check the cross-origin allow list (MINIO_API_CORS_ALLOW_ORIGIN) or the network connection.')
   }
 
   xhr.onabort = () => {

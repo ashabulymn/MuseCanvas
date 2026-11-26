@@ -22,7 +22,7 @@ export function hasNewerAdminSettingsRevision(loaded: { revision: number }, late
 export function resolveAdminConcurrency(raw: string): { value: number; error?: never } | { value?: never; error: string } {
   const value = Number(raw)
   if (!raw.trim() || !Number.isFinite(value) || !Number.isInteger(value) || value < 1 || value > 50) {
-    return { error: '请输入 1–50 之间的有限整数，不能为空或包含小数。' }
+    return { error: 'Please enter a finite integer between 1 and 50; it cannot be empty or contain decimals.' }
   }
   return { value }
 }

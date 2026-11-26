@@ -120,7 +120,7 @@ export function MediaParameterControls({ model, values, onChange, countUnit, dis
     const options = descriptorOptions(descriptor)
     if (options.length === 0) return null
 
-    const unit = descriptor.ui?.unit ?? (canonicalNameOf(descriptor) === 'durationSeconds' ? ' 秒' : '')
+    const unit = descriptor.ui?.unit ?? (canonicalNameOf(descriptor) === 'durationSeconds' ? ' s' : '')
 
     if (descriptor.ui?.control === 'select' || options.length > SEGMENTED_MAX_OPTIONS) {
       const value = effectiveValue(model, descriptor, values)
@@ -134,7 +134,7 @@ export function MediaParameterControls({ model, values, onChange, countUnit, dis
         >
           {options.map((option) => (
             <option key={String(option.value)} value={String(option.value)}>
-              {`${option.label}${unit}${option.isDefault ? ' · 默认' : ''}`}
+              {`${option.label}${unit}${option.isDefault ? ' · Default' : ''}`}
             </option>
           ))}
         </Select>
@@ -181,9 +181,9 @@ export function MediaParameterControls({ model, values, onChange, countUnit, dis
       {advancedControls.length > 0 && (
         <>
           <Button type="button" variant="secondary" size="sm" disabled={disabled} aria-haspopup="dialog" onClick={() => setAdvancedOpen(true)} icon={<ChevronDown weight="bold" aria-hidden="true" />}>
-            {advancedIssues.length > 0 ? '检查更多参数' : '更多参数'}
+            {advancedIssues.length > 0 ? 'Check more parameters' : 'More parameters'}
           </Button>
-          <Dialog open={advancedOpen && !disabled} onClose={() => setAdvancedOpen(false)} title="更多参数" size="wide" description="参数范围与默认值来自当前模型；修改仅更新草稿，不会提交。" footer={<Button variant="secondary" onClick={() => setAdvancedOpen(false)}>完成</Button>}>
+          <Dialog open={advancedOpen && !disabled} onClose={() => setAdvancedOpen(false)} title="More parameters" size="wide" description="Ranges and defaults come from the current model; changes only update the draft and do not submit." footer={<Button variant="secondary" onClick={() => setAdvancedOpen(false)}>Done</Button>}>
             <fieldset disabled={disabled} className="m-0 flex min-w-0 flex-wrap items-start gap-4 border-0 p-0">
               {advancedControls.map((descriptor) => (
                 <ParameterField key={descriptor.name} descriptor={descriptor} model={model}>
@@ -256,7 +256,7 @@ function SliderControl({
       <Input
         type="number"
         size="sm"
-        aria-label={`${name} 数值`}
+        aria-label={`${name} value`}
         min={bounds.min}
         max={bounds.max}
         step={bounds.step}
@@ -298,7 +298,7 @@ function ValueSegments({
         label: (
           <>
             <span>{`${option.label}${unit}`}</span>
-            {option.isDefault && <span className="text-xs font-normal text-muted-foreground">默认</span>}
+            {option.isDefault && <span className="text-xs font-normal text-muted-foreground">Default</span>}
           </>
         ),
       }))}

@@ -63,7 +63,7 @@ export function Pagination({
   showTotal = true,
   className,
   listClassName,
-  'aria-label': ariaLabel = '分页',
+  'aria-label': ariaLabel = 'Pagination',
 }: PaginationProps) {
   const derivedPages = Math.ceil(total / (pageSize || 1))
   const safePageCount = Math.max(1, pageCount ?? (Number.isFinite(derivedPages) ? derivedPages : 1))
@@ -75,7 +75,7 @@ export function Pagination({
     onPageChange(next)
   }
 
-  const label: ReactNode = showTotal ? `共 ${total} 条` : null
+  const label: ReactNode = showTotal ? `${total} items in total` : null
 
   return (
     <nav aria-label={ariaLabel} className={cn('flex flex-wrap items-center justify-between gap-x-4 gap-y-2', className)}>
@@ -85,7 +85,7 @@ export function Pagination({
         <IconButton
           variant="ghost"
           size={controlSize}
-          aria-label="上一页"
+          aria-label="Previous page"
           aria-disabled={page <= 1 || undefined}
           onClick={() => go(page - 1)}
           icon={<ChevronLeft weight="bold" aria-hidden="true" />}
@@ -118,7 +118,7 @@ export function Pagination({
         <IconButton
           variant="ghost"
           size={controlSize}
-          aria-label="下一页"
+          aria-label="Next page"
           aria-disabled={page >= safePageCount || undefined}
           onClick={() => go(page + 1)}
           icon={<ChevronRight weight="bold" aria-hidden="true" />}

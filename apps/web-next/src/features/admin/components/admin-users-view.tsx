@@ -41,8 +41,8 @@ import {
 import type { BadgeTone, TabItem } from '@/shared/components/ui'
 
 const ROLE_META: Record<UserRole, { label: string; tone: BadgeTone }> = {
-  admin: { label: '管理员', tone: 'accent' },
-  user: { label: '普通用户', tone: 'neutral' },
+  admin: { label: 'Administrator', tone: 'accent' },
+  user: { label: 'Regular user', tone: 'neutral' },
 }
 
 type AdminUsersTab = 'users' | 'invitations'
@@ -83,7 +83,7 @@ export function AdminUsersView() {
     queryKey: ['admin', 'users', userParams],
     queryFn: async () => {
       const res = await api<PaginatedResponse<AdminUser>>(API_ENDPOINTS.admin.users, { params: userParams })
-      return requireAdminData(res, '加载用户列表失败')
+      return requireAdminData(res, 'Failed to load user list')
     },
   })
 
@@ -99,7 +99,7 @@ export function AdminUsersView() {
     queryFn: async () => {
       const res = await api<{ items: Invitation[] }>(API_ENDPOINTS.admin.invitations)
       // Rows carry the admin-decryptable plaintext code (undefined for pre-encryption legacy rows).
-      return requireAdminData(res, '加载邀请码列表失败').items
+      return requireAdminData(res, 'Failed to load invitation code list').items
     },
   })
 
@@ -111,18 +111,18 @@ export function AdminUsersView() {
         body: {},
       })
       if (!res.success) {
-        throw new Error(res.error?.message || '服务端拒绝了创建请求')
+        throw new Error(res.error?.message || 'The server rejected the create request')
       }
       return res.data
     },
     onSuccess: (invitation) => {
       setCreatedInvitation(invitation ?? null)
-      toast.push({ variant: 'success', title: invitation?.code ? '邀请码已创建' : '创建请求已完成' })
+      toast.push({ variant: 'success', title: invitation?.code ? 'Invitation code created' : 'Create request completed' })
       queryClient.invalidateQueries({ queryKey: ['admin', 'invitations'] })
     },
     onError: (err: unknown) => {
-      const reason = err instanceof Error && err.message ? err.message : '网络请求未完成'
-      setActionError(`${reason}。请稍后再次创建。`)
+      const reason = err instanceof Error && err.message ? err.message : 'Network request did not complete'
+      setActionError(`${reason}. Please try creating it again later.`)
     },
   })
 
@@ -144,33 +144,33 @@ export function AdminUsersView() {
   const tabs: TabItem[] = [
     {
       id: 'users',
-      label: `注册用户 (${usersPage?.total ?? '—'})`,
+      label: `Registered users (${usersPage?.total ?? '—'})`,
       content: (
         <div className="flex min-w-0 flex-col gap-4">
-        <AdminFilterPanel activeCount={Number(!!userFilters.email) + Number(userFilters.status !== 'all')} summary={[userFilters.email && `邮箱包含 ${userFilters.email}`, userFilters.status !== 'all' && (userFilters.status === 'active' ? '正常' : '已停用')].filter(Boolean).join(' · ')}>
+        <AdminFilterPanel activeCount={Number(!!userFilters.email) + Number(userFilters.status !== 'all')} summary={[userFilters.email && `Email contains ${userFilters.email}`, userFilters.status !== 'all' && (userFilters.status === 'active' ? 'Active' : 'Disabled')].filter(Boolean).join(' · ')}>
           <form className="flex flex-wrap items-end gap-3" onSubmit={(event) => { event.preventDefault(); applyUserFilters(emailDraft, statusDraft) }}>
-            <FormField label="邮箱包含" className="w-full sm:w-64"><Input value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} placeholder="搜索所有注册用户" /></FormField>
-            <FormField label="用户状态" className="w-full sm:w-48"><Select value={statusDraft} onChange={(event) => setStatusDraft(event.target.value)}>
-              <option value="all">所有状态</option><option value="active">正常</option><option value="disabled">已停用</option>
+            <FormField label="Email contains" className="w-full sm:w-64"><Input value={emailDraft} onChange={(event) => setEmailDraft(event.target.value)} placeholder="Search all registered users" /></FormField>
+            <FormField label="User status" className="w-full sm:w-48"><Select value={statusDraft} onChange={(event) => setStatusDraft(event.target.value)}>
+              <option value="all">All statuses</option><option value="active">Active</option><option value="disabled">Disabled</option>
             </Select></FormField>
-            <Button type="submit">应用筛选</Button>
-            <Button variant="ghost" onClick={() => { setEmailDraft(''); setStatusDraft('all'); applyUserFilters('', 'all') }}>清除筛选</Button>
+            <Button type="submit">Apply filters</Button>
+            <Button variant="ghost" onClick={() => { setEmailDraft(''); setStatusDraft('all'); applyUserFilters('', 'all') }}>Clear filters</Button>
           </form>
         </AdminFilterPanel>
         <AdminMobileRecords records={users} loading={usersLoading}
-          error={usersError && !usersPage ? usersQueryError?.message || '加载用户失败' : null}
-          onRetry={() => { void refetchUsers() }} empty={userFilters.email || userFilters.status !== 'all' ? '没有匹配的注册用户，请调整或清除筛选条件。' : '用户通过登录或邀请码注册后，会显示在这里。'}
+          error={usersError && !usersPage ? usersQueryError?.message || 'Failed to load users' : null}
+          onRetry={() => { void refetchUsers() }} empty={userFilters.email || userFilters.status !== 'all' ? 'No registered users match; adjust or clear the filters.' : 'Users will appear here after registering via login or an invitation code.'}
           title={(user) => user.email}
           status={(user) => <Badge tone={(ROLE_META[user.role] ?? ROLE_META.user).tone}>{(ROLE_META[user.role] ?? ROLE_META.user).label}</Badge>}
-          summary={(user) => <>{user.status === 'disabled' ? '已停用' : '正常'} · {formatLocalizedDate(user.createdAt)}</>}
+          summary={(user) => <>{user.status === 'disabled' ? 'Disabled' : 'Active'} · {formatLocalizedDate(user.createdAt)}</>}
           onDetails={setDetailUser}
         />
-        <DataTable cardClassName="hidden md:block" caption="注册用户列表" columns={4}>
+        <DataTable cardClassName="hidden md:block" caption="Registered user list" columns={4}>
           <TableHead>
-            <TableHeadCell>邮箱</TableHeadCell>
-            <TableHeadCell>角色</TableHeadCell>
-            <TableHeadCell>状态</TableHeadCell>
-            <TableHeadCell align="right">注册时间</TableHeadCell>
+            <TableHeadCell>Email</TableHeadCell>
+            <TableHeadCell>Role</TableHeadCell>
+            <TableHeadCell>Status</TableHeadCell>
+            <TableHeadCell align="right">Registered at</TableHeadCell>
           </TableHead>
           <TableBody busy={usersLoading}>
             {usersLoading ? (
@@ -189,10 +189,10 @@ export function AdminUsersView() {
               <TableStateRow>
                 <EmptyState
                   variant="error"
-                  objectName="用户列表"
-                  title="无法加载用户列表"
-                  description="请求用户数据时出现问题，可能是服务暂时不可用。请稍后重试，或检查后端服务状态。"
-                  actionLabel="刷新重试"
+                  objectName="User list"
+                  title="Unable to load user list"
+                  description="There was a problem requesting user data; the service may be temporarily unavailable. Please try again later, or check the backend service status."
+                  actionLabel="Refresh and retry"
                   onAction={() => refetchUsers()}
                 />
               </TableStateRow>
@@ -205,7 +205,7 @@ export function AdminUsersView() {
                     <TableCell>
                       <Badge tone={role.tone}>{role.label}</Badge>
                     </TableCell>
-                    <TableCell><Badge tone={u.status === 'disabled' ? 'neutral' : 'success'}>{u.status === 'disabled' ? '已停用' : '正常'}</Badge></TableCell>
+                    <TableCell><Badge tone={u.status === 'disabled' ? 'neutral' : 'success'}>{u.status === 'disabled' ? 'Disabled' : 'Active'}</Badge></TableCell>
                     <TableCell align="right" mono tabular tone="muted">
                       {formatLocalizedDate(u.createdAt)}
                     </TableCell>
@@ -216,10 +216,10 @@ export function AdminUsersView() {
               <TableStateRow>
                 <EmptyState
                   variant="first-use"
-                  objectName="注册用户"
+                  objectName="Registered user"
                   density="compact"
-                  title={userFilters.email || userFilters.status !== 'all' ? '没有匹配的注册用户' : '还没有注册用户'}
-                  description={userFilters.email || userFilters.status !== 'all' ? '请调整或清除筛选条件。' : '用户通过登录或邀请码注册后，会显示在这里。'}
+                  title={userFilters.email || userFilters.status !== 'all' ? 'No matching registered users' : 'No registered users yet'}
+                  description={userFilters.email || userFilters.status !== 'all' ? 'Please adjust or clear the filters.' : 'Users will appear here after registering via login or an invitation code.'}
                 />
               </TableStateRow>
             )}
@@ -233,28 +233,28 @@ export function AdminUsersView() {
     },
     {
       id: 'invitations',
-      label: `邀请码（本窗口 ${invitationsData?.length ?? '—'} 条）`,
+      label: `Invitation codes (${invitationsData?.length ?? '—'} in this window)`,
       content: (
         <div className="flex min-w-0 flex-col gap-4">
-        <p className="text-sm text-muted-foreground">仅展示最近最多 100 条邀请码；以下搜索只在此窗口内匹配，不是全量搜索。</p>
-        <AdminFilterPanel activeCount={Number(!!invitationSearch.trim())} summary={`当前窗口搜索 ${invitationSearch.trim()}`}>
-          <FormField label="搜索当前邀请码窗口" hint="按邀请码或记录 ID 搜索最近最多 100 条。">
-            <Input value={invitationSearch} onChange={(event) => setInvitationSearch(event.target.value)} placeholder="当前窗口内搜索" />
+        <p className="text-sm text-muted-foreground">Only the most recent 100 invitation codes are shown; the search below matches only within this window, not across all records.</p>
+        <AdminFilterPanel activeCount={Number(!!invitationSearch.trim())} summary={`Current window search: ${invitationSearch.trim()}`}>
+          <FormField label="Search the current invitation code window" hint="Search the most recent 100 records by invitation code or record ID.">
+            <Input value={invitationSearch} onChange={(event) => setInvitationSearch(event.target.value)} placeholder="Search within the current window" />
           </FormField>
         </AdminFilterPanel>
         <AdminMobileRecords records={invitations} loading={invitesLoading}
-          error={invitesError && invitationsData === undefined ? invitesQueryError?.message || '加载邀请码失败' : null}
-          onRetry={() => { void refetchInvites() }} empty={<>{invitationSearch.trim() ? '当前窗口内没有匹配邀请码，请调整搜索词。' : '创建邀请码后，把它发给需要注册的用户即可。'}<Button variant="secondary" onClick={openInviteDialog}>创建邀请码</Button></>}
-          title={(invitation) => <span className="font-mono">{invitation.code || '明文不可用'}</span>}
+          error={invitesError && invitationsData === undefined ? invitesQueryError?.message || 'Failed to load invitation codes' : null}
+          onRetry={() => { void refetchInvites() }} empty={<>{invitationSearch.trim() ? 'No invitation codes in the current window match; adjust the search term.' : 'After creating an invitation code, send it to the user who needs to register.'}<Button variant="secondary" onClick={openInviteDialog}>Create invitation code</Button></>}
+          title={(invitation) => <span className="font-mono">{invitation.code || 'Plaintext unavailable'}</span>}
           status={(invitation) => <Badge tone={invitationStatus(invitation).tone}>{invitationStatus(invitation).label}</Badge>}
           summary={(invitation) => formatLocalizedDate(invitation.createdAt)}
           onDetails={setDetailInvitation}
         />
-        <DataTable cardClassName="hidden md:block" caption="邀请码列表" columns={3}>
+        <DataTable cardClassName="hidden md:block" caption="Invitation code list" columns={3}>
           <TableHead>
-            <TableHeadCell>邀请码标识</TableHeadCell>
-            <TableHeadCell>状态</TableHeadCell>
-            <TableHeadCell align="right">创建时间</TableHeadCell>
+            <TableHeadCell>Invitation code</TableHeadCell>
+            <TableHeadCell>Status</TableHeadCell>
+            <TableHeadCell align="right">Created at</TableHeadCell>
           </TableHead>
           <TableBody busy={invitesLoading}>
             {invitesLoading ? (
@@ -272,10 +272,10 @@ export function AdminUsersView() {
               <TableStateRow>
                 <EmptyState
                   variant="error"
-                  objectName="邀请码列表"
-                  title="无法加载邀请码列表"
-                  description="请求邀请码数据时出现问题，可能是服务暂时不可用。请稍后重试，或检查后端服务状态。"
-                  actionLabel="刷新重试"
+                  objectName="Invitation code list"
+                  title="Unable to load invitation code list"
+                  description="There was a problem requesting invitation code data; the service may be temporarily unavailable. Please try again later, or check the backend service status."
+                  actionLabel="Refresh and retry"
                   onAction={() => refetchInvites()}
                 />
               </TableStateRow>
@@ -284,7 +284,7 @@ export function AdminUsersView() {
                 const status = invitationStatus(inv)
                 return (
                   <TableRow key={inv.id}>
-                    <TableCell mono tabular tone="foreground"><AdminCopyValue value={inv.code} label="邀请码" /></TableCell>
+                    <TableCell mono tabular tone="foreground"><AdminCopyValue value={inv.code} label="Invitation code" /></TableCell>
                     <TableCell>
                       <Badge tone={status.tone}>{status.label}</Badge>
                     </TableCell>
@@ -298,10 +298,10 @@ export function AdminUsersView() {
               <TableStateRow>
                 <EmptyState
                   variant="first-use"
-                  objectName="邀请码"
+                  objectName="Invitation code"
                   density="compact"
-                  title={invitationSearch.trim() ? '当前窗口内没有匹配邀请码' : '还没有邀请码'}
-                  description={invitationSearch.trim() ? '请调整搜索词；只搜索最近最多 100 条记录。' : '创建邀请码后，把它发给需要注册的用户即可。'}
+                  title={invitationSearch.trim() ? 'No matching invitation codes in the current window' : 'No invitation codes yet'}
+                  description={invitationSearch.trim() ? 'Please adjust the search term; only the most recent 100 records are searched.' : 'After creating an invitation code, send it to the user who needs to register.'}
                   onAction={openInviteDialog}
                 />
               </TableStateRow>
@@ -318,13 +318,13 @@ export function AdminUsersView() {
       <PageHeader
         className="min-w-0 [overflow-wrap:anywhere]"
         actionsClassName="max-w-full min-w-0 max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_a]:min-h-[var(--control-lg)]"
-        title="用户与邀请管理"
-        description="查看注册用户、角色与账号状态，创建和查看邀请码；本页不修改用户角色或账号状态。"
+        title="User & invitation management"
+        description="View registered users, roles, and account status, and create and view invitation codes; this page does not change user roles or account status."
         actions={
           <>
             {activeTab === 'invitations' && (
               <Button onClick={openInviteDialog} icon={<UserPlus weight="bold" aria-hidden="true" />}>
-                创建邀请码
+                Create invitation code
               </Button>
             )}
             <Button
@@ -333,56 +333,56 @@ export function AdminUsersView() {
               loading={refreshing}
               icon={<RefreshCw weight="bold" aria-hidden="true" />}
             >
-              刷新
+              Refresh
             </Button>
           </>
         }
       />
 
       {activeTab === 'users' && usersPage && (
-        <AdminQueryFeedback error={usersQueryError} hasData label="用户列表" onRetry={() => refetchUsers()} />
+        <AdminQueryFeedback error={usersQueryError} hasData label="User list" onRetry={() => refetchUsers()} />
       )}
       {activeTab === 'invitations' && invitationsData !== undefined && (
-        <AdminQueryFeedback error={invitesQueryError} hasData label="邀请码列表" onRetry={() => refetchInvites()} />
+        <AdminQueryFeedback error={invitesQueryError} hasData label="Invitation code list" onRetry={() => refetchInvites()} />
       )}
 
       {activeTab === 'invitations' && createdInvitation !== undefined && <Card className="min-w-0 gap-3">
-        <h2 className="text-module">最近一次创建结果</h2>
-        <p className="text-sm text-muted-foreground">结果会保留到下一次成功创建。请仅将邀请码分享给需要注册的用户。</p>
-        <AdminCopyValue value={createdInvitation?.code} label="新邀请码" unavailable="创建请求已完成，但响应没有邀请码明文。请刷新列表核对；记录 ID 不是邀请码，不能用于注册。" />
+        <h2 className="text-module">Most recent creation result</h2>
+        <p className="text-sm text-muted-foreground">The result is kept until the next successful creation. Share the invitation code only with users who need to register.</p>
+        <AdminCopyValue value={createdInvitation?.code} label="New invitation code" unavailable="The create request completed, but the response did not include the invitation code plaintext. Refresh the list to verify; the record ID is not an invitation code and cannot be used to register." />
       </Card>}
 
       <Tabs
         tabs={tabs}
         value={activeTab}
         onValueChange={(id) => setActiveTab(id as AdminUsersTab)}
-        aria-label="用户与邀请"
+        aria-label="Users & invitations"
       />
 
-      <AdminRecordDetailDialog open={detailUser !== null} onClose={() => setDetailUser(null)} title="用户详情">
+      <AdminRecordDetailDialog open={detailUser !== null} onClose={() => setDetailUser(null)} title="User details">
         {detailUser && <AdminRecordFields fields={[
-          { label: '邮箱', value: detailUser.email },
-          { label: '用户 ID', value: <span className="font-mono">{detailUser.id}</span> },
-          { label: '角色', value: (ROLE_META[detailUser.role] ?? ROLE_META.user).label },
-          { label: '状态', value: detailUser.status === 'disabled' ? '已停用' : '正常' },
-          { label: '注册时间', value: formatLocalizedDate(detailUser.createdAt) },
+          { label: 'Email', value: detailUser.email },
+          { label: 'User ID', value: <span className="font-mono">{detailUser.id}</span> },
+          { label: 'Role', value: (ROLE_META[detailUser.role] ?? ROLE_META.user).label },
+          { label: 'Status', value: detailUser.status === 'disabled' ? 'Disabled' : 'Active' },
+          { label: 'Registered at', value: formatLocalizedDate(detailUser.createdAt) },
         ]} />}
       </AdminRecordDetailDialog>
-      <AdminRecordDetailDialog open={detailInvitation !== null} onClose={() => setDetailInvitation(null)} title="邀请码详情">
+      <AdminRecordDetailDialog open={detailInvitation !== null} onClose={() => setDetailInvitation(null)} title="Invitation code details">
         {detailInvitation && <AdminRecordFields fields={[
-          { label: '邀请码', value: <AdminCopyValue value={detailInvitation.code} label="邀请码" /> },
-          { label: '记录 ID（不是邀请码）', value: <span className="font-mono">{detailInvitation.id}</span> },
-          { label: '状态', value: invitationStatus(detailInvitation).label },
-          { label: '创建时间', value: formatLocalizedDate(detailInvitation.createdAt) },
+          { label: 'Invitation code', value: <AdminCopyValue value={detailInvitation.code} label="Invitation code" /> },
+          { label: 'Record ID (not the invitation code)', value: <span className="font-mono">{detailInvitation.id}</span> },
+          { label: 'Status', value: invitationStatus(detailInvitation).label },
+          { label: 'Created at', value: formatLocalizedDate(detailInvitation.createdAt) },
         ]} />}
       </AdminRecordDetailDialog>
 
       {/* Create Invite Modal */}
-      <Dialog open={inviteModalOpen} onClose={() => setInviteModalOpen(false)} title="创建邀请码" panelClassName="max-h-[90dvh] max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_button]:min-w-[var(--control-lg)]">
+      <Dialog open={inviteModalOpen} onClose={() => setInviteModalOpen(false)} title="Create invitation code" panelClassName="max-h-[90dvh] max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_button]:min-w-[var(--control-lg)]">
         {createInviteMutation.isSuccess ? <div className="flex min-w-0 flex-col gap-4">
-          <p className="text-sm">创建请求已完成，下方仅展示接口实际返回的邀请码明文。</p>
-          <AdminCopyValue value={createdInvitation?.code} label="新邀请码" unavailable="响应未返回邀请码明文，请刷新列表核对。不要使用记录 ID 代替邀请码。" />
-          <Button variant="secondary" onClick={() => setInviteModalOpen(false)}>完成</Button>
+          <p className="text-sm">The create request completed; only the invitation code plaintext actually returned by the API is shown below.</p>
+          <AdminCopyValue value={createdInvitation?.code} label="New invitation code" unavailable="The response did not include the invitation code plaintext; refresh the list to verify. Do not use the record ID in place of the invitation code." />
+          <Button variant="secondary" onClick={() => setInviteModalOpen(false)}>Done</Button>
         </div> : <form
           className="flex flex-col gap-4"
           onSubmit={(event) => {
@@ -393,24 +393,24 @@ export function AdminUsersView() {
           {actionError ? (
             // The 4px bar is `Alert`'s `danger` tone — a soft red is never a border colour.
             <div id="invite-error">
-              <Alert tone="danger" role="alert" title="无法创建邀请码">
+              <Alert tone="danger" role="alert" title="Unable to create invitation code">
                 {actionError}
               </Alert>
             </div>
           ) : null}
 
-          <p className="text-sm text-muted-foreground">邀请码不限定邮箱。创建后可分享给需要注册的用户。</p>
+          <p className="text-sm text-muted-foreground">Invitation codes are not tied to an email. After creation, share them with users who need to register.</p>
 
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setInviteModalOpen(false)}>
-              取消
+              Cancel
             </Button>
             <Button
               type="submit"
               loading={createInviteMutation.isPending}
               icon={<UserPlus weight="bold" aria-hidden="true" />}
             >
-              创建邀请码
+              Create invitation code
             </Button>
           </div>
         </form>}

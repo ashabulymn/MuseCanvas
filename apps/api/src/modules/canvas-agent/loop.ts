@@ -38,7 +38,7 @@ export async function runAgent(input: { ctx: RunContext; actor: Actor; store: Ag
     }
     const finish = async (text: string, ops: CanvasOp[] = []) => {
       check()
-      const message = await store.finish(ctx, { role: 'assistant', content: text || '本轮已完成。', usage, ops })
+      const message = await store.finish(ctx, { role: 'assistant', content: text || 'This round is complete.', usage, ops })
       ctx.leaseReleased = true
       if (ops.length) send({ type: 'canvas_ops', ops, baseRevision: ctx.baseRevision })
       send({ type: 'done', message: publicMessage(message), usage, requireConfirmation: ctx.requireConfirmation, autoContinuationCount: ctx.autoContinuationCount })
@@ -59,12 +59,12 @@ export async function runAgent(input: { ctx: RunContext; actor: Actor; store: Ag
       }
       // Persist the missing stable ops in the terminal message BEFORE their frame,
       // so losing this recovery response does not lose the next completed replay.
-      await finish('已恢复本轮记录的任务，等待确认或任务完成事件。', recoveredOps)
+      await finish('Restored the tasks recorded this round; waiting for confirmation or a task completion event.', recoveredOps)
       return
     }
     while (true) {
       check()
-      if (calls >= ctx.settings.maxToolCallsPerTurn) { await finish('已达到本轮工具调用上限。'); break }
+      if (calls >= ctx.settings.maxToolCallsPerTurn) { await finish('Reached the tool call limit for this round.'); break }
       if (Buffer.byteLength(JSON.stringify(messages.filter(message => message.turnId === ctx.lease.turnId))) > 100_000) raise(C.CANVAS_AGENT_BUDGET_EXCEEDED, 409)
       const history = providerHistory(messages)
       // Current canvas summary is trusted server context; its content is explicitly untrusted data.
@@ -123,7 +123,7 @@ export async function runAgent(input: { ctx: RunContext; actor: Actor; store: Ag
         }
       }
       check()
-      if (pendingRound) { await finish('任务已记录，等待确认或任务完成事件。'); break }
+      if (pendingRound) { await finish('Task recorded; waiting for confirmation or a task completion event.'); break }
     }
   } catch (error) {
     const e = signal.aborted ? new AgentError(signal.reason === 'timeout' ? C.CANVAS_AGENT_TIMEOUT : C.CANVAS_AGENT_CANCELED) : safeError(error)

@@ -52,8 +52,8 @@ function validationError(field: FieldKey, message: string): FieldValidationError
 }
 
 const MODE_OPTIONS: { value: Mode; label: string; hint: string }[] = [
-  { value: 'template', label: '内置插件', hint: '按插件声明的格式与端点校验，可通过连通测试。' },
-  { value: 'legacy', label: '自定义凭据', hint: '只选择供应商账号，可填写兼容端点。' },
+  { value: 'template', label: 'Built-in plugin', hint: 'Validated against the plugin-declared format and endpoints; connectivity can be tested.' },
+  { value: 'legacy', label: 'Custom credential', hint: 'Selects only a provider account; a compatible endpoint can be entered.' },
 ]
 
 // Credentials belong to a provider account. A template names the plugin whose
@@ -61,9 +61,9 @@ const MODE_OPTIONS: { value: Mode; label: string; hint: string }[] = [
 // (language models and compatible endpoints), and the API checks them against
 // every plugin of that account.
 const ENDPOINT_POLICY_LABEL: Record<BuiltinProviderTemplate['credential']['baseUrlPolicy'], string> = {
-  fixed: '仅官方端点',
-  allowlisted: '插件允许的域名',
-  'any-https': '任意 HTTPS 端点',
+  fixed: 'Official endpoints only',
+  allowlisted: 'Plugin-allowed domains',
+  'any-https': 'Any HTTPS endpoint',
 }
 
 export function AdminProviderCredentialDialog({
@@ -124,7 +124,7 @@ export function AdminProviderCredentialDialog({
       setActionError('')
       let body: ProviderCredentialInput
       if (effectiveMode === 'template') {
-        if (!template) throw validationError('template', '请选择媒体插件。')
+        if (!template) throw validationError('template', 'Please select a media plugin.')
         if (template.credential.format === 'json') {
           // Google's service-account fields are known here; any other JSON
           // credential is checked by its plugin's declared contract on save.
@@ -134,16 +134,16 @@ export function AdminProviderCredentialDialog({
           if (!parsed.ok) throw validationError('serviceAccount', parsed.error)
           body = buildTemplateCredentialInput(template, parsed.value, displayName)
         } else {
-          if (!apiKey.trim()) throw validationError('apiKey', '请输入 API Key。')
+          if (!apiKey.trim()) throw validationError('apiKey', 'Please enter an API Key.')
           body = buildTemplateCredentialInput(template, apiKey.trim(), displayName)
         }
       } else {
-        if (!displayName.trim()) throw validationError('displayName', '请输入凭据显示名称。')
-        if (!apiKey.trim()) throw validationError('apiKey', '请输入 API Key。')
+        if (!displayName.trim()) throw validationError('displayName', 'Please enter a credential display name.')
+        if (!apiKey.trim()) throw validationError('apiKey', 'Please enter an API Key.')
         body = { displayName: displayName.trim(), providerId: customProvider, baseUrl: baseUrl.trim() || undefined, secret: apiKey.trim(), enabled: true }
       }
       const res = await api(API_ENDPOINTS.admin.providerCredentials, { method: 'POST', body })
-      if (!res.success) throw new Error(res.error?.message || '创建凭据失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to create credential')
       return res.data
     },
     onSuccess: () => {
@@ -159,7 +159,7 @@ export function AdminProviderCredentialDialog({
         setActionError('')
         return
       }
-      setActionError(err.message || '创建凭据失败')
+      setActionError(err.message || 'Failed to create credential')
     },
   })
 
@@ -173,37 +173,37 @@ export function AdminProviderCredentialDialog({
       onClose={close}
       title={
         effectiveMode === 'template'
-          ? '从媒体插件创建凭据'
+          ? 'Create credential from a media plugin'
           : scope === 'language'
-            ? '创建语言模型凭据'
-            : '创建自定义凭据'
+            ? 'Create language model credential'
+            : 'Create custom credential'
       }
       panelClassName="max-w-form max-h-[90dvh] max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_button]:min-w-[var(--control-lg)]"
       footer={
         <>
           <Button variant="ghost" onClick={close}>
-            取消
+            Cancel
           </Button>
           <Button
             loading={createMutation.isPending}
             disabled={createMutation.isPending || (effectiveMode === 'template' && !template)}
             onClick={() => createMutation.mutate()}
           >
-            保存凭据
+            Save credential
           </Button>
         </>
       }
     >
       <fieldset disabled={createMutation.isPending} className="flex min-w-0 flex-col gap-6">
         {actionError && (
-          <Alert tone="danger" role="alert" title="无法创建凭据">
-            {actionError}。请核对填写内容与供应商配置后重试；密钥无效时请重新获取 API Key。
+          <Alert tone="danger" role="alert" title="Unable to create credential">
+            {actionError}. Check the entered values and provider configuration, then retry; if the secret is invalid, obtain a new API Key.
           </Alert>
         )}
 
         {scope === 'media' && !lockedTemplate && (
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 text-sm font-medium text-foreground">凭据类型</legend>
+            <legend className="mb-2 text-sm font-medium text-foreground">Credential type</legend>
             {/* Native radios + `accent-color`: keyboard, form semantics and the
                 selected state come from the platform, not from aria-pressed. */}
             <div className="flex flex-wrap gap-2">
@@ -236,10 +236,10 @@ export function AdminProviderCredentialDialog({
         <FieldGroup>
           {effectiveMode === 'template' && !lockedTemplate && (
             <FormField
-              label="媒体插件"
+              label="Media plugin"
               required
               error={fieldErrors.template}
-              hint="凭据按所选插件声明的格式与端点校验；同一供应商账号下的其它插件也可以使用。"
+              hint="Credentials are validated against the selected plugin's declared format and endpoints; other plugins under the same provider account can also use them."
             >
               <Select
                 value={templateKey}
@@ -248,10 +248,10 @@ export function AdminProviderCredentialDialog({
                   clearFieldError('template')
                 }}
               >
-                <option value="">请选择插件</option>
+                <option value="">Please select a plugin</option>
                 {templates.map((t) => (
                   <option key={t.key} value={t.key}>
-                    {t.displayName} · {t.pluginId}@{t.pluginVersion} · {t.modality === 'video' ? '视频' : '图像'}
+                    {t.displayName} · {t.pluginId}@{t.pluginVersion} · {t.modality === 'video' ? 'Video' : 'Image'}
                   </option>
                 ))}
               </Select>
@@ -264,10 +264,10 @@ export function AdminProviderCredentialDialog({
                 {template.pluginId}@{template.pluginVersion}
               </div>
               <div>
-                供应商 {template.providerId} · 凭据 {template.credential.schemaId}@{template.credential.schemaVersion}
+                Provider {template.providerId} · Credential {template.credential.schemaId}@{template.credential.schemaVersion}
               </div>
               <div className="break-all font-mono">{template.baseUrl}</div>
-              <div>端点策略：{ENDPOINT_POLICY_LABEL[template.credential.baseUrlPolicy]}</div>
+              <div>Endpoint policy: {ENDPOINT_POLICY_LABEL[template.credential.baseUrlPolicy]}</div>
             </div>
           )}
 
@@ -275,14 +275,14 @@ export function AdminProviderCredentialDialog({
             <div className="rounded-control bg-tonal p-3 text-xs text-muted-foreground">
               {scope === 'language' ? (
                 <>
-                  语言模型凭据由{' '}
-                  <span className="font-mono text-foreground">供应商 + API Key</span> 组成，可填写兼容端点。
+                  Language model credentials consist of{' '}
+                  <span className="font-mono text-foreground">Provider + API Key</span>  and a compatible endpoint can be entered.
                 </>
               ) : (
                 <>
-                  自定义凭据不经插件模板校验，关联模型后可借该模型的插件做连通测试；此类凭据列在
-                  <span className="font-mono text-foreground">语言模型</span>
-                  页的凭据列表中。
+                  Custom credentials are not validated against a plugin template; once linked to a model, they can be connectivity-tested using that model's plugin. These credentials are listed on the
+                  <span className="font-mono text-foreground">Language model</span>
+                   page's credential list.
                 </>
               )}
             </div>
@@ -290,10 +290,10 @@ export function AdminProviderCredentialDialog({
 
           {effectiveMode === 'legacy' && (
             <FormField
-              label="显示名称"
+              label="Display name"
               required
               error={fieldErrors.displayName}
-              hint="用于在模型配置中标识该凭据，例如供应商或用途。"
+              hint="Identifies this credential in model configurations, e.g. by provider or purpose."
             >
               <Input
                 type="text"
@@ -302,14 +302,14 @@ export function AdminProviderCredentialDialog({
                   setDisplayName(e.target.value)
                   clearFieldError('displayName')
                 }}
-                placeholder={scope === 'language' ? '例如：Anthropic 语言模型凭据' : '例如：自建 OpenAI 兼容端点'}
+                placeholder={scope === 'language' ? 'Example: Anthropic language model credential' : 'Example: self-hosted OpenAI-compatible endpoint'}
                 autoComplete="off"
               />
             </FormField>
           )}
 
           {effectiveMode === 'legacy' && (
-            <FormField label="供应商" hint="凭据所属的供应商账号，决定哪些插件的模型可以使用它。">
+            <FormField label="Provider" hint="The provider account this credential belongs to; it determines which plugins' models can use it.">
               <Select value={customProvider} onChange={(e) => setCustomProvider(e.target.value)}>
                 {customProviders.map((a) => (
                   <option key={a.value} value={a.value}>
@@ -322,8 +322,8 @@ export function AdminProviderCredentialDialog({
 
           {effectiveMode === 'legacy' && (
             <FormField
-              label="Base URL（可选）"
-              hint="留空时使用供应商的默认端点；填写时请写到版本路径，例如 https://api.example.com/v1。"
+              label="Base URL (optional)"
+              hint="Leave empty to use the provider's default endpoint; when filling it in, include the version path, e.g. https://api.example.com/v1."
             >
               <Input
                 type="text"
@@ -338,8 +338,8 @@ export function AdminProviderCredentialDialog({
 
           {effectiveMode === 'template' && (
             <FormField
-              label="显示名称（可选）"
-              hint="留空时使用插件名称作为凭据显示名称。"
+              label="Display name (optional)"
+              hint="Leave empty to use the plugin name as the credential display name."
             >
               <Input
                 type="text"
@@ -348,7 +348,7 @@ export function AdminProviderCredentialDialog({
                   setDisplayName(e.target.value)
                   clearFieldError('displayName')
                 }}
-                placeholder={template ? template.displayName : '默认使用插件名称'}
+                placeholder={template ? template.displayName : 'Defaults to the plugin name'}
                 autoComplete="off"
               />
             </FormField>
@@ -359,7 +359,7 @@ export function AdminProviderCredentialDialog({
               label="API Key"
               required
               error={fieldErrors.apiKey}
-              hint="密钥以加密形式存储于服务端，保存后不再明文展示。"
+              hint="Secrets are stored encrypted on the server and are never shown in plaintext after saving."
             >
               <Input
                 type="password"
@@ -375,10 +375,10 @@ export function AdminProviderCredentialDialog({
             </FormField>
           ) : useJsonSecret ? (
             <FormField
-              label={credentialFieldLabel ?? '凭据 JSON'}
+              label={credentialFieldLabel ?? 'Credential JSON'}
               required
               error={fieldErrors.serviceAccount}
-              hint={template?.credential.helpText ?? '粘贴凭据 JSON，仅服务端解密使用。'}
+              hint={template?.credential.helpText ?? 'Paste the credential JSON; only the server decrypts it.'}
               keepHintOnError
             >
               <Textarea
@@ -398,7 +398,7 @@ export function AdminProviderCredentialDialog({
               label={credentialFieldLabel ?? 'API Key'}
               required
               error={fieldErrors.apiKey}
-              hint={template?.credential.helpText ?? '密钥以加密形式存储于服务端，保存后不再明文展示。'}
+              hint={template?.credential.helpText ?? 'Secrets are stored encrypted on the server and are never shown in plaintext after saving.'}
               keepHintOnError
             >
               <Input

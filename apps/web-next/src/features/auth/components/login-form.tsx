@@ -34,8 +34,8 @@ const fieldOfStep: Record<Step, FieldKey> = {
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /** copy.md §4: 发生了什么 + 为什么 + 如何解决. */
-const NETWORK_ERROR = '网络连接失败。设备可能未联网或后端服务暂时不可用，请检查网络后重试。'
-const OTP_SEND_FAILED = '验证码发送失败。请确认邮箱地址填写无误，稍后重新发送。'
+const NETWORK_ERROR = 'Network connection failed. Your device may be offline or the backend service may be temporarily unavailable. Check your connection and try again.'
+const OTP_SEND_FAILED = 'Failed to send the verification code. Confirm the email address is correct, then resend it later.'
 
 export function LoginForm() {
   const router = useRouter()
@@ -82,12 +82,12 @@ export function LoginForm() {
     const trimmedEmail = email.trim()
     const next: FieldErrors = {}
     if (!trimmedEmail) {
-      next.email = '邮箱地址不能为空。请填写用于接收登录验证码的邮箱地址。'
+      next.email = 'Email address is required. Enter the email address that receives the login verification code.'
     } else if (!EMAIL_PATTERN.test(trimmedEmail)) {
-      next.email = '邮箱地址格式不正确。请确认包含 @ 和完整域名，例如 name@example.com。'
+      next.email = 'Email address format is incorrect. Confirm it contains @ and a full domain, e.g. name@example.com.'
     }
     if (step === 'invitation' && !invitationCode.trim()) {
-      next.invitation = '邀请码不能为空。请填写收到的邀请码，每个邀请码通常只能使用一次。'
+      next.invitation = 'Invitation code is required. Enter the code you received — each code can usually be used only once.'
     }
 
     setErrors(next)
@@ -123,7 +123,7 @@ export function LoginForm() {
     event.preventDefault()
 
     if (!otpCode.trim()) {
-      const next: FieldErrors = { otp: '验证码不能为空。请输入邮件中收到的 6 位验证码。' }
+      const next: FieldErrors = { otp: 'Verification code is required. Enter the 6-digit code from the email.' }
       setErrors(next)
       focusFirstError(next)
       return
@@ -149,7 +149,7 @@ export function LoginForm() {
         return
       }
       reportFailure(
-        res.error?.message || '验证码错误或已过期。请输入邮件中最新的一条验证码，或返回上一步重新发送。',
+        res.error?.message || 'The verification code is wrong or expired. Enter the code from the latest email, or go back a step and resend it.',
       )
     } catch {
       setLoading(false)
@@ -167,7 +167,7 @@ export function LoginForm() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1 text-center">
         <h1 className="text-title text-foreground">
-          {step === 'otp' ? '输入验证码' : step === 'invitation' ? '需要邀请码' : '登录\u00A0MuseCanvas'}
+          {step === 'otp' ? 'Enter verification code' : step === 'invitation' ? 'Invitation code required' : 'Log in to\u00A0MuseCanvas'}
         </h1>
         <p
           className={`min-w-0 text-sm text-muted-foreground [text-wrap:pretty] ${
@@ -175,10 +175,10 @@ export function LoginForm() {
           }`}
         >
           {step === 'otp'
-            ? `验证码已发送至 ${email}，请在下方输入邮件里的 6 位验证码。`
+            ? `Verification code sent to ${email}. Enter the 6-digit code from the email below.`
             : step === 'invitation'
-              ? '当前平台处于邀请测试期，请填写有效邀请码。'
-              : '无需复杂密码，通过邮箱验证码登录。'}
+              ? 'The platform is currently in an invitation-only testing period. Enter a valid invitation code.'
+              : 'No complex password needed — log in with an email verification code.'}
         </p>
       </header>
 
@@ -187,9 +187,9 @@ export function LoginForm() {
           <FieldGroup>
             <FormField
               id="email"
-              label="邮箱地址"
+              label="Email address"
               required
-              hint="邮箱只用于登录与作品找回。"
+              hint="Your email is only used for login and recovering your works."
               error={errors.email}
             >
               <Input
@@ -214,7 +214,7 @@ export function LoginForm() {
             fullWidth
             icon={<Mail weight="bold" aria-hidden="true" />}
           >
-            获取登录验证码
+            Get login code
           </Button>
         </form>
       )}
@@ -224,9 +224,9 @@ export function LoginForm() {
           <FieldGroup>
             <FormField
               id="invite"
-              label="邀请码"
+              label="Invitation code"
               required
-              hint="邀请码由发放方提供，可能只能使用一次。"
+              hint="The invitation code is provided by the issuer and may only be usable once."
               error={errors.invitation}
             >
               <Input
@@ -237,7 +237,7 @@ export function LoginForm() {
                   setInvitationCode(event.target.value)
                   clearFieldError('invitation')
                 }}
-                placeholder="请填写邀请码"
+                placeholder="Enter your invitation code"
                 ref={(node) => {
                   inputRefs.current.invitation = node
                 }}
@@ -248,12 +248,12 @@ export function LoginForm() {
           <div className="flex items-center gap-3">
             <IconButton
               variant="secondary"
-              aria-label="返回上一步，检查邮箱地址"
+              aria-label="Go back a step to check the email address"
               onClick={backToEmail}
               icon={<ArrowLeft weight="bold" aria-hidden="true" />}
             />
             <Button type="submit" loading={loading} className="flex-1">
-              确认并发送验证码
+              Confirm and send code
             </Button>
           </div>
         </form>
@@ -264,9 +264,9 @@ export function LoginForm() {
           <FieldGroup>
             <FormField
               id="otp"
-              label={`6\u00A0位验证码`}
+              label={`6\u00A0digit code`}
               required
-              hint={`发送至 ${email}`}
+              hint={`Sent to ${email}`}
               error={errors.otp}
             >
               <Input
@@ -292,33 +292,33 @@ export function LoginForm() {
           <div className="flex items-center gap-3">
             <IconButton
               variant="secondary"
-              aria-label="返回上一步，重新填写邮箱地址"
+              aria-label="Go back a step to re-enter the email address"
               onClick={backToEmail}
               icon={<ArrowLeft weight="bold" aria-hidden="true" />}
             />
             <Button type="submit" loading={loading} className="flex-1">
-              验证并登录
+              Verify and log in
             </Button>
           </div>
         </form>
       )}
 
       <div className="flex flex-col gap-3">
-        <p className="text-center text-sm text-muted-foreground">或使用第三方账号登录</p>
+        <p className="text-center text-sm text-muted-foreground">Or log in with a third-party account</p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <a
             href={API_ENDPOINTS.auth.oauthStart('github')}
             className={buttonVariants({ variant: 'secondary', className: 'flex-1 gap-2' })}
           >
             <GithubIcon className="h-5 w-5 shrink-0" />
-            <span>使用 GitHub 登录</span>
+            <span>Log in with GitHub</span>
           </a>
           <a
             href={API_ENDPOINTS.auth.oauthStart('google')}
             className={buttonVariants({ variant: 'secondary', className: 'flex-1 gap-2' })}
           >
             <GoogleIcon className="h-5 w-5 shrink-0" />
-            <span>使用 Google 登录</span>
+            <span>Log in with Google</span>
           </a>
         </div>
       </div>

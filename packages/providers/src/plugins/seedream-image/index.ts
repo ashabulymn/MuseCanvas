@@ -81,7 +81,7 @@ function seedreamSizeParameter(presets: readonly string[], minPixels: number): I
   return {
     type: 'image-size',
     name: 'size',
-    label: '尺寸',
+    label: 'Size',
     presets: seedreamSizePresets(presets),
     allowCustom: true,
     constraints: { ...seedreamBaseSizeConstraints, minPixels },
@@ -116,7 +116,7 @@ const seedream50LiteSizeParameter: ImageSizeParameterDescriptor = {
 const seedreamCountParameter: IntegerParameterDescriptor = {
   type: 'integer',
   name: 'count',
-  label: '数量',
+  label: 'Count',
   min: 1,
   max: SEEDREAM_MAX_BATCH_SIZE,
   defaultValue: 1,
@@ -129,7 +129,7 @@ const seedreamCountParameter: IntegerParameterDescriptor = {
 const seedreamWatermarkParameter: BooleanParameterDescriptor = {
   type: 'boolean',
   name: 'watermark',
-  label: '水印',
+  label: 'Watermark',
   defaultValue: false,
 }
 
@@ -145,7 +145,7 @@ const seedreamInputSlots: InputSlotDescriptor[] = [
     minCount: 0,
     maxCount: SEEDREAM_MAX_INPUT_IMAGES,
     allowedMediaKinds: ['image'],
-    label: '参考图',
+    label: 'Reference image',
   },
 ]
 

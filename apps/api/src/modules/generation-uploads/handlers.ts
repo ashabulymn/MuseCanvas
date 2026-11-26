@@ -66,23 +66,23 @@ export async function createGenerationUpload(
   input: unknown
 ): Promise<NextResponse> {
   if (await limited(`upload:${actor.id}`, 60, 60)) {
-    return fail('RATE_LIMITED', '上传请求过于频繁，请稍后再试', 429)
+    return fail('RATE_LIMITED', 'Too many upload requests. Please try again later.', 429)
   }
 
   if (!input || typeof input !== 'object') {
-    return fail('INVALID_INPUT', '请求体格式无效')
+    return fail('INVALID_INPUT', 'Invalid request body format')
   }
 
   const payload = input as Record<string, unknown>
   const mimeType = payload.mimeType
   if (typeof mimeType !== 'string' || !ALLOWED_MIME_TYPES[mimeType]) {
-    return fail('INVALID_INPUT', '仅支持 PNG 或 JPEG 格式的图片')
+    return fail('INVALID_INPUT', 'Only PNG or JPEG images are supported')
   }
 
   const runtime = await uploadRuntime()
   const sizeBytes = Number(payload.sizeBytes)
   if (!Number.isSafeInteger(sizeBytes) || sizeBytes < 1 || sizeBytes > runtime.maxImageBytes) {
-    return fail('INVALID_INPUT_IMAGE_SIZE', '图片大小超出限制')
+    return fail('INVALID_INPUT_IMAGE_SIZE', 'Image size exceeds the limit')
   }
 
   const id = randomUUID()
@@ -118,7 +118,7 @@ export async function createGenerationUpload(
     return result.rows[0]
   })
   if (!row) {
-    return fail('UPLOAD_QUOTA_EXCEEDED', '待处理参考图过多，请先移除已有图片', 429)
+    return fail('UPLOAD_QUOTA_EXCEEDED', 'Too many pending reference images. Please remove some existing images first.', 429)
   }
   try {
     const presigned = await createUploadPresignedPost(
@@ -139,7 +139,7 @@ export async function createGenerationUpload(
   } catch (error) {
     console.error('createUploadPresignedPost error', error)
     await db().query('DELETE FROM generation_input_images WHERE id=$1', [id]).catch(() => {})
-    return fail('UPLOAD_SIGN_FAILED', '生成上传凭证失败，请稍后重试', 503)
+    return fail('UPLOAD_SIGN_FAILED', 'Failed to generate an upload credential. Please try again later.', 503)
   }
 }
 
@@ -148,10 +148,10 @@ export async function completeGenerationUpload(
   uploadId: string
 ): Promise<NextResponse> {
   if (await limited(`upload-complete:${actor.id}`, 60, 60)) {
-    return fail('RATE_LIMITED', '完成上传请求过于频繁，请稍后再试', 429)
+    return fail('RATE_LIMITED', 'Too many upload completion requests. Please try again later.', 429)
   }
   if (!GENERATION_UPLOAD_ID_PATTERN.test(uploadId)) {
-    return fail('INVALID_INPUT', '上传 ID 格式无效')
+    return fail('INVALID_INPUT', 'Invalid upload ID format')
   }
 
   const existing = await db().query(
@@ -160,7 +160,7 @@ export async function completeGenerationUpload(
   )
   const upload = existing.rows[0]
   if (!upload) {
-    return fail('NOT_FOUND', '上传记录不存在', 404)
+    return fail('NOT_FOUND', 'Upload record not found', 404)
   }
 
   if (upload.status === 'ready' || upload.status === 'attached') {
@@ -175,12 +175,12 @@ export async function completeGenerationUpload(
   }
 
   if (upload.status !== 'pending') {
-    return fail('INVALID_STATE', '上传记录状态无效', 409)
+    return fail('INVALID_STATE', 'Invalid upload record status', 409)
   }
 
   if (new Date(upload.expires_at as string | number | Date).getTime() <= Date.now()) {
     await rejectUpload(upload.id as string, upload.object_key as string)
-    return fail('UPLOAD_EXPIRED', '上传凭证已过期，请重新选择图片', 410)
+    return fail('UPLOAD_EXPIRED', 'The upload credential has expired. Please select the image again.', 410)
   }
 
   const objectKey = upload.object_key as string
@@ -189,14 +189,14 @@ export async function completeGenerationUpload(
     bytes = await getPrivateS3ObjectBytes(objectKey)
   } catch (error) {
     console.error('getPrivateS3ObjectBytes error', error)
-    return fail('INPUT_IMAGE_UNAVAILABLE', '未找到已上传的文件，请先完成直传', 400)
+    return fail('INPUT_IMAGE_UNAVAILABLE', 'Uploaded file not found. Please complete the direct upload first.', 400)
   }
 
   const declaredSize = Number(upload.size_bytes)
   const runtime = await uploadRuntime()
   if (bytes.length !== declaredSize || bytes.length > runtime.maxImageBytes) {
     await rejectUpload(upload.id as string, objectKey)
-    return fail('INVALID_INPUT_IMAGE_SIZE', '上传文件大小与声明不符', 400)
+    return fail('INVALID_INPUT_IMAGE_SIZE', 'Uploaded file size does not match the declared size', 400)
   }
 
   let inspected: { width: number; height: number; mimeType: string; sizeBytes: number }
@@ -206,12 +206,12 @@ export async function completeGenerationUpload(
     await rejectUpload(upload.id as string, objectKey)
     const message = error instanceof Error ? error.message : 'INVALID_INPUT_IMAGE'
     const code = message === 'INVALID_INPUT_IMAGE_SIZE' ? 'INVALID_INPUT_IMAGE_SIZE' : 'INVALID_INPUT_IMAGE'
-    return fail(code, '上传的图片无效或不受支持', 400)
+    return fail(code, 'The uploaded image is invalid or unsupported', 400)
   }
 
   if (inspected.mimeType !== upload.mime_type) {
     await rejectUpload(upload.id as string, objectKey)
-    return fail('INVALID_INPUT_IMAGE', '上传文件类型与声明不符', 400)
+    return fail('INVALID_INPUT_IMAGE', 'Uploaded file type does not match the declared type', 400)
   }
 
   const checksum = createHash('sha256').update(bytes).digest('hex')
@@ -245,7 +245,7 @@ export async function completeGenerationUpload(
     finalRow.deleted_at !== null ||
     !['ready', 'attached'].includes(finalRow.status as string)
   ) {
-    return fail('INVALID_STATE', '上传记录状态已变更，请重新选择图片', 409)
+    return fail('INVALID_STATE', 'The upload record status has changed. Please select the image again.', 409)
   }
   return ok({
     id: finalRow.id as string,
@@ -262,11 +262,11 @@ export async function deleteGenerationUpload(
   uploadId: string
 ): Promise<NextResponse> {
   if (await limited(`upload-delete:${actor.id}`, 60, 60)) {
-    return fail('RATE_LIMITED', '请求过于频繁，请稍后再试', 429)
+    return fail('RATE_LIMITED', 'Too many requests. Please try again later.', 429)
   }
 
   if (!GENERATION_UPLOAD_ID_PATTERN.test(uploadId)) {
-    return fail('INVALID_INPUT', '上传 ID 格式无效')
+    return fail('INVALID_INPUT', 'Invalid upload ID format')
   }
 
   const deleted = await db().query(
@@ -283,7 +283,7 @@ export async function deleteGenerationUpload(
       [uploadId, actor.id]
     )
     if (state.rows[0]?.status === 'attached') {
-      return fail('IMAGE_ATTACHED', '图片已关联到生成任务，无法删除', 409)
+      return fail('IMAGE_ATTACHED', 'The image is already attached to a generation task and cannot be deleted', 409)
     }
     return ok({ deleted: true })
   }

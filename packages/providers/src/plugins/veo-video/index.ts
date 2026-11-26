@@ -51,16 +51,16 @@ const VEO_POLL_RETRY_AFTER_MS = 5000
 const veoDurationParameter: EnumParameterDescriptor = {
   type: 'enum',
   name: 'durationSeconds',
-  label: '时长（秒）',
+  label: 'Duration (seconds)',
   options: ['4', '6', '8'],
   defaultValue: '8',
-  ui: { control: 'segmented', unit: '秒', order: 1 },
+  ui: { control: 'segmented', unit: 'seconds', order: 1 },
 }
 
 const veoAspectRatioParameter: EnumParameterDescriptor = {
   type: 'enum',
   name: 'aspectRatio',
-  label: '宽高比',
+  label: 'Aspect ratio',
   options: ['16:9', '9:16'],
   defaultValue: '16:9',
   ui: { control: 'segmented', order: 2 },
@@ -70,7 +70,7 @@ function veoResolutionParameter(options: string[], defaultValue: string): EnumPa
   return {
     type: 'enum',
     name: 'resolution',
-    label: '分辨率',
+    label: 'Resolution',
     options,
     defaultValue,
     ui: { control: 'segmented', order: 3 },
@@ -88,7 +88,7 @@ const veoFastResolutionParameter = veoResolutionParameter(['720p'], '720p')
 const veoAudioParameter: BooleanParameterDescriptor = {
   type: 'boolean',
   name: 'audio',
-  label: '生成音频',
+  label: 'Generate audio',
   defaultValue: true,
   ui: { control: 'switch', order: 4 },
 }
@@ -96,7 +96,7 @@ const veoAudioParameter: BooleanParameterDescriptor = {
 const veoCountParameter: IntegerParameterDescriptor = {
   type: 'integer',
   name: 'count',
-  label: '生成数量',
+  label: 'Generation count',
   min: 1,
   max: 4,
   defaultValue: 1,
@@ -111,7 +111,7 @@ const veoResolutionDurationRules: ParameterCrossFieldConstraint[] = [
     whenValueEquals: '1080p',
     targetParameter: 'durationSeconds',
     targetValues: ['4', '6'],
-    message: '分辨率 1080p 需要时长 8 秒',
+    message: 'Resolution 1080p requires a duration of 8 seconds',
   },
   {
     type: 'forbidden',
@@ -119,7 +119,7 @@ const veoResolutionDurationRules: ParameterCrossFieldConstraint[] = [
     whenValueEquals: '4k',
     targetParameter: 'durationSeconds',
     targetValues: ['4', '6'],
-    message: '分辨率 4k 需要时长 8 秒',
+    message: 'Resolution 4k requires a duration of 8 seconds',
   },
 ]
 
@@ -130,9 +130,9 @@ const veoResolutionDurationRules: ParameterCrossFieldConstraint[] = [
  * placement instead.
  */
 const veoInputSlots: InputSlotDescriptor[] = [
-  { role: 'first_frame', required: false, minCount: 0, maxCount: 1, allowedMediaKinds: ['image'], label: '首帧' },
-  { role: 'last_frame', required: false, minCount: 0, maxCount: 1, allowedMediaKinds: ['image'], label: '尾帧' },
-  { role: 'reference_image', required: false, minCount: 0, maxCount: 4, allowedMediaKinds: ['image'], label: '参考图' },
+  { role: 'first_frame', required: false, minCount: 0, maxCount: 1, allowedMediaKinds: ['image'], label: 'First frame' },
+  { role: 'last_frame', required: false, minCount: 0, maxCount: 1, allowedMediaKinds: ['image'], label: 'Last frame' },
+  { role: 'reference_image', required: false, minCount: 0, maxCount: 4, allowedMediaKinds: ['image'], label: 'Reference image' },
 ]
 
 function veoCapabilities(resolution: EnumParameterDescriptor): ModelCapabilities {

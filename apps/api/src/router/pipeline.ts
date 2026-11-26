@@ -19,7 +19,7 @@ import type { Route } from './types'
  * rather than answering 404 directly.
  */
 
-export const notFound = () => fail('NOT_FOUND', '接口不存在', 404)
+export const notFound = () => fail('NOT_FOUND', 'Endpoint not found', 404)
 
 type Context = {
   request: NextRequest
@@ -57,14 +57,14 @@ export async function dispatchGet(request: NextRequest, path: string) {
 }
 
 export async function dispatchPost(request: NextRequest, path: string) {
-  if (!mutationOriginValid(request)) return fail('CSRF_REJECTED', '请求来源无效', 403)
+  if (!mutationOriginValid(request)) return fail('CSRF_REJECTED', 'Invalid request origin', 403)
   const matched = matchRoute(POST_ROUTES, path)
   if (matched) return answer(matched.route, makeContext(request, path, matched.params))
   return (await unmatchedGate(request, path, false)) ?? notFound()
 }
 
 export async function dispatchPatch(request: NextRequest, path: string) {
-  if (!mutationOriginValid(request)) return fail('CSRF_REJECTED', '请求来源无效', 403)
+  if (!mutationOriginValid(request)) return fail('CSRF_REJECTED', 'Invalid request origin', 403)
   const matched = matchRoute(PATCH_ROUTES, path)
   if (matched) return answer(matched.route, makeContext(request, path, matched.params))
   // Every PATCH route is administrative, and so is the 404 for an unknown one.
@@ -76,12 +76,12 @@ export async function dispatchPatch(request: NextRequest, path: string) {
  * gate before 404ing. The 401 and 403 for an unauthorized PUT are observable.
  */
 export async function dispatchPut(request: NextRequest, path: string) {
-  if (!mutationOriginValid(request)) return fail('CSRF_REJECTED', '请求来源无效', 403)
+  if (!mutationOriginValid(request)) return fail('CSRF_REJECTED', 'Invalid request origin', 403)
   return (await unmatchedGate(request, path, true)) ?? notFound()
 }
 
 export async function dispatchDelete(request: NextRequest, path: string) {
-  if (!mutationOriginValid(request)) return fail('CSRF_REJECTED', '请求来源无效', 403)
+  if (!mutationOriginValid(request)) return fail('CSRF_REJECTED', 'Invalid request origin', 403)
   const matched = matchRoute(DELETE_ROUTES, path)
   if (matched) return answer(matched.route, makeContext(request, path, matched.params))
   return (await unmatchedGate(request, path, false)) ?? notFound()

@@ -53,13 +53,13 @@ for (const [canonical, aliases] of Object.entries(PARAM_ALIASES)) {
 }
 
 const CANONICAL_LABELS: Record<string, string> = {
-  durationSeconds: '时长（秒）',
-  aspectRatio: '宽高比',
-  resolution: '分辨率',
-  audio: '生成音频',
-  count: '生成数量',
-  size: '尺寸',
-  quality: '质量',
+  durationSeconds: 'Duration (seconds)',
+  aspectRatio: 'Aspect ratio',
+  resolution: 'Resolution',
+  audio: 'Generate audio',
+  count: 'Generation count',
+  size: 'Size',
+  quality: 'Quality',
 }
 
 /**
@@ -201,8 +201,8 @@ export function descriptorOptions(descriptor: ParameterDescriptor | undefined): 
     case 'boolean': {
       const active = descriptor.defaultValue ?? true
       return [
-        { value: true, label: '开', isDefault: active === true },
-        { value: false, label: '关', isDefault: active === false },
+        { value: true, label: 'On', isDefault: active === true },
+        { value: false, label: 'Off', isDefault: active === false },
       ]
     }
     default:
@@ -435,7 +435,7 @@ export function customSizeViolations(
 ): string[] {
   if (!constraints) return []
   if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
-    return ['请输入有效的宽度和高度']
+    return ['Enter a valid width and height']
   }
   return imageConstraintViolations(constraints, width, height, parameterName).map((issue) => issue.message)
 }
@@ -461,21 +461,21 @@ export function describeConstraints(constraints: ImageSizeConstraints | undefine
     else if (max !== undefined) hints.push(`${label} ≤ ${max}`)
     else if (min !== undefined) hints.push(`${label} ≥ ${min}`)
   }
-  edge('宽度', constraints.minWidth, constraints.maxWidth)
-  edge('高度', constraints.minHeight, constraints.maxHeight)
-  if (constraints.widthMultipleOf) hints.push(`宽为 ${constraints.widthMultipleOf} 的倍数`)
-  if (constraints.heightMultipleOf) hints.push(`高为 ${constraints.heightMultipleOf} 的倍数`)
+  edge('Width', constraints.minWidth, constraints.maxWidth)
+  edge('Height', constraints.minHeight, constraints.maxHeight)
+  if (constraints.widthMultipleOf) hints.push(`Width must be a multiple of ${constraints.widthMultipleOf}`)
+  if (constraints.heightMultipleOf) hints.push(`Height must be a multiple of ${constraints.heightMultipleOf}`)
   if (constraints.minPixels || constraints.maxPixels) {
     const format = (value: number) => value.toLocaleString('en-US')
     if (constraints.minPixels && constraints.maxPixels) {
-      hints.push(`总像素 ${format(constraints.minPixels)}–${format(constraints.maxPixels)}`)
+      hints.push(`Total pixels ${format(constraints.minPixels)}–${format(constraints.maxPixels)}`)
     } else if (constraints.maxPixels) {
-      hints.push(`总像素 ≤ ${format(constraints.maxPixels)}`)
+      hints.push(`Total pixels ≤ ${format(constraints.maxPixels)}`)
     } else if (constraints.minPixels) {
-      hints.push(`总像素 ≥ ${format(constraints.minPixels)}`)
+      hints.push(`Total pixels ≥ ${format(constraints.minPixels)}`)
     }
   }
-  if (constraints.maxAspectRatio) hints.push(`宽高比 ≤ ${constraints.maxAspectRatio}:1`)
+  if (constraints.maxAspectRatio) hints.push(`Aspect ratio ≤ ${constraints.maxAspectRatio}:1`)
   return hints
 }
 

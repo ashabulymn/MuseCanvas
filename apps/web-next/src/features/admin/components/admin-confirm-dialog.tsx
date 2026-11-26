@@ -7,7 +7,7 @@ export interface AdminDeleteConfirmationProps {
   impact: string
   pending: boolean
   error?: string
-  cancelLabel: '取消' | '返回详情'
+  cancelLabel: 'Cancel' | 'Back to details'
   onCancel: () => void
   onConfirm: () => void
 }
@@ -16,15 +16,15 @@ export interface AdminDeleteConfirmationProps {
 export function AdminDeleteConfirmation({ objectName, impact, error }: AdminDeleteConfirmationProps) {
   return (
     <div className="flex min-w-0 flex-col gap-4">
-      <p className="break-words text-sm">删除对象：<strong>{objectName}</strong></p>
+      <p className="break-words text-sm">Delete object: <strong>{objectName}</strong></p>
       <p className="text-sm text-muted-foreground">{impact}</p>
-      {error && <Alert tone="danger" role="alert" title="删除未完成">{error}。可重试或取消。</Alert>}
+      {error && <Alert tone="danger" role="alert" title="Deletion not completed">{error}. You can retry or cancel.</Alert>}
     </div>
   )
 }
 
 export function AdminActionErrors({ errors }: { errors: Record<string, string> }) {
   return Object.entries(errors).map(([id, message]) => (
-    <Alert key={id} tone="danger" role="alert" title="操作未完成">{message}。请修正后重试。</Alert>
+    <Alert key={id} tone="danger" role="alert" title="Action not completed">{message}. Please fix it and retry.</Alert>
   ))
 }

@@ -34,7 +34,7 @@ export function ReferenceImagesTrigger({
   const stagedImages = useGenerateUiStore((s) => s.stagedImages)
   const maxInputs = plan.capacity
   const frameMode = usesFrameSlots(plan)
-  const noun = frameMode ? '输入画面' : '参考图'
+  const noun = frameMode ? 'input frame' : 'reference image'
   const uploading = stagedImages.find((image) => image.status === 'uploading')
   const pending = stagedImages.some((image) => image.status === 'pending')
   const processing = stagedImages.some((image) => image.status === 'processing')
@@ -56,7 +56,7 @@ export function ReferenceImagesTrigger({
   }
 
   const counter = `${count}/${maxInputs}`
-  const status = failed ? '上传失败' : preparing || processing ? '校验中' : uploading ? `上传中 ${uploading.progress}%` : pending ? '排队中' : count > 0 ? '已就绪' : maxInputs === 0 ? '模型不支持' : '未添加'
+  const status = failed ? 'Upload failed' : preparing || processing ? 'Validating' : uploading ? `Uploading ${uploading.progress}%` : pending ? 'Queued' : count > 0 ? 'Ready' : maxInputs === 0 ? 'Not supported by model' : 'Not added'
 
   return (
     <>
@@ -68,7 +68,7 @@ export function ReferenceImagesTrigger({
         onClick={openPanel}
         disabled={disabled}
         aria-label={
-          `${noun}，已添加 ${count} 张，最多 ${maxInputs} 张，${status}`
+          `${noun}, ${count} added, up to ${maxInputs}, ${status}`
         }
         className={cn(
           'border gap-1.5 px-2.5',
@@ -81,7 +81,7 @@ export function ReferenceImagesTrigger({
           />
         }
       >
-        <span>{noun}</span>
+        <span>{noun.charAt(0).toUpperCase() + noun.slice(1)}</span>
         {stagedImages.slice(0, PREVIEW_LIMIT).map((image) => (
           <img
             key={image.localId}

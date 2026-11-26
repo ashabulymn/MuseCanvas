@@ -15,7 +15,7 @@ function FindingItem({ finding, showPath }: { finding: AdminPluginScanFinding; s
     >
       {/* 严重级别以文字呈现，不依赖颜色区分 */}
       <Badge tone={finding.severity === 'error' ? 'danger' : 'warning'} className="shrink-0">
-        {finding.severity === 'error' ? '错误' : '警告'}
+        {finding.severity === 'error' ? 'Error' : 'Warning'}
       </Badge>
       <span className="font-mono">{finding.rule}</span>
       {location && <span className="break-all font-mono tabular-nums">{location}</span>}
@@ -55,11 +55,11 @@ export function PluginFindingList({ findings, emptyText, groupByPath = false }: 
   return (
     <div className="flex flex-col gap-3">
       {groups.map((group) => (
-        <section key={group.path ?? '__package__'} className="flex flex-col gap-1" aria-label={group.path ? `文件 ${group.path} 的扫描发现` : '包级扫描发现'}>
+        <section key={group.path ?? '__package__'} className="flex flex-col gap-1" aria-label={group.path ? `Scan findings for file ${group.path}` : 'Package-level scan findings'}>
           <p className="text-xs font-medium text-foreground">
-            {group.path ? <span className="break-all font-mono">{group.path}</span> : '包级'}
+            {group.path ? <span className="break-all font-mono">{group.path}</span> : 'Package-level'}
             <span className="ml-1 text-muted-foreground">
-              （<span className="font-mono tabular-nums">{group.findings.length}</span> 项）
+               (<span className="font-mono tabular-nums">{group.findings.length}</span> items)
             </span>
           </p>
           <ul className="flex flex-col gap-2">

@@ -48,7 +48,7 @@ export async function postImageEdit(
   signal?: AbortSignal,
 ): Promise<ApiResponse<GenerationJob>> {
   if (!editSelectionIsUsable(request.selection)) {
-    return { success: false, error: { code: 'INVALID_SELECTION', message: '请先在图片上框选要修改的区域' } }
+    return { success: false, error: { code: 'INVALID_SELECTION', message: 'Select the area to edit on the image first' } }
   }
 
   const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
@@ -81,17 +81,17 @@ export async function postImageEdit(
     const res = await fetch(requestUrl, { method: 'POST', body: form, credentials: 'include', signal })
     const text = await res.text()
     if (!text) {
-      return { success: false, error: { code: `HTTP_${res.status}`, message: '上游服务响应异常' } }
+      return { success: false, error: { code: `HTTP_${res.status}`, message: 'Upstream service returned an unexpected response' } }
     }
     try {
       return JSON.parse(text) as ApiResponse<GenerationJob>
     } catch {
-      return { success: false, error: { code: `HTTP_${res.status}`, message: '上游服务响应异常' } }
+      return { success: false, error: { code: `HTTP_${res.status}`, message: 'Upstream service returned an unexpected response' } }
     }
   } catch (err: unknown) {
     if (err instanceof DOMException && err.name === 'AbortError') {
-      return { success: false, error: { code: 'ABORTED', message: '请求已取消' } }
+      return { success: false, error: { code: 'ABORTED', message: 'Request was cancelled' } }
     }
-    return { success: false, error: { code: 'NETWORK_ERROR', message: '网络连接失败' } }
+    return { success: false, error: { code: 'NETWORK_ERROR', message: 'Network connection failed' } }
   }
 }

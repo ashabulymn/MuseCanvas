@@ -90,7 +90,7 @@ export function AssetLightbox({ assets, activeAssetId, onClose, onSelect }: Asse
   const isFirst = index <= 0
   const isLast = index >= assets.length - 1
   const regionEditBlocked = isVideo
-    ? '仅图像作品支持局部修改'
+    ? 'Only image works support local edits'
     : maskCapabilityBlockReason(resolveActiveImageModel(models ?? [], storedImageModelId))
 
   function startRegionEdit(asset: Asset) {
@@ -119,7 +119,7 @@ export function AssetLightbox({ assets, activeAssetId, onClose, onSelect }: Asse
       }`}
     >
       <p className="sr-only" role="status" aria-live="polite">
-        第 {Math.max(index + 1, 1)} / {assets.length} 个作品
+        Work {Math.max(index + 1, 1)} / {assets.length}
       </p>
 
       <IconButton
@@ -127,7 +127,7 @@ export function AssetLightbox({ assets, activeAssetId, onClose, onSelect }: Asse
         size="lg"
         ref={closeButtonRef}
         onClick={onClose}
-        aria-label="关闭预览"
+        aria-label="Close preview"
         className="absolute right-4 top-4 rounded-pill bg-overlay/60 text-foreground-inverse enabled:hover:bg-overlay"
         icon={<X weight="bold" aria-hidden="true" />}
       />
@@ -172,20 +172,20 @@ export function AssetLightbox({ assets, activeAssetId, onClose, onSelect }: Asse
                 icon={<Crop weight="bold" aria-hidden="true" />}
                 onClick={() => startRegionEdit(shown)}
                 disabled={Boolean(regionEditBlocked)}
-                title={regionEditBlocked ?? '到创作台框选要修改的区域'}
+                title={regionEditBlocked ?? 'Go to the console to select the area to edit'}
               >
-                局部修改
+                Local edit
               </Button>
               <a
                 href={assetPlaybackUrl(shown)}
                 download
                 target="_blank"
                 rel="noreferrer"
-                aria-label="下载该作品"
+                aria-label="Download this work"
                 className={buttonVariants({ variant: 'ghost', size: 'sm' })}
               >
                 <Download weight="bold" aria-hidden="true" />
-                下载
+                Download
               </a>
             </div>
           </div>
@@ -214,7 +214,7 @@ function NavButton({ direction, disabled, onNavigate }: NavButtonProps) {
       size="lg"
       onClick={() => onNavigate(direction)}
       disabled={disabled}
-      aria-label={previous ? '上一个作品' : '下一个作品'}
+      aria-label={previous ? 'Previous work' : 'Next work'}
       className={`absolute top-1/2 -translate-y-1/2 rounded-pill bg-overlay/60 text-foreground-inverse enabled:hover:bg-overlay ${
         previous ? 'left-4' : 'right-4'
       }`}

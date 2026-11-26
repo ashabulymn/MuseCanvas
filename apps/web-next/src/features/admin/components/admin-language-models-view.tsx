@@ -43,19 +43,19 @@ import {
 } from '@/shared/components/ui'
 
 const REASONING_EFFORT_OPTIONS: { value: ReasoningEffort; label: string }[] = [
-  { value: 'none', label: '不思考（none）' },
-  { value: 'low', label: '低（low）' },
-  { value: 'medium', label: '中（medium）' },
-  { value: 'high', label: '高（high）' },
-  { value: 'xhigh', label: '极高（xhigh）' },
+  { value: 'none', label: 'No thinking (none)' },
+  { value: 'low', label: 'Low (low)' },
+  { value: 'medium', label: 'Medium (medium)' },
+  { value: 'high', label: 'High (high)' },
+  { value: 'xhigh', label: 'Very high (xhigh)' },
 ]
 
 const REASONING_EFFORT_LABEL: Record<string, string> = {
-  none: '不思考',
-  low: '低',
-  medium: '中',
-  high: '高',
-  xhigh: '极高',
+  none: 'No thinking',
+  low: 'Low',
+  medium: 'Medium',
+  high: 'High',
+  xhigh: 'Very high',
 }
 
 export function AdminLanguageModelsView() {
@@ -83,7 +83,7 @@ export function AdminLanguageModelsView() {
     queryKey: ['admin', 'models'],
     queryFn: async () => {
       const res = await api<AdminModel[]>(API_ENDPOINTS.admin.models)
-      return requireAdminData(res, '加载模型列表失败')
+      return requireAdminData(res, 'Failed to load model list')
     },
   })
 
@@ -91,7 +91,7 @@ export function AdminLanguageModelsView() {
     queryKey: ['admin', 'model-presets'],
     queryFn: async () => {
       const res = await api<ModelPreset[]>(API_ENDPOINTS.admin.modelPresets)
-      return requireAdminData(res, '加载模型预设失败')
+      return requireAdminData(res, 'Failed to load model presets')
     },
   })
 
@@ -105,7 +105,7 @@ export function AdminLanguageModelsView() {
     queryKey: ['admin', 'provider-credentials'],
     queryFn: async () => {
       const res = await api<ProviderCredential[]>(API_ENDPOINTS.admin.providerCredentials)
-      return requireAdminData(res, '加载凭据列表失败')
+      return requireAdminData(res, 'Failed to load credential list')
     },
     // Connectivity tests settle in the worker; poll only while one is open.
     refetchInterval: (query) => (query.state.data?.some((c) => c.lastTestStatus === 'pending') ? 2000 : false),
@@ -134,10 +134,10 @@ export function AdminLanguageModelsView() {
     if (presetUnavailable) {
       setSelectedPresetId('')
       setSelectedCredentialId('')
-      setActionError('所选预设已不在当前可用目录中（插件可能已停用或删除），已清除选择。请重新选择预设。')
+      setActionError('The selected preset is no longer in the current available directory (the plugin may have been disabled or deleted); the selection has been cleared. Please select a preset again.')
     } else if (credentialUnavailable) {
       setSelectedCredentialId('')
-      setActionError('所选凭据已不可用或不再匹配当前预设，已清除选择。请重新选择凭据。')
+      setActionError('The selected credential is no longer available or no longer matches the current preset; the selection has been cleared. Please select a credential again.')
     }
   }, [presetUnavailable, credentialUnavailable])
 
@@ -157,7 +157,7 @@ export function AdminLanguageModelsView() {
         method: 'PATCH',
         body: { enabled },
       })
-      if (!res.success) throw new Error(res.error?.message || '更新状态失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to update status')
       return res.data
     },
     onSuccess: async () => {
@@ -168,7 +168,7 @@ export function AdminLanguageModelsView() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await api(API_ENDPOINTS.admin.model(id), { method: 'DELETE' })
-      if (!res.success) throw new Error(res.error?.message || '删除模型失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to delete model')
       return res.data
     },
     onSuccess: async () => {
@@ -179,10 +179,10 @@ export function AdminLanguageModelsView() {
   const createMutation = useMutation({
     mutationFn: async () => {
       if (concurrencyValidation.value === undefined) throw new Error(concurrencyValidation.error)
-      if (!selectedPreset) throw new Error('请选择语言模型预设')
+      if (!selectedPreset) throw new Error('Please select a language model preset')
       // The API rejects a language model without a credential
       // (LANGUAGE_MODEL_CONFIG_INVALID), so the picker is mandatory here.
-      if (!selectedCredentialId) throw new Error('语言模型必须关联供应商凭据')
+      if (!selectedCredentialId) throw new Error('A language model must be linked to a provider credential')
       const res = await api<AdminModel>(API_ENDPOINTS.admin.models, {
         method: 'POST',
         body: {
@@ -193,7 +193,7 @@ export function AdminLanguageModelsView() {
           enabled: true,
         },
       })
-      if (!res.success) throw new Error(res.error?.message || '创建模型失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to create model')
       return res.data
     },
     onSuccess: () => {
@@ -204,7 +204,7 @@ export function AdminLanguageModelsView() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'models'] })
     },
     onError: (err: Error) => {
-      setActionError(err.message || '创建模型失败')
+      setActionError(err.message || 'Failed to create model')
     },
   })
 
@@ -228,7 +228,7 @@ export function AdminLanguageModelsView() {
     setDeleteTarget(model)
   }
   function toggleModel(model: AdminModel, enabled: boolean) {
-    return actions.run(model.id, model.displayName, () => toggleMutation.mutateAsync({ id: model.id, enabled }), enabled ? '模型已启用' : '模型已停用', 'toggle')
+    return actions.run(model.id, model.displayName, () => toggleMutation.mutateAsync({ id: model.id, enabled }), enabled ? 'Model enabled' : 'Model disabled', 'toggle')
   }
 
   return (
@@ -236,12 +236,12 @@ export function AdminLanguageModelsView() {
       <PageHeader
         className="min-w-0 [overflow-wrap:anywhere]"
         actionsClassName="max-w-full min-w-0 max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_a]:min-h-[var(--control-lg)]"
-        title="语言模型"
-        description="配置语言模型与推理参数。"
+        title="Language model"
+        description="Configure language models and inference parameters."
         actions={
           <>
             <Button onClick={openCreateModal} icon={<Plus weight="bold" aria-hidden="true" />}>
-              创建语言模型
+              Create language model
             </Button>
             <Button
               variant="secondary"
@@ -252,38 +252,38 @@ export function AdminLanguageModelsView() {
               }}
               icon={<RefreshCw weight="bold" aria-hidden="true" className={modelsLoading ? 'motion-spin' : undefined} />}
             >
-              刷新
+              Refresh
             </Button>
           </>
         }
       />
 
-      {modelsData !== undefined && <AdminQueryFeedback error={modelsQueryError} hasData label="语言模型" onRetry={() => refetchModels()} />}
-      <AdminQueryFeedback error={presetsError} hasData={presetsData !== undefined} label="模型预设" onRetry={() => refetchPresets()} />
-      {credentialsData !== undefined && <AdminQueryFeedback error={credentialsQueryError} hasData label="语言模型凭据" onRetry={() => refetchCredentials()} />}
+      {modelsData !== undefined && <AdminQueryFeedback error={modelsQueryError} hasData label="Language model" onRetry={() => refetchModels()} />}
+      <AdminQueryFeedback error={presetsError} hasData={presetsData !== undefined} label="Model presets" onRetry={() => refetchPresets()} />
+      {credentialsData !== undefined && <AdminQueryFeedback error={credentialsQueryError} hasData label="Language model credential" onRetry={() => refetchCredentials()} />}
 
       <AdminActionErrors errors={actions.errors} />
 
-      <div ref={recordListRef} tabIndex={-1} role="region" aria-label="语言模型列表" className="flex min-w-0 flex-col gap-4">
+      <div ref={recordListRef} tabIndex={-1} role="region" aria-label="Language model list" className="flex min-w-0 flex-col gap-4">
       <AdminMobileRecords records={models} loading={modelsLoading}
-        error={modelsError && modelsData === undefined ? modelsQueryError?.message || '加载模型失败' : null}
+        error={modelsError && modelsData === undefined ? modelsQueryError?.message || 'Failed to load models' : null}
         onRetry={() => { void refetchModels() }}
-        empty={<><span>创建模型前请先准备可用预设与凭据。</span><Button variant="secondary" onClick={openCreateModal}>创建模型</Button></>}
+        empty={<><span>Prepare an available preset and credential before creating a model.</span><Button variant="secondary" onClick={openCreateModal}>Create model</Button></>}
         title={(model) => model.displayName}
-        status={(model) => <Badge tone={model.enabled ? 'success' : 'neutral'}>{model.enabled ? '已启用' : '已停用'}</Badge>}
-        summary={(model) => <><span className="font-mono">{model.vendorModelId || model.name || '—'}</span> · 并发 {model.concurrencyLimit}</>}
+        status={(model) => <Badge tone={model.enabled ? 'success' : 'neutral'}>{model.enabled ? 'Enabled' : 'Disabled'}</Badge>}
+        summary={(model) => <><span className="font-mono">{model.vendorModelId || model.name || '—'}</span> · Concurrency {model.concurrencyLimit}</>}
         onDetails={setDetailModel}
       />
 
-      <DataTable cardClassName="hidden md:block" caption="语言模型列表" columns={7}>
+      <DataTable cardClassName="hidden md:block" caption="Language model list" columns={7}>
         <TableHead>
-          <TableHeadCell>模型名称</TableHeadCell>
-          <TableHeadCell>协议</TableHeadCell>
-          <TableHeadCell>推理参数</TableHeadCell>
-          <TableHeadCell>关联凭据</TableHeadCell>
-          <TableHeadCell align="right">并发上限</TableHeadCell>
-          <TableHeadCell>状态</TableHeadCell>
-          <TableHeadCell align="right">操作</TableHeadCell>
+          <TableHeadCell>Model name</TableHeadCell>
+          <TableHeadCell>Protocol</TableHeadCell>
+          <TableHeadCell>Inference parameters</TableHeadCell>
+          <TableHeadCell>Linked credential</TableHeadCell>
+          <TableHeadCell align="right">Concurrency limit</TableHeadCell>
+          <TableHeadCell>Status</TableHeadCell>
+          <TableHeadCell align="right">Actions</TableHeadCell>
         </TableHead>
         <TableBody busy={modelsLoading}>
           {modelsLoading ? (
@@ -306,10 +306,10 @@ export function AdminLanguageModelsView() {
               <EmptyState
                 variant="error"
                 density="compact"
-                objectName="语言模型"
-                title="无法加载语言模型"
-                description={`${modelsQueryError?.message || '加载模型列表时出现问题'}。请检查后端服务状态后重试。`}
-                action={<Button variant="secondary" onClick={() => refetchModels()}>刷新重试</Button>}
+                objectName="Language model"
+                title="Unable to load language models"
+                description={`${modelsQueryError?.message || 'There was a problem loading the model list'}. Please check the backend service status and retry.`}
+                action={<Button variant="secondary" onClick={() => refetchModels()}>Refresh and retry</Button>}
               />
             </TableStateRow>
           ) : models.length > 0 ? (
@@ -326,13 +326,13 @@ export function AdminLanguageModelsView() {
                 </TableCell>
                 <TableCell>
                   <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs">
-                    <dt className="text-muted-foreground">输出上限</dt>
+                    <dt className="text-muted-foreground">Max output tokens</dt>
                     <dd className="text-right font-mono tabular-nums">{m.maxOutputTokens ?? '-'}</dd>
-                    <dt className="text-muted-foreground">思考等级</dt>
+                    <dt className="text-muted-foreground">Reasoning effort</dt>
                     <dd className="text-right">
                       {m.reasoningEffort ? (REASONING_EFFORT_LABEL[m.reasoningEffort] ?? m.reasoningEffort) : '-'}
                     </dd>
-                    <dt className="text-muted-foreground">温度</dt>
+                    <dt className="text-muted-foreground">Temperature</dt>
                     <dd className="text-right font-mono tabular-nums">{m.temperature ?? '-'}</dd>
                   </dl>
                 </TableCell>
@@ -340,7 +340,7 @@ export function AdminLanguageModelsView() {
                   {m.providerCredentialName ? (
                     <span>{m.providerCredentialName}</span>
                   ) : (
-                    <Badge tone="danger">未关联凭据</Badge>
+                    <Badge tone="danger">No credential linked</Badge>
                   )}
                 </TableCell>
                 <TableCell align="right" mono tabular>{m.concurrencyLimit}</TableCell>
@@ -352,9 +352,9 @@ export function AdminLanguageModelsView() {
                       checked={m.enabled}
                       disabled={actions.isToggleBlocked(m.id)}
                       onCheckedChange={(enabled) => toggleModel(m, enabled)}
-                      aria-label={`语言模型 ${m.displayName} 启用状态`}
+                      aria-label={`Language model ${m.displayName} enabled state`}
                     />
-                    <span className="text-xs text-muted-foreground">{m.enabled ? '已启用' : '已停用'}</span>
+                    <span className="text-xs text-muted-foreground">{m.enabled ? 'Enabled' : 'Disabled'}</span>
                   </div>
                 </TableCell>
                 <TableCell align="right">
@@ -363,7 +363,7 @@ export function AdminLanguageModelsView() {
                     size="sm"
                     disabled={actions.isPending(m.id)}
                     onClick={() => requestDeleteModel(m)}
-                    aria-label={`删除语言模型 ${m.displayName}`}
+                    aria-label={`Delete language model ${m.displayName}`}
                     icon={<Trash2 weight="bold" aria-hidden="true" />}
                   />
                 </TableCell>
@@ -374,11 +374,11 @@ export function AdminLanguageModelsView() {
               <EmptyState
                 variant="first-use"
                 density="compact"
-                objectName="语言模型"
-                title="还没有配置语言模型"
-                description="在这里可以创建、启停和删除语言模型；推理参数在创建时选择。请先在下方创建凭据，再点击「创建语言模型」。"
+                objectName="Language model"
+                title="No language models configured yet"
+                description="Create, enable/disable, and delete language models here; inference parameters are chosen at creation. Create a credential below first, then click “Create language model”."
                 action={
-                  <Button onClick={openCreateModal}>创建第一个语言模型</Button>
+                  <Button onClick={openCreateModal}>Create first language model</Button>
                 }
               />
             </TableStateRow>
@@ -391,11 +391,11 @@ export function AdminLanguageModelsView() {
         <SectionHeader
         className="min-w-0 [overflow-wrap:anywhere] max-md:[&_button]:min-h-[var(--control-lg)]"
           id="language-credentials-heading"
-          title="语言模型凭据"
-          description="语言模型使用供应商账号凭据（openai / anthropic + API Key，可填写兼容端点）。图像与视频凭据从插件模板创建，请在「媒体模型」页配置；未经插件模板创建的自定义媒体凭据同样列在此处。"
+          title="Language model credential"
+          description="Language models use provider account credentials (openai / anthropic + API Key; a compatible endpoint can be entered). Image and video credentials are created from plugin templates — configure them on the “Media Models” page; custom media credentials created without a plugin template are also listed here."
           actions={
             <Button variant="secondary" onClick={() => setCredentialDialogOpen(true)} icon={<Plus weight="bold" aria-hidden="true" />}>
-              创建凭据
+              Create credential
             </Button>
           }
         />
@@ -405,8 +405,8 @@ export function AdminLanguageModelsView() {
           isLoading={credentialsLoading}
           variant="language"
           linkedModels={linkedModelsByCredential}
-          emptyText="在这里可以创建、启停、连通测试和删除语言模型凭据。点击右上角「创建凭据」开始。"
-          error={credentialsError && credentialsData === undefined ? credentialsQueryError?.message || '加载凭据列表失败' : null}
+          emptyText="Create, enable/disable, test connectivity for, and delete language model credentials here. Click “Create credential” at the top right to start."
+          error={credentialsError && credentialsData === undefined ? credentialsQueryError?.message || 'Failed to load credential list' : null}
           onRetry={() => refetchCredentials()}
         />
       </section>
@@ -416,12 +416,12 @@ export function AdminLanguageModelsView() {
       <Dialog
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
-        title="创建新语言模型"
+        title="Create new language model"
         panelClassName="max-w-form max-h-[90dvh] max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_button]:min-w-[var(--control-lg)]"
         footer={
           <>
             <Button variant="ghost" onClick={() => setCreateModalOpen(false)}>
-              取消
+              Cancel
             </Button>
             <Button
               type="submit"
@@ -429,26 +429,26 @@ export function AdminLanguageModelsView() {
               disabled={!selectedPreset || selectedCredentialMissing || credentialUnavailable || !!concurrencyValidation.error}
               form="admin-create-language-model-form"
             >
-              创建模型
+              Create model
             </Button>
           </>
         }
       >
         <form id="admin-create-language-model-form" className="flex flex-col gap-6" onSubmit={(event) => { event.preventDefault(); if (!createMutation.isPending && concurrencyValidation.value !== undefined) createMutation.mutate() }}>
           {actionError && (
-            <Alert tone="danger" role="alert" title="无法创建语言模型">
-              {actionError}。请选择预设并关联可用凭据后重试。
+            <Alert tone="danger" role="alert" title="Unable to create language model">
+              {actionError}. Please select a preset, link an available credential, and retry.
             </Alert>
           )}
 
           <FieldGroup>
             <FormField
-              label="选择语言模型预设"
+              label="Select a language model preset"
               required
-              hint={presets.length === 0 ? '当前没有可用的语言模型预设。' : '预设由服务端注册，决定输出上限与温度。'}
+              hint={presets.length === 0 ? 'No language model presets are currently available.' : 'Presets are registered by the server and determine the max output tokens and temperature.'}
             >
               <Select value={selectedPresetId} onChange={(e) => pickPreset(e.target.value)}>
-                <option value="">请选择预设</option>
+                <option value="">Please select a preset</option>
                 {presets.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.displayName} ({p.vendorModelId})
@@ -458,13 +458,13 @@ export function AdminLanguageModelsView() {
             </FormField>
 
             <FormField
-              label="关联供应商凭据"
+              label="Link a provider credential"
               required
               hint={
                 selectedPreset ? (
                   <>
-                    按供应商 <span className="font-mono text-foreground">{selectedPreset.adapter || '-'}</span> 匹配凭据
-                    {matchingCredentials.length === 0 ? '，当前无可用凭据，请在下方「语言模型凭据」区创建凭据' : ''}
+                    Match credentials by provider <span className="font-mono text-foreground">{selectedPreset.adapter || '-'}</span>
+                    {matchingCredentials.length === 0 ? '; no credentials are currently available, please create one in the "Language model credentials" section below' : ''}
                   </>
                 ) : undefined
               }
@@ -474,7 +474,7 @@ export function AdminLanguageModelsView() {
                 onChange={(e) => setSelectedCredentialId(e.target.value)}
                 disabled={!selectedPreset}
               >
-                <option value="">{selectedPreset ? '请选择凭据' : '请先选择预设'}</option>
+                <option value="">{selectedPreset ? 'Please select a credential' : 'Please select a preset first'}</option>
                 {matchingCredentials.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.displayName} ({c.providerId || c.adapter})
@@ -484,14 +484,14 @@ export function AdminLanguageModelsView() {
             </FormField>
 
             <FormField
-              label="思考等级"
+              label="Reasoning effort"
               hint={
                 <>
-                  预设默认值：
+                  Preset default: 
                   {selectedPreset?.reasoningEffort
                     ? REASONING_EFFORT_LABEL[selectedPreset.reasoningEffort] ?? selectedPreset.reasoningEffort
                     : 'medium'}
-                  ；输出上限与温度由预设决定。
+                  ; max output tokens and temperature are determined by the preset.
                 </>
               }
             >
@@ -507,8 +507,8 @@ export function AdminLanguageModelsView() {
               </Select>
             </FormField>
 
-            <FormField label="并发执行限制"
-              error={concurrencyValidation.error} hint="同时运行的该模型任务数量上限，取值范围 1–50。">
+            <FormField label="Concurrency limit"
+              error={concurrencyValidation.error} hint="Maximum number of concurrent jobs for this model, from 1 to 50.">
               <Input
                 type="number"
                 min="1"
@@ -523,19 +523,19 @@ export function AdminLanguageModelsView() {
         </form>
       </Dialog>
 
-      <AdminRecordDetailDialog open={currentDetailModel !== null || deleteTarget !== null} onClose={() => { setDetailModel(null); setDeleteTarget(null) }} title="模型详情"
+      <AdminRecordDetailDialog open={currentDetailModel !== null || deleteTarget !== null} onClose={() => { setDetailModel(null); setDeleteTarget(null) }} title="Model details"
         listFocusRef={recordListRef}
         confirmation={deleteTarget ? {
-          objectName: `${deleteTarget.displayName}（${deleteTarget.id}）`,
-          impact: '删除后无法再通过此模型配置创建新任务；关联凭据及历史任务的处理、引用限制以服务端规则为准。此操作不可撤销。',
+          objectName: `${deleteTarget.displayName} (${deleteTarget.id})`,
+          impact: 'After deletion, no new jobs can be created with this model configuration; linked credentials, history jobs, and reference limits follow server rules. This action cannot be undone.',
           pending: actions.isPending(deleteTarget.id),
           error: actions.errors[deleteTarget.id],
-          cancelLabel: currentDetailModel ? '返回详情' : '取消',
+          cancelLabel: currentDetailModel ? 'Back to details' : 'Cancel',
           onCancel: () => setDeleteTarget(null),
           onConfirm: () => {
             if (!deleteTarget || actions.isPending(deleteTarget.id)) return
             const target = deleteTarget
-            void actions.run(target.id, target.displayName, () => deleteMutation.mutateAsync(target.id), '模型已删除', 'delete')
+            void actions.run(target.id, target.displayName, () => deleteMutation.mutateAsync(target.id), 'Model deleted', 'delete')
               .then(() => {
                 setDeleteTarget((current) => current?.id === target.id ? null : current)
                 setDetailModel((current) => current?.id === target.id ? null : current)
@@ -543,19 +543,19 @@ export function AdminLanguageModelsView() {
           },
         } : undefined}
         actions={currentDetailModel && <><Switch checked={currentDetailModel.enabled} disabled={actions.isToggleBlocked(currentDetailModel.id)}
-          onCheckedChange={(enabled) => toggleModel(currentDetailModel, enabled)} aria-label={`模型 ${currentDetailModel.displayName} 启用状态`} /><span>启用模型</span></>}
-        danger={currentDetailModel && <Button variant="danger-ghost" disabled={actions.isPending(currentDetailModel.id)} onClick={() => requestDeleteModel(currentDetailModel)}>删除模型</Button>}>
+          onCheckedChange={(enabled) => toggleModel(currentDetailModel, enabled)} aria-label={`Model ${currentDetailModel.displayName} enabled state`} /><span>Enable model</span></>}
+        danger={currentDetailModel && <Button variant="danger-ghost" disabled={actions.isPending(currentDetailModel.id)} onClick={() => requestDeleteModel(currentDetailModel)}>Delete model</Button>}>
         {currentDetailModel && <>
           <AdminRecordFields fields={[
-            { label: '模型名称', value: currentDetailModel.displayName },
-            { label: '供应商模型标识', value: <span className="font-mono">{currentDetailModel.vendorModelId || currentDetailModel.name || '—'}</span> },
-            { label: '协议', value: currentDetailModel.languageProtocol || '—' },
-            { label: '输出上限', value: currentDetailModel.maxOutputTokens ?? '—' },
-            { label: '思考等级', value: currentDetailModel.reasoningEffort ? REASONING_EFFORT_LABEL[currentDetailModel.reasoningEffort] ?? currentDetailModel.reasoningEffort : '—' },
-            { label: '温度', value: currentDetailModel.temperature ?? '—' },
-            { label: '关联凭据', value: currentDetailModel.providerCredentialName || '未关联凭据' },
-            { label: '并发上限', value: currentDetailModel.concurrencyLimit },
-            { label: '状态', value: currentDetailModel.enabled ? '已启用' : '已停用' },
+            { label: 'Model name', value: currentDetailModel.displayName },
+            { label: 'Provider model ID', value: <span className="font-mono">{currentDetailModel.vendorModelId || currentDetailModel.name || '—'}</span> },
+            { label: 'Protocol', value: currentDetailModel.languageProtocol || '—' },
+            { label: 'Max output tokens', value: currentDetailModel.maxOutputTokens ?? '—' },
+            { label: 'Reasoning effort', value: currentDetailModel.reasoningEffort ? REASONING_EFFORT_LABEL[currentDetailModel.reasoningEffort] ?? currentDetailModel.reasoningEffort : '—' },
+            { label: 'Temperature', value: currentDetailModel.temperature ?? '—' },
+            { label: 'Linked credential', value: currentDetailModel.providerCredentialName || 'No credential linked' },
+            { label: 'Concurrency limit', value: currentDetailModel.concurrencyLimit },
+            { label: 'Status', value: currentDetailModel.enabled ? 'Enabled' : 'Disabled' },
           ]} />
           {actions.errors[currentDetailModel.id] && <Alert tone="danger" role="alert">{actions.errors[currentDetailModel.id]}</Alert>}
         </>}

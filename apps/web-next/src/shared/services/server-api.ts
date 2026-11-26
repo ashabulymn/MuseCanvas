@@ -66,14 +66,14 @@ export async function serverApi<T>(
     } catch {
       return {
         success: false,
-        error: { code: res.status === 401 ? 'UNAUTHORIZED' : 'UPSTREAM_UNAVAILABLE', message: `上游服务响应异常 (${res.status})` },
+        error: { code: res.status === 401 ? 'UNAUTHORIZED' : 'UPSTREAM_UNAVAILABLE', message: `Upstream service returned an unexpected response (${res.status})` },
       }
     }
     return payload
   } catch {
     return {
       success: false,
-      error: { code: 'UPSTREAM_UNAVAILABLE', message: '无法连接后端服务，请稍后重试' },
+      error: { code: 'UPSTREAM_UNAVAILABLE', message: 'Could not connect to the backend service. Please try again later.' },
     }
   }
 }

@@ -53,9 +53,9 @@ import { AssetLightbox } from './asset-lightbox'
 /** Segmented control values, mirroring `LibraryFilterKind`. Fed to `Tabs`, whose
  *  `tablist` / `tab` / `tabpanel` semantics replace the old `aria-pressed` row. */
 const FILTER_TABS: TabItem[] = [
-  { id: 'all', label: '全部' },
-  { id: 'image', label: '图像' },
-  { id: 'video', label: '视频' },
+  { id: 'all', label: 'All' },
+  { id: 'image', label: 'Images' },
+  { id: 'video', label: 'Videos' },
 ]
 
 /** Column count is a preference rather than a filter, so it stays a native `Select`. */
@@ -88,7 +88,7 @@ function gridClass(columnCount: 2 | 3 | 4 | 6): string {
  */
 function isPermissionFailure(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? '')
-  return /无权|未登录|无权限|FORBIDDEN|UNAUTHORIZED/i.test(message)
+  return /无权|未登录|无权限|FORBIDDEN|UNAUTHORIZED|not logged in|please log in|permission|unauthorized|forbidden|not authorized|access denied/i.test(message)
 }
 
 export function LibraryView() {
@@ -220,10 +220,10 @@ export function LibraryView() {
     try {
       await batchDeleteMutation.mutateAsync(selectedAssetIds)
       clearSelectedAssets()
-      toast.push({ title: `已删除 ${count} 个作品`, variant: 'success' })
+      toast.push({ title: `Deleted ${count} works`, variant: 'success' })
     } catch {
       // Keep the selection so a retry does not mean re-picking every tile.
-      toast.push({ title: '删除失败', description: '网络异常，请稍后重试。', variant: 'error' })
+      toast.push({ title: 'Delete failed', description: 'Network error. Please try again later.', variant: 'error' })
     } finally {
       setBatchDeleteOpen(false)
     }
@@ -235,11 +235,11 @@ export function LibraryView() {
     // The dialog stays open while the request runs so its loading state is seen.
     deleteMutation.mutate(assetId, {
       onSettled: () => setDeleteTargetId(null),
-      onSuccess: () => toast.push({ title: '作品已删除', variant: 'success' }),
+      onSuccess: () => toast.push({ title: 'Work deleted', variant: 'success' }),
       onError: (err: Error) =>
         toast.push({
-          title: '删除失败',
-          description: `${err.message}。请刷新后重试。`,
+          title: 'Delete failed',
+          description: `${err.message}. Refresh and try again.`,
           variant: 'error',
         }),
     })
@@ -318,25 +318,25 @@ export function LibraryView() {
           {Array.from({ length: SKELETON_TILES }, (_, index) => (
             <SkeletonTile key={index} />
           ))}
-          <p className="sr-only">正在加载作品…</p>
+          <p className="sr-only">Loading works…</p>
         </div>
       ) : isError && !data ? (
         isPermissionFailure(error) ? (
           <EmptyState
             variant="no-permission"
-            objectName="作品图库"
-            description="登录状态已失效，或你没有访问该作品库的权限。请重新登录后再试。"
+            objectName="the work gallery"
+            description="Your login has expired, or you do not have permission to access this gallery. Log in again and try."
             action={
               <Button variant="secondary" onClick={() => router.push('/login')}>
-                重新登录
+                Log in again
               </Button>
             }
           />
         ) : (
           <EmptyState
             variant="error"
-            objectName="作品图库"
-            description={`无法获取作品列表：${error instanceof Error ? error.message : '网络或服务端错误'}。请检查网络后刷新重试。`}
+            objectName="the work gallery"
+            description={`Could not load the work list: ${error instanceof Error ? error.message : 'Network or server error'}. Check your connection, then refresh and try again.`}
             onAction={() => void refetch()}
           />
         )
@@ -376,7 +376,7 @@ export function LibraryView() {
                   <Checkbox
                     checked={selected}
                     onCheckedChange={() => toggleSelectAsset(asset.id)}
-                    aria-label={selected ? '取消选择该作品' : '选择该作品'}
+                    aria-label={selected ? 'Deselect this work' : 'Select this work'}
                   />
                 </div>
 
@@ -387,7 +387,7 @@ export function LibraryView() {
                     only — no `border-t`. */}
                 <div className="media-scrim media-tile-actions motion-hover-fade absolute inset-0 flex flex-col justify-end gap-3 p-3 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100">
                   <p className="line-clamp-2 text-xs text-foreground-inverse">
-                    {asset.prompt || '无提示词'}
+                    {asset.prompt || 'No prompt'}
                   </p>
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-mono text-xs tabular-nums text-foreground-inverse">
@@ -398,7 +398,7 @@ export function LibraryView() {
                         variant="ghost"
                         size="sm"
                         onClick={() => openPreview(asset.id)}
-                        aria-label="放大查看该作品"
+                        aria-label="Enlarge this work"
                         className="bg-overlay/40 text-foreground-inverse enabled:hover:bg-overlay/60"
                         icon={<ZoomIn weight="bold" aria-hidden="true" />}
                       />
@@ -409,7 +409,7 @@ export function LibraryView() {
                         download
                         target="_blank"
                         rel="noreferrer"
-                        aria-label="下载该作品"
+                        aria-label="Download this work"
                         className={`inline-flex ${controlSquare.sm} shrink-0 items-center justify-center rounded-control bg-overlay/40 text-foreground-inverse transition-colors hover:bg-overlay/60`}
                       >
                         <Download weight="bold" aria-hidden="true" className={iconSize.sm} />
@@ -418,7 +418,7 @@ export function LibraryView() {
                         variant="ghost"
                         size="sm"
                         onClick={() => setDeleteTargetId(asset.id)}
-                        aria-label="删除该作品"
+                        aria-label="Delete this work"
                         className="bg-overlay/40 text-danger enabled:hover:bg-overlay/60"
                         icon={<Trash2 weight="bold" aria-hidden="true" />}
                       />
@@ -434,22 +434,22 @@ export function LibraryView() {
            empty library. The wording follows whichever conditions are on. */
         <EmptyState
           variant="no-results"
-          objectName="作品"
+          objectName="works"
           keyword={appliedQuery || undefined}
-          title={appliedQuery ? undefined : '没有符合当前筛选条件的作品'}
+          title={appliedQuery ? undefined : 'No works match the current filters'}
           description={
             appliedQuery
               ? undefined
-              : '尝试调整或清除筛选条件以查看更多内容。'
+              : 'Try adjusting or clearing the filters to see more.'
           }
           onAction={clearFilters}
         />
       ) : (
         <EmptyState
           variant="first-use"
-          objectName="作品"
-          title="欢迎使用作品图库"
-          description="在创作台生成图像或视频后，所有作品都会归档在这里。点击下方按钮开始。"
+          objectName="works"
+          title="Welcome to the work gallery"
+          description="After you generate images or videos at the console, all works are archived here. Click the button below to start."
           onAction={() => router.push(GENERATE_ROUTE)}
         />
       )}
@@ -467,10 +467,10 @@ export function LibraryView() {
             loading={isFetchingNextPage}
             icon={<RefreshCw weight="bold" aria-hidden="true" />}
           >
-            加载更多作品
+            Load more works
           </Button>
           <p className="font-mono text-xs tabular-nums text-muted-foreground">
-            已显示 {assets.length} / {total}
+            Showing {assets.length} / {total}
           </p>
         </div>
       ) : null}
@@ -483,8 +483,8 @@ export function LibraryView() {
     <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-4 sm:p-6 lg:p-8">
       <div className="mx-auto flex w-full max-w-content flex-1 flex-col gap-6">
         <PageHeader
-          title="作品图库"
-          description="浏览、下载与管理您所生成的所有图片与视频作品。"
+          title="Work gallery"
+          description="Browse, download, and manage all the images and videos you have generated."
           actions={
             <>
               {isAnySelected ? (
@@ -494,14 +494,14 @@ export function LibraryView() {
                   icon={<Trash2 weight="bold" aria-hidden="true" />}
                   onClick={() => setBatchDeleteOpen(true)}
                 >
-                  删除选中 ({selectedAssetIds.length})
+                  Delete selected ({selectedAssetIds.length})
                 </Button>
               ) : null}
               {visibleAssets.length > 0 ? (
                 <Checkbox
                   checked={isAllSelected}
                   indeterminate={isAnySelected && !isAllSelected}
-                  label={isAllSelected ? '取消全选' : '全选'}
+                  label={isAllSelected ? 'Deselect all' : 'Select all'}
                   onCheckedChange={(checked) =>
                     checked
                       ? selectAllAssets(visibleAssets.map((asset) => asset.id))
@@ -516,7 +516,7 @@ export function LibraryView() {
                 loading={isFetching && !isFetchingNextPage}
                 onClick={() => void refetch()}
               >
-                刷新
+                Refresh
               </Button>
             </>
           }
@@ -535,8 +535,8 @@ export function LibraryView() {
               />
               <Input
                 type="search"
-                aria-label="按提示词搜索作品"
-                placeholder="搜索提示词"
+                aria-label="Search works by prompt"
+                placeholder="Search prompts"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 className="pl-10"
@@ -544,20 +544,20 @@ export function LibraryView() {
             </div>
 
             <Select
-              aria-label="每行显示列数"
+              aria-label="Columns per row"
               className="w-32"
               value={String(columnCount)}
               onChange={(event) => setColumnCount(Number(event.target.value) as 2 | 3 | 4 | 6)}
             >
               {COLUMN_OPTIONS.map((cols) => (
                 <option key={cols} value={String(cols)}>
-                  {cols} 列
+                  {cols} columns
                 </option>
               ))}
             </Select>
 
             <p role="status" className="text-sm tabular-nums text-muted-foreground">
-              {appliedQuery ? `找到 ${total} 个作品` : `共 ${total} 个作品`}
+              {appliedQuery ? `Found ${total} works` : `${total} works in total`}
             </p>
           </div>
 
@@ -566,12 +566,12 @@ export function LibraryView() {
               {appliedQuery ? (
                 <span className="inline-flex items-center gap-1">
                   <Badge tone="neutral" icon={<SearchIcon weight="bold" aria-hidden="true" />}>
-                    关键词：{appliedQuery}
+                    Keyword: {appliedQuery}
                   </Badge>
                   <IconButton
                     variant="ghost"
                     size="sm"
-                    aria-label="清除关键词筛选"
+                    aria-label="Clear keyword filter"
                     onClick={clearQuery}
                     className={`${controlSquare.xs} min-h-[var(--control-xs)]`}
                     icon={<X weight="bold" aria-hidden="true" />}
@@ -581,12 +581,12 @@ export function LibraryView() {
               {filterKind !== 'all' ? (
                 <span className="inline-flex items-center gap-1">
                   <Badge tone="neutral">
-                    类型：{FILTER_TABS.find((tab) => tab.id === filterKind)?.label ?? filterKind}
+                    Type: {FILTER_TABS.find((tab) => tab.id === filterKind)?.label ?? filterKind}
                   </Badge>
                   <IconButton
                     variant="ghost"
                     size="sm"
-                    aria-label="清除作品类型筛选"
+                    aria-label="Clear work type filter"
                     onClick={() => setFilterKind('all')}
                     className={`${controlSquare.xs} min-h-[var(--control-xs)]`}
                     icon={<X weight="bold" aria-hidden="true" />}
@@ -594,7 +594,7 @@ export function LibraryView() {
                 </span>
               ) : null}
               <Button variant="ghost" size="sm" onClick={clearFilters}>
-                清除筛选
+                Clear filters
               </Button>
             </div>
           ) : null}
@@ -605,14 +605,14 @@ export function LibraryView() {
         {isError && data ? (
           <Alert
             tone="danger"
-            title="图库刷新失败"
+            title="Gallery refresh failed"
             action={
               <Button variant="secondary" size="sm" loading={isFetching} onClick={() => void refetch()}>
-                刷新重试
+                Retry refresh
               </Button>
             }
           >
-            当前显示的是已加载内容：{error instanceof Error ? error.message : '网络或服务端错误'}。请稍后重试刷新。
+            Showing the content already loaded: {error instanceof Error ? error.message : 'Network or server error'}. Try refreshing again later.
           </Alert>
         ) : null}
 
@@ -626,7 +626,7 @@ export function LibraryView() {
           onValueChange={(id) => setFilterKind(id as LibraryFilterKind)}
           lazy
           className="flex-1"
-          aria-label="作品类型筛选"
+          aria-label="Work type filter"
         />
       </div>
 
@@ -634,24 +634,24 @@ export function LibraryView() {
         open={batchDeleteOpen}
         onClose={() => setBatchDeleteOpen(false)}
         size="narrow"
-        title={`确定要删除选中的 ${selectedAssetIds.length} 个作品吗？`}
+        title={`Delete the ${selectedAssetIds.length} selected works?`}
         footer={
           <>
             <Button variant="secondary" onClick={() => setBatchDeleteOpen(false)}>
-              取消
+              Cancel
             </Button>
             <Button
               variant="danger"
               loading={batchDeleteMutation.isPending}
               onClick={() => void confirmBatchDelete()}
             >
-              删除作品
+              Delete works
             </Button>
           </>
         }
       >
         <p className="text-sm text-muted-foreground">
-          这 {selectedAssetIds.length} 个作品将从作品库中永久删除，对应的生成记录不受影响。此操作无法撤销。
+          These {selectedAssetIds.length} works will be permanently deleted from the library. The related generation records are not affected. This cannot be undone.
         </p>
       </Dialog>
 
@@ -659,20 +659,20 @@ export function LibraryView() {
         open={deleteTarget !== null}
         onClose={() => setDeleteTargetId(null)}
         size="narrow"
-        title="确定要删除这个作品吗？"
+        title="Delete this work?"
         footer={
           <>
             <Button variant="secondary" onClick={() => setDeleteTargetId(null)}>
-              取消
+              Cancel
             </Button>
             <Button variant="danger" loading={deleteMutation.isPending} onClick={confirmSingleDelete}>
-              删除作品
+              Delete work
             </Button>
           </>
         }
       >
         <p className="text-sm text-foreground">
-          “{deleteTarget?.prompt?.trim() || '（无提示词）'}” 将从作品库中永久删除。此操作无法撤销。
+          “{deleteTarget?.prompt?.trim() || '(No prompt)'}” will be permanently deleted from the library. This cannot be undone.
         </p>
       </Dialog>
 

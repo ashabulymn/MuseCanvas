@@ -170,8 +170,8 @@ export function GenerateConsole() {
   const inputNoun = inputPlan.slots.some(
     (slot) => slot.role === 'first_frame' || slot.role === 'last_frame',
   )
-    ? '输入画面'
-    : '参考图'
+    ? 'input frames'
+    : 'reference images'
 
   /**
    * `?tab=` is a one-shot deep link into the mode, not a record of it: the
@@ -261,41 +261,41 @@ export function GenerateConsole() {
   // user can read instead of a control that simply refuses to respond.
   function editSubmitBlocker(): string | null {
     if (!editing) return null
-    if (!prompt.trim()) return '请输入修改指令'
+    if (!prompt.trim()) return 'Enter the edit instruction'
     if (!maskCapable) return maskBlockedReason
-    if (!editSelectionReady) return '请先在图片上框选要修改的区域'
+    if (!editSelectionReady) return 'Select the area to edit on the image first'
     if (editParameterProblems.length > 0) return editParameterProblems[0].message
-    if (submissionBusy) return '正在提交任务，请稍候'
+    if (submissionBusy) return 'Submitting the task, please wait'
     return null
   }
   const editBlockedReason = editSubmitBlocker()
 
   function generateSubmitBlocker(): string | null {
-    if (modelsLoading) return '正在加载模型，请稍候'
-    if (modelsQueryFailed && !models) return '模型列表加载失败，请重试'
+    if (modelsLoading) return 'Loading models, please wait'
+    if (modelsQueryFailed && !models) return 'The model list failed to load. Please try again.'
     if (!currentModel) {
       return isVideoTab
-        ? '尚未配置可用的视频模型，请先启用视频模型'
-        : '尚未配置可用的图像模型，请联系管理员'
+        ? 'No video model is configured yet. Enable a video model first.'
+        : 'No image model is configured yet. Contact an administrator.'
     }
-    if (!prompt.trim()) return '请输入提示词后即可生成'
-    if (createJobMutation.isPending) return '正在创建任务，请稍候'
-    if (submissionBusy) return '正在提交任务，请稍候'
-    if (isPreparingReferences) return `正在校验${inputNoun}，请完成后再生成`
-    if (isReferenceUploadBusy) return `${inputNoun}正在上传，请等待完成后再生成`
-    if (hasReferenceUploadError) return `存在上传失败的${inputNoun}，请重试或删除`
+    if (!prompt.trim()) return 'Enter a prompt to generate'
+    if (createJobMutation.isPending) return 'Creating the task, please wait'
+    if (submissionBusy) return 'Submitting the task, please wait'
+    if (isPreparingReferences) return `Validating ${inputNoun} — finish before generating`
+    if (isReferenceUploadBusy) return `${inputNoun} are uploading — wait until they finish before generating`
+    if (hasReferenceUploadError) return `Some ${inputNoun} failed to upload — retry or remove them`
     if (referencePlanBlocker) return referencePlanBlocker
     if (parameterProblems.length > 0) {
       const [problem] = parameterProblems
       const descriptor = currentModel?.parameters?.find((entry) => entry.name === problem.parameter)
       const label = descriptor ? descriptorLabel(descriptor, currentModel) : ''
-      return label ? `${label}：${problem.message}` : problem.message
+      return label ? `${label}: ${problem.message}` : problem.message
     }
     return null
   }
   const submitBlockedReason = editing
     ? editMutation.isPending
-      ? '正在提交局部修改，请稍候'
+      ? 'Submitting the local edit, please wait'
       : editBlockedReason
     : generateSubmitBlocker()
 
@@ -306,7 +306,7 @@ export function GenerateConsole() {
     if (mutation.isPending) return
     setActionErrors((current) => { const next = { ...current }; delete next[jobId]; return next })
     mutation.mutate(jobId, {
-      onError: (error) => setActionErrors((current) => ({ ...current, [jobId]: `${kind === 'cancel' ? '取消' : '重试'}失败：${error.message}` })),
+      onError: (error) => setActionErrors((current) => ({ ...current, [jobId]: `${kind === 'cancel' ? 'Cancel' : 'Retry'} failed: ${error.message}` })),
     })
   }
 
@@ -379,23 +379,23 @@ export function GenerateConsole() {
     setErrorMessage('')
     setReuseJob(null)
     setComposerExpanded(true)
-    void cleanup.catch((error: unknown) => setErrorMessage(`草稿已载入，但旧输入清理失败：${error instanceof Error ? error.message : '请稍后重试'}`))
+    void cleanup.catch((error: unknown) => setErrorMessage(`Draft loaded, but clearing the old inputs failed: ${error instanceof Error ? error.message : 'Please try again later'}`))
   }
 
   async function handleSubmitEdit() {
     if (!editTarget || !activeModelId) {
-      setErrorMessage('请选择生成模型')
+      setErrorMessage('Select a generation model')
       return
     }
     // Read here rather than from the derived flag, so the narrowing below is the
     // same predicate the button used and cannot have drifted from it.
     const selection = editTarget.selection
     if (!editSelectionIsUsable(selection)) {
-      setErrorMessage('请先在图片上框选要修改的区域')
+      setErrorMessage('Select the area to edit on the image first')
       return
     }
     if (!maskCapable) {
-      setErrorMessage(maskBlockedReason ?? '当前模型不支持局部修改')
+      setErrorMessage(maskBlockedReason ?? 'This model does not support local edits')
       return
     }
     if (editParameterProblems.length > 0) {
@@ -403,7 +403,7 @@ export function GenerateConsole() {
       const parameters = editModelContract?.parameters ?? []
       const descriptor = parameters.find((entry) => entry.name === problem.parameter)
       const label = descriptor ? descriptorLabel(descriptor, editModelContract) : ''
-      setErrorMessage(label ? `${label}：${problem.message}` : problem.message)
+      setErrorMessage(label ? `${label}: ${problem.message}` : problem.message)
       return
     }
     setErrorMessage('')
@@ -422,7 +422,7 @@ export function GenerateConsole() {
         parameters: buildMediaParameters(editModelContract, params),
       })
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : '创建局部修改任务失败')
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to create the local edit task')
     }
   }
 
@@ -445,15 +445,15 @@ export function GenerateConsole() {
     }
     const video = activeTab === 'video'
     if (!prompt.trim()) {
-      setErrorMessage(video ? '请输入视频生成提示词' : '请输入作图提示词')
+      setErrorMessage(video ? 'Enter a video generation prompt' : 'Enter an image prompt')
       return
     }
     if (!activeModelId) {
-      setErrorMessage(video ? '请选择视频生成模型' : '请选择生成模型')
+      setErrorMessage(video ? 'Select a video generation model' : 'Select a generation model')
       return
     }
     if (video && videoModels.length === 0) {
-      setErrorMessage('尚未配置可用的视频模型，请先在媒体模型中启用 Seedance 或 Veo 预设')
+      setErrorMessage('No video model is configured yet. Enable the Seedance or Veo preset under Media models first.')
       return
     }
 
@@ -462,20 +462,20 @@ export function GenerateConsole() {
     const inputState = useGenerateUiStore.getState()
     const stagedImages = inputState.stagedImages
     if (inputState.isPreparingReferences) {
-      setErrorMessage(`正在校验${inputNoun}，请完成后再生成`)
+      setErrorMessage(`Validating ${inputNoun} — finish before generating`)
       return
     }
     if (stagedImages.some((image) => image.status !== 'ready' && image.status !== 'error')) {
-      setErrorMessage(`${inputNoun}正在上传，请等待完成后再生成`)
+      setErrorMessage(`${inputNoun} are uploading — wait until they finish before generating`)
       return
     }
     if (stagedImages.some((image) => image.status === 'error')) {
-      setErrorMessage(`存在上传失败的${inputNoun}，请重试或删除`)
+      setErrorMessage(`Some ${inputNoun} failed to upload — retry or remove them`)
       return
     }
     const inputs = buildGenerationInputs(stagedImages)
     if (stagedImages.length > 0 && inputs.length === 0) {
-      setErrorMessage(`没有可用的${inputNoun}，请重新上传`)
+      setErrorMessage(`No usable ${inputNoun} — please re-upload`)
       return
     }
     // Only validate the input capability when images are actually staged: a model
@@ -497,7 +497,7 @@ export function GenerateConsole() {
       const [problem] = parameterProblems
       const descriptor = currentModel?.parameters?.find((entry) => entry.name === problem.parameter)
       const label = descriptor ? descriptorLabel(descriptor, currentModel) : ''
-      setErrorMessage(label ? `${label}：${problem.message}` : problem.message)
+      setErrorMessage(label ? `${label}: ${problem.message}` : problem.message)
       return
     }
     setErrorMessage('')
@@ -518,7 +518,7 @@ export function GenerateConsole() {
       // The uploads are now attached to the job; only release local object URLs.
       await clearReferenceImages({ deleteRemote: false })
     } catch (err: any) {
-      setErrorMessage(err.message || '创建生成任务失败')
+      setErrorMessage(err.message || 'Failed to create the generation task')
     }
   }
 
@@ -529,12 +529,12 @@ export function GenerateConsole() {
     }
   }
 
-  const modelStatus = modelsLoading ? '正在加载模型列表…'
-    : modelsQueryFailed ? models ? '模型列表刷新失败，仍可使用已加载模型。' : `模型列表加载失败：${modelsQueryError instanceof Error ? modelsQueryError.message : '请重试'}`
-      : !currentModel ? `尚未配置可用的${isVideoTab ? '视频' : '图像'}模型。` : null
+  const modelStatus = modelsLoading ? 'Loading model list…'
+    : modelsQueryFailed ? models ? 'The model list failed to refresh, but the loaded models are still usable.' : `Model list failed to load: ${modelsQueryError instanceof Error ? modelsQueryError.message : 'Please try again'}`
+      : !currentModel ? `No ${isVideoTab ? 'video' : 'image'} model is configured yet.` : null
 
   return (
-    <div role="region" aria-label="创作台" className="flex h-full min-h-0 w-full flex-1 flex-col gap-3 overflow-hidden p-3 md:p-5">
+    <div role="region" aria-label="Creation console" className="flex h-full min-h-0 w-full flex-1 flex-col gap-3 overflow-hidden p-3 md:p-5">
       <GenerationStage
         tab={activeTab} job={selectedJob} loading={jobsLoading} queryFailed={jobsError}
         onReload={() => void refetchJobs()} activeCount={jobs.filter(isJobActive).length} onOpenTasks={() => setTasksOpen(true)}
@@ -557,21 +557,21 @@ export function GenerateConsole() {
         inputPlan={inputPlan} blockedReason={submitBlockedReason} error={errorMessage} notice={draftNotice} onSubmit={() => void handleGenerate()}
       />
       <GenerationTaskPanel {...boardProps} open={tasksOpen} onClose={() => setTasksOpen(false)} busy={submissionBusy} actionErrors={actionErrors} />
-      <Dialog open={Boolean(reuseConfig) && !submissionBusy} onClose={() => setReuseJob(null)} title="使用这次配置" size="wide" description="这将替换当前提示词，并退出局部修改、清理暂存输入。不会自动提交任务。" footer={<><Button variant="secondary" onClick={() => setReuseJob(null)}>保留当前草稿</Button><Button variant="primary" disabled={submissionBusy || reuseBlocked} onClick={confirmReuse}>{reuseConfig?.model ? '确认载入配置' : '仅使用提示词'}</Button></>}>
+      <Dialog open={Boolean(reuseConfig) && !submissionBusy} onClose={() => setReuseJob(null)} title="Use this configuration" size="wide" description="This will replace the current prompt, exit local edit, and clear staged inputs. It will not submit the task automatically." footer={<><Button variant="secondary" onClick={() => setReuseJob(null)}>Keep current draft</Button><Button variant="primary" disabled={submissionBusy || reuseBlocked} onClick={confirmReuse}>{reuseConfig?.model ? 'Confirm and load configuration' : 'Use prompt only'}</Button></>}>
         {reuseConfig && <div className="flex flex-col gap-3">
           <p className="whitespace-pre-wrap break-words text-sm text-foreground">{reuseConfig.prompt}</p>
-          <p className="text-xs text-muted-foreground">{reuseConfig.model ? `模型：${reuseConfig.model.displayName}` : '历史模型不可用：仅替换文字，不更改当前模式、模型或参数。请自行选择模型。'}</p>
+          <p className="text-xs text-muted-foreground">{reuseConfig.model ? `Model: ${reuseConfig.model.displayName}` : 'The historical model is unavailable: only the text is replaced — the mode, model, and parameters stay unchanged. Choose a model yourself.'}</p>
           {reuseConfig.notices.map((notice) => <Alert key={notice} tone="warning">{notice}</Alert>)}
-          {reuseBlocked && <p role="status" className="text-xs text-muted-foreground">输入图片上传或校验中，请等待完成。</p>}
+          {reuseBlocked && <p role="status" className="text-xs text-muted-foreground">Input images are uploading or being validated — please wait until they finish.</p>}
         </div>}
       </Dialog>
-      <Dialog open={exampleText !== null && !submissionBusy} onClose={() => setExampleText(null)} title="替换当前提示词？" description="示例只替换文字，模型、参数和参考图保持不变；不会自动提交。" footer={<><Button variant="secondary" onClick={() => setExampleText(null)}>保留草稿</Button><Button variant="primary" disabled={submissionBusy} onClick={() => { if (exampleText !== null && !useGenerateUiStore.getState().isGenerating) { setPrompt(exampleText); setExampleText(null); setComposerExpanded(true) } }}>使用示例</Button></>}>
+      <Dialog open={exampleText !== null && !submissionBusy} onClose={() => setExampleText(null)} title="Replace the current prompt?" description="The example only replaces the text — the model, parameters, and reference images stay unchanged. It will not submit automatically." footer={<><Button variant="secondary" onClick={() => setExampleText(null)}>Keep draft</Button><Button variant="primary" disabled={submissionBusy} onClick={() => { if (exampleText !== null && !useGenerateUiStore.getState().isGenerating) { setPrompt(exampleText); setExampleText(null); setComposerExpanded(true) } }}>Use example</Button></>}>
         <p className="whitespace-pre-wrap break-words text-sm">{exampleText}</p>
       </Dialog>
-      <Dialog open={editOutput !== null && !submissionBusy} onClose={() => setEditOutput(null)} title="准备局部修改" size="wide" description="原草稿文字已保留在下方。请描述框选区域要改什么；确认后才更新草稿，不会提交。" footer={<><Button variant="secondary" onClick={() => setEditOutput(null)}>保留原草稿</Button><Button variant="primary" disabled={submissionBusy || !maskCapable} onClick={confirmRegionEdit}>确认指令并进入</Button></>}>
-        <label htmlFor="edit-instruction-draft" className="text-xs text-muted-foreground">修改指令（例如：将框选区域改为红色风衣，其余保持不变）</label>
+      <Dialog open={editOutput !== null && !submissionBusy} onClose={() => setEditOutput(null)} title="Prepare a local edit" size="wide" description="The original draft text is kept below. Describe what to change in the selected area; confirming only updates the draft and does not submit." footer={<><Button variant="secondary" onClick={() => setEditOutput(null)}>Keep original draft</Button><Button variant="primary" disabled={submissionBusy || !maskCapable} onClick={confirmRegionEdit}>Confirm instruction and enter</Button></>}>
+        <label htmlFor="edit-instruction-draft" className="text-xs text-muted-foreground">Edit instruction (e.g. Change the selected area to a red trench coat, keep everything else unchanged)</label>
         <textarea id="edit-instruction-draft" rows={4} value={editInstruction} disabled={submissionBusy} onChange={(event) => setEditInstruction(event.target.value)} className="mt-2 w-full rounded-control border border-border-control bg-transparent p-3 text-sm" />
-        <p className="mt-2 text-xs text-muted-foreground">参考图仍保留，局部修改只使用源图与选区。进入后请先框选区域。</p>
+        <p className="mt-2 text-xs text-muted-foreground">Reference images are kept, but local edit only uses the source image and the selection. Select an area first after entering.</p>
       </Dialog>
     </div>
   )

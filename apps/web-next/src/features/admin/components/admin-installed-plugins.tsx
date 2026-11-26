@@ -60,10 +60,10 @@ import type { BadgeTone } from '@/shared/components/ui'
 const PENDING_POLL_MS = 5000
 
 const STATUS_LABEL: Record<InstalledPluginStatus, string> = {
-  pending: '待加载',
-  active: '已启用',
-  disabled: '已停用',
-  failed: '加载失败',
+  pending: 'Pending',
+  active: 'Enabled',
+  disabled: 'Disabled',
+  failed: 'Load failed',
 }
 
 // Status is always conveyed by the Chinese label text; the Badge tone only reinforces it.
@@ -76,16 +76,16 @@ const STATUS_TONE: Record<InstalledPluginStatus, BadgeTone> = {
 
 const SECTION_COPY: Record<PluginKind, { title: string; description: string; objectName: string }> = {
   media: {
-    title: '已安装媒体插件',
+    title: 'Installed media plugins',
     description:
-      '上传的媒体插件（provider_plugins 行）。Worker 加载激活后，插件会并入上方「供应商插件目录」，其模型作为服务端合成的预设出现在「创建模型」中，并可为其签发媒体凭据。',
-    objectName: '媒体插件',
+      'Uploaded media plugins (provider_plugins rows). After the Worker loads and activates a plugin, it is merged into the "Provider plugin directory" above; its models appear as server-composed presets in "Create model", and media credentials can be issued for it.',
+    objectName: 'Media plugin',
   },
   language: {
-    title: '已安装语言插件',
+    title: 'Installed language plugins',
     description:
-      '可查看、启停和删除已安装的语言插件。当前服务端目录未将此类插件自动合成为语言模型预设；可创建哪些模型，以「创建语言模型」中实际可选的服务端预设为准。',
-    objectName: '语言插件',
+      'View, enable/disable, and delete installed language plugins. The current server directory does not automatically compose these plugins into language model presets; which models can be created depends on the server presets actually available in "Create language model".',
+    objectName: 'Language plugin',
   },
 }
 
@@ -164,7 +164,7 @@ function PackageDocs({ plugin }: { plugin: AdminPluginDto }) {
     queryKey: ['admin', 'plugin-docs', plugin.id],
     queryFn: async () => {
       const res = await api<AdminPluginDocsDto>(API_ENDPOINTS.admin.pluginDocs(plugin.id))
-      if (!res.success || !res.data) throw new Error(res.error?.message || '加载插件文档失败')
+      if (!res.success || !res.data) throw new Error(res.error?.message || 'Failed to load plugin documentation')
       return res.data
     },
     enabled: requested,
@@ -191,13 +191,13 @@ function PackageDocs({ plugin }: { plugin: AdminPluginDto }) {
               {data === undefined && (isFetching || !error) ? (
                 <span className="inline-flex items-center gap-2 text-muted-foreground" role="status">
                   <Spinner size="sm" />
-                  正在加载…
+                  Loading…
                 </span>
               ) : error && data === undefined ? (
                 <div className="flex flex-wrap items-center gap-2 text-danger" role="alert">
-                  <span>{error.message || '加载插件文档失败'}。</span>
+                  <span>{error.message || 'Failed to load plugin documentation'}.</span>
                   <Button variant="ghost" size="sm" onClick={() => refetch()}>
-                    重试
+                    Retry
                   </Button>
                 </div>
               ) : text && text.trim() ? (
@@ -205,7 +205,7 @@ function PackageDocs({ plugin }: { plugin: AdminPluginDto }) {
                   {text}
                 </pre>
               ) : (
-                <span className="text-muted-foreground">文档内容为空</span>
+                <span className="text-muted-foreground">Documentation is empty</span>
               )}
             </div>
           </details>
@@ -224,15 +224,15 @@ function PluginPackageDetails({ plugin }: { plugin: AdminPluginDto }) {
   return (
     <div className="flex flex-col gap-3">
       <dl className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2 text-xs">
-        <dt className="text-muted-foreground">包格式</dt>
+        <dt className="text-muted-foreground">Package format</dt>
         <dd>
           <Badge tone="neutral" className="font-mono">
-            {isZip ? 'zip 包' : '旧版单文件 (.mjs)'}
+            {isZip ? 'zip package' : 'Legacy single file (.mjs)'}
           </Badge>
         </dd>
         {isZip && plugin.packageDigest && (
           <>
-            <dt className="text-muted-foreground">包 sha256</dt>
+            <dt className="text-muted-foreground">Package sha256</dt>
             <dd className="break-all font-mono text-foreground">
               {plugin.packageDigest}
             </dd>
@@ -240,19 +240,19 @@ function PluginPackageDetails({ plugin }: { plugin: AdminPluginDto }) {
         )}
         {meta.author && (
           <>
-            <dt className="text-muted-foreground">作者</dt>
+            <dt className="text-muted-foreground">Author</dt>
             <dd className="break-words text-foreground">{meta.author}</dd>
           </>
         )}
         {meta.license && (
           <>
-            <dt className="text-muted-foreground">许可证</dt>
+            <dt className="text-muted-foreground">License</dt>
             <dd className="font-mono text-foreground">{meta.license}</dd>
           </>
         )}
         {meta.homepage && (
           <>
-            <dt className="text-muted-foreground">主页</dt>
+            <dt className="text-muted-foreground">Homepage</dt>
             <dd className="min-w-0">
               {homepage ? (
                 <a
@@ -263,7 +263,7 @@ function PluginPackageDetails({ plugin }: { plugin: AdminPluginDto }) {
                 >
                   <span className="break-all">{homepage}</span>
                   <ExternalLink weight="bold" aria-hidden="true" className="h-3 w-3 shrink-0" />
-                  <span className="sr-only">（在新窗口打开）</span>
+                  <span className="sr-only">(opens in a new window)</span>
                 </a>
               ) : (
                 <span className="break-all font-mono text-muted-foreground">{meta.homepage}</span>
@@ -276,17 +276,17 @@ function PluginPackageDetails({ plugin }: { plugin: AdminPluginDto }) {
       {isZip && files.length > 0 && (
         <details className="rounded-control bg-tonal text-xs">
           <summary className={DISCLOSURE_SUMMARY_CLASS}>
-            包内文件（<span className="font-mono tabular-nums">{files.length}</span>）
+            Files in package (<span className="font-mono tabular-nums">{files.length}</span>)
           </summary>
           <TableFrame
-            caption={`插件包 ${plugin.pluginId}@${plugin.pluginVersion} 的文件清单`}
+            caption={`File list for plugin package ${plugin.pluginId}@${plugin.pluginVersion}`}
             density="dense"
             columns={3}
             className="px-3 pb-3"
           >
             <TableHead>
-              <TableHeadCell>路径</TableHeadCell>
-              <TableHeadCell align="right">大小</TableHeadCell>
+              <TableHeadCell>Path</TableHeadCell>
+              <TableHeadCell align="right">Size</TableHeadCell>
               {/* Last column: the dense cell box reserves a right gutter that only
                   exists to separate columns, so the final one opts out of it. */}
               <TableHeadCell className="pr-0">sha256</TableHeadCell>
@@ -314,11 +314,11 @@ function PluginPackageDetails({ plugin }: { plugin: AdminPluginDto }) {
           <a
             href={resolveApiUrl(API_ENDPOINTS.admin.pluginPackage(plugin.id))}
             download
-            aria-label={`下载插件包 ${plugin.pluginId}@${plugin.pluginVersion}`}
+            aria-label={`Download plugin package ${plugin.pluginId}@${plugin.pluginVersion}`}
             className={buttonVariants({ variant: 'secondary', size: 'sm' })}
           >
             <Download weight="bold" aria-hidden="true" />
-            下载插件包
+            Download plugin package
           </a>
         </div>
       )}
@@ -331,7 +331,7 @@ function ChipRow({ label, items }: { label: string; items: { key: string; text: 
   return (
     <div className="flex flex-col gap-1">
       <p className="text-overline text-muted-foreground">
-        {label}（<span className="font-mono tabular-nums">{items.length}</span>）
+        {label} (<span className="font-mono tabular-nums">{items.length}</span>)
       </p>
       {items.length > 0 ? (
         <div className="flex flex-wrap gap-1">
@@ -355,14 +355,14 @@ function PluginRecordDetails({ plugin: p }: { plugin: AdminPluginDto }) {
 
     {p.status === 'pending' && (
       <div role="status" className="rounded-control bg-tonal p-3 text-xs text-muted-foreground">
-        Worker 正在拉取制品、核验 sha256 并重新扫描（约 5 秒一轮）；若对象存储或 ALLOW_PLUGIN_UPLOAD 未配置，此状态可能持续。
+        The Worker is fetching the artifact, verifying sha256, and rescanning (about one round every 5 seconds); this state may persist if object storage or ALLOW_PLUGIN_UPLOAD is not configured.
       </div>
     )}
     {p.status === 'failed' && (
       // The 4px bar is `Alert`'s danger tone — a soft red is never a border colour.
       <Alert tone="danger" role="alert" title={p.errorCode || 'PLUGIN_LOAD_FAILED'} icon={false}>
-        <div>{p.errorMessage || 'Worker 加载该插件失败'}</div>
-        <div className="mt-1">加载失败的版本不可重新启用，请以新版本号重新上传插件包。</div>
+        <div>{p.errorMessage || 'The Worker failed to load this plugin'}</div>
+        <div className="mt-1">A failed version cannot be re-enabled; please re-upload the plugin package with a new version number.</div>
       </Alert>
     )}
 
@@ -379,7 +379,7 @@ function PluginRecordDetails({ plugin: p }: { plugin: AdminPluginDto }) {
           <span className="font-mono text-muted-foreground">-</span>
         )}
       </dd>
-      <dt className="text-muted-foreground">凭据 Schema</dt>
+      <dt className="text-muted-foreground">Credential schema</dt>
       <dd className="flex flex-wrap gap-1">
         {p.credentialSchemas.map((schema) => (
           <Badge key={schema} tone="neutral" className="max-w-full font-mono [&>span]:whitespace-normal [&>span]:break-all">
@@ -389,17 +389,17 @@ function PluginRecordDetails({ plugin: p }: { plugin: AdminPluginDto }) {
       </dd>
       {p.kind === 'media' && p.modalities.length > 0 && (
         <>
-          <dt className="text-muted-foreground">模态</dt>
+          <dt className="text-muted-foreground">Modality</dt>
           <dd className="font-mono text-foreground">{p.modalities.join(', ')}</dd>
         </>
       )}
       {p.kind === 'language' && p.languageProtocols.length > 0 && (
         <>
-          <dt className="text-muted-foreground">协议</dt>
+          <dt className="text-muted-foreground">Protocol</dt>
           <dd className="font-mono text-foreground">{p.languageProtocols.join(', ')}</dd>
         </>
       )}
-      <dt className="text-muted-foreground">入口制品</dt>
+      <dt className="text-muted-foreground">Entry artifact</dt>
       <dd className="font-mono text-foreground">
         sha256: <span className="break-all">{p.artifactDigest}</span>
         <span className="ml-1 text-muted-foreground">· {humanFileSize(p.artifactSizeBytes)}</span>
@@ -407,7 +407,7 @@ function PluginRecordDetails({ plugin: p }: { plugin: AdminPluginDto }) {
     </dl>
 
     <ChipRow
-      label="支持模型"
+      label="Supported models"
       items={models.map((model) => ({ key: model.id, text: model.id, title: model.name }))}
     />
 
@@ -415,9 +415,9 @@ function PluginRecordDetails({ plugin: p }: { plugin: AdminPluginDto }) {
 
     <div className="flex flex-col gap-1">
       <p className="text-overline text-muted-foreground">
-        扫描报告（<span className="font-mono tabular-nums">{p.scanReport.length}</span>）
+        Scan report (<span className="font-mono tabular-nums">{p.scanReport.length}</span>)
       </p>
-      <PluginFindingList findings={p.scanReport} groupByPath emptyText="安装时未发现任何问题" />
+      <PluginFindingList findings={p.scanReport} groupByPath emptyText="No issues found during installation" />
     </div>
 
   </div>
@@ -456,7 +456,7 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
       // The list endpoint returns a bare AdminPluginDto[] (no { items } wrapper) —
       // `ok(rows.map(pluginDtoFromRow))` in apps/api/src/modules/admin/plugins.ts.
       const res = await api<AdminPluginDto[]>(API_ENDPOINTS.admin.plugins)
-      if (!res.success) throw new Error(res.error?.message || '加载已安装插件失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to load installed plugins')
       return res.data || []
     },
     refetchInterval: (query) =>
@@ -479,7 +479,7 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
       // Only 'active' <-> 'disabled' is accepted; 'failed' answers PLUGIN_FAILED_IMMUTABLE
       // and 'pending' answers PLUGIN_NOT_LOADED — both messages surface verbatim below.
       const res = await api<AdminPluginDto>(API_ENDPOINTS.admin.plugin(id), { method: 'PATCH', body: { status } })
-      if (!res.success) throw new Error(res.error?.message || '更新插件状态失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to update plugin status')
       return res.data
     },
     onSuccess: async () => {
@@ -490,12 +490,12 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await api<AdminPluginDeleteResult>(API_ENDPOINTS.admin.plugin(id), { method: 'DELETE' })
-      if (!res.success) throw new Error(res.error?.message || '删除插件失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to delete plugin')
       return res.data
     },
     onSuccess: async (data) => {
       // The server explains the retention contract on success; show it verbatim.
-      setStatusNote(data?.note || '插件已删除。')
+      setStatusNote(data?.note || 'Plugin deleted.')
       await invalidateAdminPluginCatalogs(queryClient)
     },
     // PLUGIN_IN_USE ("该插件版本仍被模型配置引用…") surfaces here unmodified.
@@ -507,9 +507,9 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
   }
   function togglePlugin(plugin: AdminPluginDto, enabled: boolean) {
     setStatusNote('')
-    return actions.run(plugin.id, `${plugin.displayName}（${plugin.pluginId}@${plugin.pluginVersion}）`, () => statusMutation.mutateAsync({
+    return actions.run(plugin.id, `${plugin.displayName} (${plugin.pluginId}@${plugin.pluginVersion})`, () => statusMutation.mutateAsync({
       id: plugin.id, status: enabled ? 'active' : 'disabled',
-    }), enabled ? '插件已启用' : '插件已停用', 'toggle')
+    }), enabled ? 'Plugin enabled' : 'Plugin disabled', 'toggle')
   }
 
   const scopedPlugins = plugins.filter((p) => p.kind === kind)
@@ -531,7 +531,7 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
             }}
             icon={<Upload weight="bold" aria-hidden="true" />}
           >
-            上传插件
+            Upload plugin
           </Button>
           <Button
             variant="secondary"
@@ -540,7 +540,7 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
             }}
             icon={<RefreshCw weight="bold" aria-hidden="true" className={isFetching ? 'motion-spin' : undefined} />}
           >
-            刷新
+            Refresh
           </Button>
           </>
         }
@@ -548,14 +548,14 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
 
       <AdminActionErrors errors={actions.errors} />
       {statusNote && (
-        <Alert tone="info" title="操作结果">
+        <Alert tone="info" title="Action result">
           {statusNote}
         </Alert>
       )}
 
       {isLoading ? (
         <div className="grid gap-4 lg:grid-cols-2" role="status" aria-busy="true">
-          <span className="sr-only">正在加载已安装插件</span>
+          <span className="sr-only">Loading installed plugins</span>
           {Array.from({ length: 2 }, (_, index) => (
             <Card key={index} density="compact" aria-hidden="true" className="h-full gap-4">
               <div className="flex items-start justify-between gap-3">
@@ -579,14 +579,14 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
         <Alert
           tone="danger"
           role="alert"
-          title="无法加载已安装插件"
+          title="Unable to load installed plugins"
           action={
             <Button variant="secondary" size="sm" onClick={() => refetch()}>
-              刷新重试
+              Refresh and retry
             </Button>
           }
         >
-          {error.message || '加载已安装插件失败'}。请检查后端服务状态后重试。
+          {error.message || 'Failed to load installed plugins'}. Please check the backend service status and retry.
         </Alert>
       ) : scopedPlugins.length === 0 ? (
         <Card density="compact">
@@ -594,8 +594,8 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
             variant="first-use"
             density="compact"
             objectName={copy.objectName}
-            title={`还没有安装${kind === 'media' ? '媒体' : '语言'}插件`}
-            description="尚未安装任何自定义插件；内置插件以卡片形式展示在上方目录中，不在此列表内。点击右上角「上传插件」可添加自定义插件。"
+            title={`No ${kind === 'media' ? 'media' : 'language'} plugins installed yet`}
+            description="No custom plugins installed yet; built-in plugins are shown as cards in the directory above, not in this list. Click “Upload plugin” at the top right to add a custom plugin."
           />
         </Card>
       ) : (
@@ -623,8 +623,8 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
                 </div>
 
                 <div className="hidden min-w-0 flex-col gap-4 md:flex"><PluginRecordDetails plugin={p} /></div>
-                <p className="text-xs text-muted-foreground md:hidden">支持 {models.length} 个模型</p>
-                <Button variant="secondary" className="md:hidden" onClick={() => setDetailPlugin(p)}>查看详情</Button>
+                <p className="text-xs text-muted-foreground md:hidden">Supports {models.length} models</p>
+                <Button variant="secondary" className="md:hidden" onClick={() => setDetailPlugin(p)}>View details</Button>
 
                 <div className="mt-auto hidden flex-wrap items-center justify-end gap-3 md:flex">
                   {/* pending belongs to the worker, failed is terminal: no toggle offered,
@@ -634,12 +634,12 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
                       {/* Immediate setting: `Switch` reverts itself when the PATCH rejects,
                           and the failure surfaces in the banner above. The card's status
                           Badge already carries the value, so the text names the setting. */}
-                      <span className="text-sm text-muted-foreground">启用</span>
+                      <span className="text-sm text-muted-foreground">Enable</span>
                       <Switch
                         checked={p.status === 'active'}
                         disabled={actions.isToggleBlocked(p.id)}
                         onCheckedChange={(enabled) => togglePlugin(p, enabled)}
-                        aria-label={`插件 ${p.displayName} 启用状态`}
+                        aria-label={`Plugin ${p.displayName} enabled state`}
                       />
                     </>
                   )}
@@ -648,7 +648,7 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
                     size="sm"
                     disabled={actions.isPending(p.id)}
                     onClick={() => requestDeletePlugin(p)}
-                    aria-label={`删除插件 ${p.displayName} ${p.pluginVersion}`}
+                    aria-label={`Delete plugin ${p.displayName} ${p.pluginVersion}`}
                     icon={<Trash2 weight="bold" aria-hidden="true" />}
                   />
                 </div>
@@ -658,20 +658,20 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
         </div>
       )}
 
-      <AdminRecordDetailDialog open={currentDetailPlugin !== null || deleteTarget !== null} onClose={() => { setDetailPlugin(null); setDeleteTarget(null) }} title="已安装插件详情"
+      <AdminRecordDetailDialog open={currentDetailPlugin !== null || deleteTarget !== null} onClose={() => { setDetailPlugin(null); setDeleteTarget(null) }} title="Installed plugin details"
         listFocusRef={recordListRef}
         confirmation={deleteTarget ? {
-          objectName: `${deleteTarget.displayName}（${deleteTarget.pluginId}@${deleteTarget.pluginVersion}）`,
-          impact: '该版本仍被模型配置引用时，服务端会拒绝删除。删除后目录和预设将刷新；制品保留规则以服务端操作结果为准。此操作不可撤销。',
+          objectName: `${deleteTarget.displayName} (${deleteTarget.pluginId}@${deleteTarget.pluginVersion})`,
+          impact: 'If this version is still referenced by a model configuration, the server will refuse deletion. The directory and presets will refresh after deletion; artifact retention follows the server operation result. This action cannot be undone.',
           pending: actions.isPending(deleteTarget.id),
           error: actions.errors[deleteTarget.id],
-          cancelLabel: currentDetailPlugin ? '返回详情' : '取消',
+          cancelLabel: currentDetailPlugin ? 'Back to details' : 'Cancel',
           onCancel: () => setDeleteTarget(null),
           onConfirm: () => {
             if (!deleteTarget || actions.isPending(deleteTarget.id)) return
             const target = deleteTarget
             setStatusNote('')
-            void actions.run(target.id, `${target.displayName}（${target.pluginVersion}）`, () => deleteMutation.mutateAsync(target.id), '插件已删除', 'delete')
+            void actions.run(target.id, `${target.displayName} (${target.pluginVersion})`, () => deleteMutation.mutateAsync(target.id), 'Plugin deleted', 'delete')
               .then(() => {
                 setDeleteTarget((current) => current?.id === target.id ? null : current)
                 setDetailPlugin((current) => current?.id === target.id ? null : current)
@@ -679,10 +679,10 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
           },
         } : undefined}
         actions={currentDetailPlugin && (currentDetailPlugin.status === 'active' || currentDetailPlugin.status === 'disabled') && <>
-          <span>启用插件</span><Switch checked={currentDetailPlugin.status === 'active'} disabled={actions.isToggleBlocked(currentDetailPlugin.id)}
-            onCheckedChange={(enabled) => togglePlugin(currentDetailPlugin, enabled)} aria-label={`插件 ${currentDetailPlugin.displayName} 启用状态`} />
+          <span>Enable plugin</span><Switch checked={currentDetailPlugin.status === 'active'} disabled={actions.isToggleBlocked(currentDetailPlugin.id)}
+            onCheckedChange={(enabled) => togglePlugin(currentDetailPlugin, enabled)} aria-label={`Plugin ${currentDetailPlugin.displayName} enabled state`} />
         </>}
-        danger={currentDetailPlugin && <Button variant="danger-ghost" disabled={actions.isPending(currentDetailPlugin.id)} onClick={() => requestDeletePlugin(currentDetailPlugin)}>删除插件</Button>}>
+        danger={currentDetailPlugin && <Button variant="danger-ghost" disabled={actions.isPending(currentDetailPlugin.id)} onClick={() => requestDeletePlugin(currentDetailPlugin)}>Delete plugin</Button>}>
         {currentDetailPlugin && <>
           <h3 className="break-words text-sm font-medium">{currentDetailPlugin.displayName}</h3>
           <p className="break-all font-mono text-xs">{currentDetailPlugin.pluginId}@{currentDetailPlugin.pluginVersion}</p>
@@ -697,7 +697,7 @@ export function AdminInstalledPlugins({ kind }: AdminInstalledPluginsProps) {
         onClose={() => setUploadOpen(false)}
         kind={kind}
         onInstalled={({ pluginId, pluginVersion }) =>
-          setStatusNote(`插件 ${pluginId}@${pluginVersion} 上传成功，当前状态「待加载」：需等待 Worker 拉取制品、核验 sha256 并重新扫描通过后才会启用。`)
+          setStatusNote(`Plugin ${pluginId}@${pluginVersion} uploaded successfully; current status is "Pending": the Worker must fetch the artifact, verify sha256, and pass a rescan before it is enabled.`)
         }
       />
     </section>

@@ -67,7 +67,7 @@ export function GalleryImagePicker({
   onClose,
   onSelect,
   excludedAssetIds = [],
-  noun = '参考图',
+  noun = 'reference image',
 }: GalleryImagePickerProps) {
   const [searchDraft, setSearchDraft] = useState('')
   const [search, setSearch] = useState('')
@@ -125,21 +125,21 @@ export function GalleryImagePicker({
       open={open}
       onClose={onClose}
       size="wide"
-      title="从图库选择"
+      title="Choose from gallery"
       // A picker is content-first: the search field is the fastest way in, and the
       // grid stays reachable with Tab from there.
       initialFocus="first-input"
-      closeLabel="关闭图库选择"
-      description={`直接使用已有作品作为${noun}，不会重新上传，也不会生成重复文件。`}
+      closeLabel="Close gallery picker"
+      description={`Use an existing work directly as the ${noun} — no re-upload, no duplicate file.`}
       footer={
         <div className="flex w-full flex-wrap items-center justify-between gap-3">
           <p className="font-mono text-xs tabular-nums text-muted-foreground">
-            已加载 {assets.length} / {total} 张
-            {search ? ` · 关键词「${search}」` : ''}
+            Loaded {assets.length} / {total} images
+            {search ? ` · Keyword "${search}"` : ''}
           </p>
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={onClose}>
-              取消
+              Cancel
             </Button>
             <Button
               variant="primary"
@@ -147,7 +147,7 @@ export function GalleryImagePicker({
               disabled={!selected}
               icon={<Check weight="bold" aria-hidden="true" />}
             >
-              使用此图片
+              Use this image
             </Button>
           </div>
         </div>
@@ -155,14 +155,14 @@ export function GalleryImagePicker({
     >
       <p className="sr-only" role="status" aria-live="polite">
         {isLoading
-          ? '正在读取图库'
+          ? 'Reading gallery'
           : isError
-            ? '图库读取失败'
-            : `图库共 ${total} 张，已加载 ${assets.length} 张${selected ? '，已选择 1 张' : ''}`}
+            ? 'Gallery failed to load'
+            : `Gallery has ${total} images, ${assets.length} loaded${selected ? ', 1 selected' : ''}`}
       </p>
 
       <label className="relative flex items-center">
-        <span className="sr-only">按提示词搜索图库图片</span>
+        <span className="sr-only">Search gallery images by prompt</span>
         <Search weight="bold"
           aria-hidden="true"
           className={`pointer-events-none absolute left-3 ${iconSize.sm} text-muted-foreground`}
@@ -171,7 +171,7 @@ export function GalleryImagePicker({
           type="search"
           value={searchDraft}
           onChange={(event) => setSearchDraft(event.target.value)}
-          placeholder="搜索图片提示词…"
+          placeholder="Search image prompts…"
           maxLength={100}
           className="pl-9"
         />
@@ -190,7 +190,7 @@ export function GalleryImagePicker({
         <Alert
           tone="danger"
           role="alert"
-          title="无法读取图库"
+          title="Could not load gallery"
           action={
             <Button
               variant="secondary"
@@ -198,28 +198,28 @@ export function GalleryImagePicker({
               onClick={() => void refetch()}
               icon={<RefreshCw weight="bold" aria-hidden="true" />}
             >
-              重试
+              Retry
             </Button>
           }
         >
-          {error?.message || '加载图库时出现问题，请检查网络后重试。'}
+          {error?.message || 'Something went wrong while loading the gallery. Check your connection and try again.'}
         </Alert>
       ) : assets.length === 0 ? (
         <EmptyState
           variant={search ? 'no-results' : 'first-use'}
-          objectName="图库图片"
+          objectName="gallery images"
           keyword={search || undefined}
           density="compact"
-          title={search ? `找不到与「${search}」相关的图库图片` : '图库还没有可用的图片'}
+          title={search ? `No gallery images found for "${search}"` : 'The gallery has no images available yet'}
           description={
             search
-              ? '请尝试检查拼写，或使用更宽泛的搜索词。'
-              : '图库里的图片作品（PNG 或 JPEG）才能作为输入参考；生成几张图片后再回来选择即可。'
+              ? 'Try checking the spelling, or use a broader search term.'
+              : 'Only image works in the gallery (PNG or JPEG) can be used as input references. Generate a few images first, then come back to choose.'
           }
           action={
             search ? (
               <Button variant="secondary" onClick={() => setSearchDraft('')}>
-                清除搜索
+                Clear search
               </Button>
             ) : null
           }
@@ -234,7 +234,7 @@ export function GalleryImagePicker({
             const unsupported = !isReferenceEligibleAsset(asset)
             const alreadyAdded = excluded.has(asset.id)
             const disabled = unsupported || alreadyAdded
-            const reason = unsupported ? '格式不支持作为参考图' : alreadyAdded ? '已在列表中' : ''
+            const reason = unsupported ? 'Format not supported as a reference image' : alreadyAdded ? 'Already in the list' : ''
             const refreshed = resignedUrls[asset.id]
             return (
               <li key={asset.id}>
@@ -244,8 +244,8 @@ export function GalleryImagePicker({
                   aria-pressed={isSelected}
                   aria-label={
                     reason
-                      ? `${asset.prompt || '图库图片'}，${reason}`
-                      : `选择图库图片：${asset.prompt || '未命名'}`
+                      ? `${asset.prompt || 'Gallery image'}, ${reason}`
+                      : `Choose gallery image: ${asset.prompt || 'Untitled'}`
                   }
                   onClick={() => setSelectedId(isSelected ? null : asset.id)}
                   className={cn(
@@ -263,7 +263,7 @@ export function GalleryImagePicker({
                     src={refreshed ?? assetPlaybackUrl(asset)}
                     previewSrc={refreshed ? undefined : assetPreviewUrl(asset)}
                     kind="image"
-                    alt={asset.prompt || '图库图片'}
+                    alt={asset.prompt || 'Gallery image'}
                     layout="tile"
                     width={asset.width}
                     height={asset.height}
@@ -301,7 +301,7 @@ export function GalleryImagePicker({
             loading={isFetchingNextPage}
             icon={<RefreshCw weight="bold" aria-hidden="true" />}
           >
-            加载更多
+            Load more
           </Button>
         </div>
       ) : null}

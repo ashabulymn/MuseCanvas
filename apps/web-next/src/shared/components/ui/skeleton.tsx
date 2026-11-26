@@ -104,7 +104,7 @@ interface SkeletonRegionProps {
 export function SkeletonRegion({
   loading,
   fallback,
-  label = '加载中',
+  label = 'Loading',
   className,
   children,
 }: SkeletonRegionProps) {

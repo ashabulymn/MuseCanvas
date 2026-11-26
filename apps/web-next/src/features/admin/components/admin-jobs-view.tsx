@@ -43,7 +43,7 @@ const JOB_PAGE_LIMIT = 50
 
 /** Values accepted by `GET /api/admin/jobs?status=`; labels ride `jobStatusMeta`. */
 const STATUS_OPTIONS: Array<{ value: string; label: string }> = [
-  { value: 'all', label: '所有状态' },
+  { value: 'all', label: 'All statuses' },
   ...(
     ['queued', 'running', 'retry_wait', 'succeeded', 'failed', 'canceled'] as JobStatus[]
   ).map((status) => ({ value: status, label: jobStatusMeta(status).label })),
@@ -105,7 +105,7 @@ export function AdminJobsView() {
       const res = await api<PaginatedResponse<AdminJob>>(API_ENDPOINTS.admin.jobs, {
         params: requestParams,
       })
-      return requireAdminData(res, '加载任务列表失败')
+      return requireAdminData(res, 'Failed to load job list')
     },
   })
 
@@ -130,12 +130,12 @@ export function AdminJobsView() {
       <PageHeader
         className="min-w-0 [overflow-wrap:anywhere]"
         actionsClassName="max-w-full min-w-0 max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_a]:min-h-[var(--control-lg)]"
-        title="任务监控"
-        description="全系统生成任务状态与已有错误摘要；不提供未经接口支持的进度百分比。"
+        title="Job monitoring"
+        description="System-wide generation job status with recorded error summaries; no progress percentage is shown because the API does not provide one."
         actions={
           <>
           <Button variant="secondary" disabled={jobCursor.batch > 1} onClick={() => setAutoRefresh((previous) => !previous)}>
-            {autoRefresh ? '暂停自动刷新' : '启用 15 秒刷新'}
+            {autoRefresh ? 'Pause auto-refresh' : 'Enable 15-second refresh'}
           </Button>
           <Button
             variant="secondary"
@@ -143,65 +143,65 @@ export function AdminJobsView() {
             loading={isFetching}
             icon={<RefreshCw weight="bold" aria-hidden="true" />}
           >
-            {error ? '重试刷新' : '手动刷新'}
+            {error ? 'Retry refresh' : 'Refresh manually'}
           </Button>
           </>
         }
       />
 
       <div className="flex min-w-0 flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">
-        <p>{jobCursor.batch > 1 ? '浏览历史批次：自动刷新已暂停，返回首批后可手动启用。' : !autoRefresh ? '自动刷新已暂停。' : !documentVisible ? '后台标签页：自动刷新已暂停。' : '前台标签页每 15 秒刷新当前首批。'}</p>
-        <p>最近成功更新：{dataUpdatedAt ? formatLocalizedDateTime(new Date(dataUpdatedAt).toISOString()) : '尚未成功获取数据'}</p>
+        <p>{jobCursor.batch > 1 ? 'Browsing a history batch: auto-refresh is paused; return to the first batch to enable it manually.' : !autoRefresh ? 'Auto-refresh is paused.' : !documentVisible ? 'Background tab: auto-refresh is paused.' : 'Foreground tab refreshes the current first batch every 15 seconds.'}</p>
+        <p>Last successful update: {dataUpdatedAt ? formatLocalizedDateTime(new Date(dataUpdatedAt).toISOString()) : 'No data fetched successfully yet'}</p>
       </div>
 
-      {urlFilterError && <Alert tone="warning" role="status" title="链接筛选未应用">链接中的 ID、状态或时间格式无效。当前显示未筛选首批；请打开筛选并修正后应用。</Alert>}
+      {urlFilterError && <Alert tone="warning" role="status" title="Link filters not applied">The ID, status, or time format in the link is invalid. Showing the unfiltered first batch; open the filters, fix them, and apply.</Alert>}
 
-      <AdminFilterPanel activeCount={Object.keys(appliedFilters).length} summary={Object.entries(appliedFilters).map(([key, value]) => `${({ status: '状态', userId: '用户 ID', modelId: '模型 ID', from: '从', to: '至' } as Record<string, string>)[key]} ${key === 'status' ? STATUS_OPTIONS.find((option) => option.value === value)?.label ?? value : value}`).join(' · ')}>
+      <AdminFilterPanel activeCount={Object.keys(appliedFilters).length} summary={Object.entries(appliedFilters).map(([key, value]) => `${({ status: 'Status', userId: 'User ID', modelId: 'Model ID', from: 'From', to: 'To' } as Record<string, string>)[key]} ${key === 'status' ? STATUS_OPTIONS.find((option) => option.value === value)?.label ?? value : value}`).join(' · ')}>
         <form className="flex flex-wrap items-end gap-3" onSubmit={(event) => { event.preventDefault(); applyFilters(draftFilters) }}>
-          <FormField label="任务状态" error={filterErrors.status} className="w-full sm:w-48">
+          <FormField label="Job status" error={filterErrors.status} className="w-full sm:w-48">
             <Select value={draftFilters.status} onChange={(event) => editFilter('status', event.target.value)}>
               {STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
             </Select>
           </FormField>
-          <FormField label="用户 ID" error={filterErrors.userId} hint="完整 UUID，匹配创建者。" className="w-full sm:w-64">
-            <Input value={draftFilters.userId} onChange={(event) => editFilter('userId', event.target.value)} placeholder="用户 UUID" />
+          <FormField label="User ID" error={filterErrors.userId} hint="Full UUID, matching the creator." className="w-full sm:w-64">
+            <Input value={draftFilters.userId} onChange={(event) => editFilter('userId', event.target.value)} placeholder="User UUID" />
           </FormField>
-          <FormField label="模型 ID" error={filterErrors.modelId} hint="完整 UUID，不是供应商模型名称。" className="w-full sm:w-64">
-            <Input value={draftFilters.modelId} onChange={(event) => editFilter('modelId', event.target.value)} placeholder="模型配置 UUID" />
+          <FormField label="Model ID" error={filterErrors.modelId} hint="Full UUID, not the provider model name." className="w-full sm:w-64">
+            <Input value={draftFilters.modelId} onChange={(event) => editFilter('modelId', event.target.value)} placeholder="Model configuration UUID" />
           </FormField>
-          <FormField label="提交时间从" error={filterErrors.from} hint="本地时间，包含起始时间。" className="w-full sm:w-64">
+          <FormField label="Submitted from" error={filterErrors.from} hint="Local time, including the start time." className="w-full sm:w-64">
             <Input type="datetime-local" value={draftFilters.from} onChange={(event) => editFilter('from', event.target.value)} />
           </FormField>
-          <FormField label="提交时间至" error={filterErrors.to} hint="本地时间，包含结束时间。" className="w-full sm:w-64">
+          <FormField label="Submitted to" error={filterErrors.to} hint="Local time, including the end time." className="w-full sm:w-64">
             <Input type="datetime-local" value={draftFilters.to} onChange={(event) => editFilter('to', event.target.value)} />
           </FormField>
-          <Button type="submit">应用筛选</Button>
-          <Button variant="ghost" onClick={clearFilter}>清除筛选</Button>
+          <Button type="submit">Apply filters</Button>
+          <Button variant="ghost" onClick={clearFilter}>Clear filters</Button>
         </form>
       </AdminFilterPanel>
 
-      {jobsPage && <AdminQueryFeedback error={error} hasData label="任务列表" onRetry={() => refetch()} />}
+      {jobsPage && <AdminQueryFeedback error={error} hasData label="Job list" onRetry={() => refetch()} />}
 
       <Button variant="secondary" className="md:hidden" onClick={() => setTimeSort((previous) => previous === 'desc' ? 'asc' : 'desc')}>
-        提交时间：{timeSort === 'desc' ? '倒序' : '正序'}（当前批次）
+        Submitted at: {timeSort === 'desc' ? 'Newest first' : 'Oldest first'}(current batch)
       </Button>
       <AdminMobileRecords
         records={sortedJobs} loading={isLoading}
-        error={isError && !jobsPage ? error?.message || '加载任务失败' : null}
-        onRetry={() => { void refetch() }} empty={filterActive ? '当前筛选没有匹配任务，可调整上方条件。' : '用户发起生成后，任务会显示在这里。'}
-        title={(job) => job.modelName || '未知模型'}
+        error={isError && !jobsPage ? error?.message || 'Failed to load jobs' : null}
+        onRetry={() => { void refetch() }} empty={filterActive ? 'No jobs match the current filters; adjust the conditions above.' : 'Jobs will appear here once users start generating.'}
+        title={(job) => job.modelName || 'Unknown model'}
         status={(job) => <Badge className={jobStatusMeta(job.status).badge}>{jobStatusMeta(job.status).label}</Badge>}
         summary={(job) => <><span className="font-mono">{job.id.slice(0, 8)}…</span> · {formatLocalizedDateTime(job.createdAt)}</>}
         onDetails={setDetailJob}
       />
 
-      <DataTable cardClassName="hidden md:block" caption="任务监控列表" columns={6}>
+      <DataTable cardClassName="hidden md:block" caption="Job monitoring list" columns={6}>
         <TableHead>
-          <TableHeadCell>任务 ID</TableHeadCell>
-          <TableHeadCell>用户</TableHeadCell>
-          <TableHeadCell>模型</TableHeadCell>
-          <TableHeadCell>状态</TableHeadCell>
-          <TableHeadCell>错误信息</TableHeadCell>
+          <TableHeadCell>Job ID</TableHeadCell>
+          <TableHeadCell>User</TableHeadCell>
+          <TableHeadCell>Model</TableHeadCell>
+          <TableHeadCell>Status</TableHeadCell>
+          <TableHeadCell>Error message</TableHeadCell>
           <TableHeadCell
             align="right"
             sort={timeSort === 'desc' ? 'descending' : 'ascending'}
@@ -213,7 +213,7 @@ export function AdminJobsView() {
               onClick={() => setTimeSort((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
               icon={<ArrowUpDown weight="bold" aria-hidden="true" />}
             >
-              提交时间（当前批次）
+              Submitted at (current batch)
             </Button>
           </TableHeadCell>
         </TableHead>
@@ -236,10 +236,10 @@ export function AdminJobsView() {
             <TableStateRow>
               <EmptyState
                 variant="error"
-                objectName="任务列表"
-                title="无法加载任务列表"
-                description="请求任务数据时出现问题，可能是服务暂时不可用。请稍后重试，或检查后端服务状态。"
-                actionLabel="刷新重试"
+                objectName="Job list"
+                title="Unable to load job list"
+                description="There was a problem requesting job data; the service may be temporarily unavailable. Please try again later, or check the backend service status."
+                actionLabel="Refresh and retry"
                 onAction={() => refetch()}
               />
             </TableStateRow>
@@ -249,9 +249,9 @@ export function AdminJobsView() {
               const errorSummary = adminJobErrorSummary(job)
               return (
                 <TableRow key={job.id}>
-                  <TableCell mono tone="muted"><Button variant="ghost" size="sm" onClick={() => setDetailJob(job)} aria-label={`查看任务 ${job.id} 详情`}>{job.id.slice(0, 8)}…</Button></TableCell>
+                  <TableCell mono tone="muted"><Button variant="ghost" size="sm" onClick={() => setDetailJob(job)} aria-label={`View job ${job.id} details`}>{job.id.slice(0, 8)}…</Button></TableCell>
                   <TableCell tone="foreground">{job.createdBy || '—'}</TableCell>
-                  <TableCell tone="strong">{job.modelName || '未知模型'}</TableCell>
+                  <TableCell tone="strong">{job.modelName || 'Unknown model'}</TableCell>
                   <TableCell>
                     {/* Colour + the state in words: never colour alone. */}
                     <Badge className={status.badge}>{status.label}</Badge>
@@ -275,7 +275,7 @@ export function AdminJobsView() {
             <TableStateRow>
               <EmptyState
                 variant="no-results"
-                objectName="任务"
+                objectName="Job"
                 density="compact"
                 onAction={clearFilter}
               />
@@ -284,19 +284,19 @@ export function AdminJobsView() {
             <TableStateRow>
               <EmptyState
                 variant="first-use"
-                objectName="生成任务"
+                objectName="Generation job"
                 density="compact"
-                title="还没有生成任务"
-                description="用户发起生成后，任务会按时间倒序出现在这里。"
+                title="No generation jobs yet"
+                description="Jobs will appear here in reverse chronological order once users start generating."
               />
             </TableStateRow>
           )}
         </TableBody>
       </DataTable>
 
-      <AdminRecordDetailDialog open={detailJob !== null} onClose={() => setDetailJob(null)} title="任务详情">
+      <AdminRecordDetailDialog open={detailJob !== null} onClose={() => setDetailJob(null)} title="Job details">
         {detailJob && <>
-          <p className="text-xs text-muted-foreground">详情为打开时的记录快照；自动刷新不替换弹层内容。关闭后重新打开可查看列表中的最新记录。</p>
+          <p className="text-xs text-muted-foreground">Details are a snapshot of the record when opened; auto-refresh does not replace the dialog content. Close and reopen to see the latest record from the list.</p>
           <AdminJobDetail job={detailJob} />
         </>}
       </AdminRecordDetailDialog>
@@ -304,7 +304,7 @@ export function AdminJobsView() {
       <AdminCursorControls batch={jobCursor.batch} count={jobs.length} total={jobsPage?.total}
         hasMore={!isError && jobsPage?.hasMore} nextCursor={jobsPage?.nextCursor} busy={isFetching}
         onPrevious={() => { if (!isFetching) jobCursor.previous() }} onNext={() => { if (!isFetching && !isError) jobCursor.next(jobsPage?.nextCursor) }} />
-      <p className="text-sm text-muted-foreground">每批最多 {JOB_PAGE_LIMIT} 条；提交时间排序仅影响当前批次，批次顺序始终由服务端按新到旧提供。</p>
+      <p className="text-sm text-muted-foreground">At most {JOB_PAGE_LIMIT} items per batch; submitted-time sorting only affects the current batch, and batch order is always provided by the server from newest to oldest.</p>
     </div>
   )
 }

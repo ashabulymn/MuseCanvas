@@ -63,7 +63,7 @@ export function AdminPromptTemplatesView() {
     queryKey: ['admin', 'prompt-templates'],
     queryFn: async () => {
       const res = await api<PromptTemplateSetDetailDto | null>(API_ENDPOINTS.admin.promptTemplates)
-      if (!res.success) throw new Error(res.error?.message || '加载提示词模板失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to load prompt templates')
       return res.data ?? null
     },
   })
@@ -75,8 +75,8 @@ export function AdminPromptTemplatesView() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      if (!activeSet) throw new Error('当前没有激活的模板集，请先通过初始化向导导入模板集')
-      if (!name.trim() || !instruction.trim()) throw new Error('请完整填写名称与提示词内容')
+      if (!activeSet) throw new Error('No template set is active; import a template set via the setup wizard first')
+      if (!name.trim() || !instruction.trim()) throw new Error('Please fill in the name and prompt content completely')
       const res = await api(API_ENDPOINTS.admin.promptTemplateSetEntries(activeSet.id), {
         method: 'POST',
         body: {
@@ -85,7 +85,7 @@ export function AdminPromptTemplatesView() {
           instruction: instruction.trim(),
         },
       })
-      if (!res.success) throw new Error(res.error?.message || '创建模板失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to create template')
       return res.data
     },
     onSuccess: async () => {
@@ -93,11 +93,11 @@ export function AdminPromptTemplatesView() {
       setName('')
       setDescription('')
       setInstruction('')
-      toast.push({ variant: 'success', title: '模板已创建' })
+      toast.push({ variant: 'success', title: 'Template created' })
       await queryClient.invalidateQueries({ queryKey: ['admin', 'prompt-templates'] })
     },
     onError: (err: any) => {
-      setActionError(err.message || '创建模板失败')
+      setActionError(err.message || 'Failed to create template')
     },
   })
 
@@ -106,7 +106,7 @@ export function AdminPromptTemplatesView() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await api(API_ENDPOINTS.admin.promptTemplateEntry(id), { method: 'DELETE' })
-      if (!res.success) throw new Error(res.error?.message || '删除模板失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to delete template')
       return res.data
     },
     onSuccess: async () => {
@@ -119,11 +119,11 @@ export function AdminPromptTemplatesView() {
       <PageHeader
         className="min-w-0 [overflow-wrap:anywhere]"
         actionsClassName="max-w-full min-w-0 max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_a]:min-h-[var(--control-lg)]"
-        title="提示词模板"
+        title="Prompt templates"
         description={
           activeSet
-            ? `当前激活模板集：${activeSet.name}（第 ${activeSet.version} 版，${activeSet.entryCount} 个条目），供创作台快捷调用。`
-            : '管理系统预置与分类提示词模板，供用户在创作台快捷调用。'
+            ? `Active template set: ${activeSet.name} (version ${activeSet.version}, ${activeSet.entryCount} entries), available as shortcuts in the studio.`
+            : 'Manage built-in and categorized prompt templates for quick use in the studio.'
         }
         actions={
           <>
@@ -133,7 +133,7 @@ export function AdminPromptTemplatesView() {
                 className={buttonVariants({ variant: 'secondary' })}
               >
                 <Download weight="bold" aria-hidden="true" className={iconSize.sm} />
-                导出模板集
+                Export template set
               </a>
             ) : null}
             <Button
@@ -142,10 +142,10 @@ export function AdminPromptTemplatesView() {
                 setCreateModalOpen(true)
               }}
               disabled={!activeSet || actions.isPending(deletionKey) || createMutation.isPending}
-              title={activeSet ? undefined : '请先导入并激活模板集'}
+              title={activeSet ? undefined : 'Import and activate a template set first'}
               icon={<Plus weight="bold" aria-hidden="true" className={iconSize.sm} />}
             >
-              创建模板
+              Create template
             </Button>
             <Button
               variant="secondary"
@@ -153,14 +153,14 @@ export function AdminPromptTemplatesView() {
               loading={isFetching}
               icon={<RefreshCw weight="bold" aria-hidden="true" className={iconSize.sm} />}
             >
-              刷新
+              Refresh
             </Button>
           </>
         }
       />
 
-      <FormField label="搜索当前激活模板集" hint={`仅搜索当前集的名称、描述和指令全文；匹配 ${entries.length} / ${activeSet?.entries.length ?? 0} 条。`}>
-        <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="名称、描述或指令关键词" disabled={!activeSet} />
+      <FormField label="Search the active template set" hint={`Searches only the current set's names, descriptions, and full instructions; ${entries.length} / ${activeSet?.entries.length ?? 0} entries match.`}>
+        <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Name, description, or instruction keyword" disabled={!activeSet} />
       </FormField>
 
       <AdminActionErrors errors={actions.errors} />
@@ -169,30 +169,30 @@ export function AdminPromptTemplatesView() {
         <Alert
           tone="danger"
           role="alert"
-          title="无法加载提示词模板"
+          title="Unable to load prompt templates"
           action={
             <Button variant="secondary" size="sm" loading={isFetching} onClick={() => void refetch()}>
-              刷新重试
+              Refresh and retry
             </Button>
           }
         >
-          {error instanceof Error ? `${error.message}。请确认管理后台会话仍然有效。` : '加载数据时出现问题，请稍后重试。'}
+          {error instanceof Error ? `${error.message}. Please confirm the admin session is still valid.` : 'There was a problem loading data; please try again later.'}
         </Alert>
       ) : null}
 
       {!isLoading && !isError && !activeSet ? (
-        <Alert tone="info" role="status" title="当前没有激活的模板集">
+        <Alert tone="info" role="status" title="No active template set">
           <span className="flex items-start gap-2">
             <FileText weight="duotone" aria-hidden="true" className={`mt-0.5 ${iconSize.sm} shrink-0`} />
-            模板集通过初始化向导（/setup）导入，条目管理在激活集上进行；激活模板集后即可创建模板。
+            Template sets are imported via the setup wizard (/setup); entries are managed on the active set, and templates can be created once a set is active.
           </span>
         </Alert>
       ) : null}
 
-      <div ref={recordListRef} tabIndex={-1} role="region" aria-label="当前提示词模板列表" className="min-w-0">
+      <div ref={recordListRef} tabIndex={-1} role="region" aria-label="Current prompt template list" className="min-w-0">
       {isLoading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3" role="status" aria-busy="true">
-          <span className="sr-only">正在加载提示词模板</span>
+          <span className="sr-only">Loading prompt templates</span>
           {Array.from({ length: 6 }, (_, index) => (
             <Card key={index} aria-hidden="true" density="compact">
               <div className="flex items-start justify-between gap-3">
@@ -213,11 +213,11 @@ export function AdminPromptTemplatesView() {
               <Card key={t.id} density="compact">
                 <CardBody className="gap-2">
                   <div className="flex items-start justify-between gap-3">
-                    <Badge tone="neutral" className="[&>span]:whitespace-normal [&>span]:break-words [overflow-wrap:anywhere]">{t.description || '通用模板'}</Badge>
+                    <Badge tone="neutral" className="[&>span]:whitespace-normal [&>span]:break-words [overflow-wrap:anywhere]">{t.description || 'General template'}</Badge>
                     <IconButton
                       variant="danger-ghost"
                       size="sm"
-                      aria-label={`删除提示词模板：${t.name}`}
+                      aria-label={`Delete prompt template: ${t.name}`}
                       loading={!!deleteTarget && deleteTarget.id === t.id && actions.isPending(deletionKey)}
                       disabled={actions.isPending(deletionKey) || createMutation.isPending}
                       onClick={() => requestDeleteTemplate(t)}
@@ -226,7 +226,7 @@ export function AdminPromptTemplatesView() {
                   </div>
                   <CardTitle level={3}>{t.name}</CardTitle>
                   <CardDescription className="line-clamp-3">{t.instruction}</CardDescription>
-                  <Button variant="secondary" onClick={() => setDetailTemplate(t)}>查看指令全文</Button>
+                  <Button variant="secondary" onClick={() => setDetailTemplate(t)}>View full instructions</Button>
                 </CardBody>
               </Card>
             ))}
@@ -235,10 +235,10 @@ export function AdminPromptTemplatesView() {
           <Card>
             <EmptyState
               variant="first-use"
-              objectName="提示词模板"
-              title={search.trim() ? '当前激活集中没有匹配模板' : undefined}
-              description={search.trim() ? '请调整或清除搜索词；搜索不包含其它模板集版本。' : undefined}
-              actionLabel="创建第一个模板"
+              objectName="Prompt templates"
+              title={search.trim() ? 'No matching templates in the active set' : undefined}
+              description={search.trim() ? 'Adjust or clear the search term; the search does not include other template set versions.' : undefined}
+              actionLabel="Create first template"
               onAction={() => {
                 setActionError('')
                 setCreateModalOpen(true)
@@ -249,32 +249,32 @@ export function AdminPromptTemplatesView() {
       ) : null}
       </div>
 
-      <AdminRecordDetailDialog open={detailTemplate !== null || deleteTarget !== null} onClose={() => { setDetailTemplate(null); setDeleteTarget(null) }} title="提示词模板全文"
+      <AdminRecordDetailDialog open={detailTemplate !== null || deleteTarget !== null} onClose={() => { setDetailTemplate(null); setDeleteTarget(null) }} title="Full prompt template"
         listFocusRef={recordListRef}
         confirmation={deleteTarget ? {
-          objectName: `${deleteTarget.name}（${deleteTarget.id}）`,
-          impact: '删除将派生并激活新的模板集版本，影响创作台可用模板；不会直接编辑旧版本。操作与目录刷新完成前，不能删除其它条目。',
+          objectName: `${deleteTarget.name} (${deleteTarget.id})`,
+          impact: 'Deleting will derive and activate a new template set version, affecting the templates available in the studio; it does not edit the old version directly. No other entries can be deleted until the operation and directory refresh complete.',
           pending: actions.isPending(deletionKey),
           error: actions.errors[deletionKey],
-          cancelLabel: detailTemplate ? '返回详情' : '取消',
+          cancelLabel: detailTemplate ? 'Back to details' : 'Cancel',
           onCancel: () => setDeleteTarget(null),
           onConfirm: () => {
             if (!deleteTarget || createMutation.isPending || actions.isPending(deletionKey)) return
             const target = deleteTarget
-            void actions.run(deletionKey, target.name, () => deleteMutation.mutateAsync(target.id), '模板已删除', 'delete')
+            void actions.run(deletionKey, target.name, () => deleteMutation.mutateAsync(target.id), 'Template deleted', 'delete')
               .then(() => {
                 setDeleteTarget((current) => current?.id === target.id ? null : current)
                 setDetailTemplate((current) => current?.id === target.id ? null : current)
               }).catch(() => {})
           },
         } : undefined}
-        danger={detailTemplate && <Button variant="danger-ghost" disabled={actions.isPending(deletionKey) || createMutation.isPending} onClick={() => requestDeleteTemplate(detailTemplate)}>删除此模板</Button>}>
+        danger={detailTemplate && <Button variant="danger-ghost" disabled={actions.isPending(deletionKey) || createMutation.isPending} onClick={() => requestDeleteTemplate(detailTemplate)}>Delete this template</Button>}>
         {detailTemplate && <>
           <AdminRecordFields fields={[
-            { label: '名称', value: detailTemplate.name },
-            { label: '描述', value: detailTemplate.description || '通用模板' },
+            { label: 'Name', value: detailTemplate.name },
+            { label: 'Description', value: detailTemplate.description || 'General template' },
           ]} />
-          <div className="min-w-0"><h3 className="mb-2 text-sm font-medium">完整指令（Instruction）</h3>
+          <div className="min-w-0"><h3 className="mb-2 text-sm font-medium">Full instructions (Instruction)</h3>
             <pre className="select-text whitespace-pre-wrap break-words font-mono text-sm [overflow-wrap:anywhere]">{detailTemplate.instruction}</pre>
           </div>
         </>}
@@ -284,7 +284,7 @@ export function AdminPromptTemplatesView() {
       <Dialog
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
-        title="创建提示词模板"
+        title="Create prompt template"
         size="narrow"
       panelClassName="max-h-[90dvh] max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_button]:min-w-[var(--control-lg)]"
       >
@@ -301,43 +301,43 @@ export function AdminPromptTemplatesView() {
             </Alert>
           ) : null}
 
-          <FormField label="模板名称" required>
+          <FormField label="Template name" required>
             <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="例如：赛博朋克都市风格"
+              placeholder="Example: cyberpunk city style"
             />
           </FormField>
 
-          <FormField label="说明描述" hint="用于创作台的标签位置，留空时显示为通用模板。">
+          <FormField label="Description" hint="Used for the label in the studio; shows as a general template when left empty.">
             <Input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="例如：增强色彩对比与霓虹光效"
+              placeholder="Example: enhance color contrast and neon lighting"
             />
           </FormField>
 
           <FormField
-            label="模板指令内容（Instruction）"
+            label="Template instruction content (Instruction)"
             required
-            hint="发送给模型的正文模板，支持 {{input_prompt}} 插值。"
+            hint="The body template sent to the model; supports {{input_prompt}} interpolation."
           >
             <Textarea
               rows={4}
               value={instruction}
               onChange={(e) => setInstruction(e.target.value)}
-              placeholder="输入详细的提示词引导模板…"
+              placeholder="Enter a detailed prompt template…"
             />
           </FormField>
 
           <div className="flex flex-wrap justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => setCreateModalOpen(false)}>
-              取消
+              Cancel
             </Button>
             <Button type="submit" disabled={!name.trim() || !instruction.trim() || actions.isPending(deletionKey)} loading={createMutation.isPending}>
-              创建模板
+              Create template
             </Button>
           </div>
         </form>

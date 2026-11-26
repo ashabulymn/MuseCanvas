@@ -261,7 +261,7 @@ export function MediaFrame({
         // has to survive as the only clue that this cell is broken.
         <span className="absolute inset-0 flex items-center justify-center bg-tonal">
           <ImageOff weight="duotone" aria-hidden="true" className={`${iconSize.lg} text-muted-foreground`} />
-          <span className="sr-only">预览加载失败</span>
+          <span className="sr-only">Preview failed to load</span>
         </span>
       ) : null}
       {/* Bottom-left duration / mute chip over the functional scrim. */}
@@ -272,7 +272,7 @@ export function MediaFrame({
           {hasAudio === false ? (
             <>
               <VolumeX weight="bold" className="h-3 w-3" aria-hidden="true" />
-              <span className="sr-only">无声</span>
+              <span className="sr-only">Muted</span>
             </>
           ) : (
             <>

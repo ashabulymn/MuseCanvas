@@ -11,7 +11,7 @@ import { ToastProvider } from '@/shared/components/ui/toast'
 
 export const metadata: Metadata = {
   title: 'MuseCanvas',
-  description: 'Meja kerja AI image generation untuk kreator: prompt, ukuran kanvas dan gambar referensi, antrean tugas, dan galeri karya tetap dalam satu jalur kreasi.',
+  description: 'An AI image generation workspace for creators: prompts, canvas sizes and reference images, task queue, and work gallery — all in one creative flow.',
   icons: { icon: '/favicon.png' },
 }
 
@@ -21,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="id" className="font-sans" suppressHydrationWarning>
+    <html lang="en" className="font-sans" suppressHydrationWarning>
       <head>
         {/* Theme bootstrap: manual choice (localStorage) beats the OS
             preference. Runs before first paint to avoid a light/dark flash. */}

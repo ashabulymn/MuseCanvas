@@ -17,10 +17,10 @@ export function AdminQueryFeedback({
     <Alert
       tone="danger"
       role="alert"
-      title={hasData ? `${label}刷新失败` : `无法加载${label}`}
-      action={<Button variant="secondary" size="sm" onClick={onRetry}>重试</Button>}
+      title={hasData ? `${label} refresh failed` : `Unable to load ${label}`}
+      action={<Button variant="secondary" size="sm" onClick={onRetry}>Retry</Button>}
     >
-      {error.message}。{hasData ? '仍显示上次成功的数据，可能已过时。' : '请稍后重试。'}
+      {error.message}.{hasData ? 'Still showing the last successfully loaded data, which may be outdated.' : 'Please try again later.'}
     </Alert>
   )
 }

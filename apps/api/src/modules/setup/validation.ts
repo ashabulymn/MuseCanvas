@@ -14,7 +14,7 @@ export const INVALID_INPUT = (message: string): InputError => ({ code: 'INVALID_
 
 export function rejectUnknownFields(input: Record<string, unknown>, allowed: ReadonlySet<string>): InputError | null {
   for (const key of Object.keys(input)) {
-    if (!allowed.has(key)) return INVALID_INPUT('请求包含不允许的字段')
+    if (!allowed.has(key)) return INVALID_INPUT('Request contains disallowed fields')
   }
   return null
 }
@@ -22,12 +22,12 @@ export function rejectUnknownFields(input: Record<string, unknown>, allowed: Rea
 function optionalText(value: unknown, maxLength: number): string | null | undefined | InputError {
   if (value === undefined) return undefined
   if (value === null) return null
-  if (typeof value !== 'string') return INVALID_INPUT('请求参数类型无效')
+  if (typeof value !== 'string') return INVALID_INPUT('Invalid request parameter type')
   const trimmed = value.trim()
   if (trimmed === '') return null
-  if (trimmed.length > maxLength) return INVALID_INPUT('请求参数长度超出限制')
+  if (trimmed.length > maxLength) return INVALID_INPUT('Request parameter length exceeds the limit')
   // eslint-disable-next-line no-control-regex
-  if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(trimmed)) return INVALID_INPUT('请求参数包含非法字符')
+  if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(trimmed)) return INVALID_INPUT('Request parameter contains illegal characters')
   return trimmed
 }
 
@@ -46,32 +46,32 @@ function optionalInt(
   if (value === undefined) return undefined
   if (value === null) return null
   const parsed = typeof value === 'number' ? value : Number(value)
-  if (!Number.isSafeInteger(parsed) || parsed < min || parsed > max) return INVALID_INPUT('数值参数超出允许范围')
+  if (!Number.isSafeInteger(parsed) || parsed < min || parsed > max) return INVALID_INPUT('Numeric parameter is out of range')
   return parsed
 }
 
 // Canonical public origin: scheme + host (+ port) only, no trailing slash.
 export function canonicalPublicOrigin(raw: unknown): string | InputError {
-  if (typeof raw !== 'string' || !raw.trim()) return INVALID_INPUT('站点地址不能为空')
+  if (typeof raw !== 'string' || !raw.trim()) return INVALID_INPUT('Site address cannot be empty')
   const trimmed = raw.trim().replace(/\/+$/, '')
-  if (trimmed.length > 500) return INVALID_INPUT('站点地址过长')
+  if (trimmed.length > 500) return INVALID_INPUT('Site address is too long')
   let url: URL
   try {
     url = new URL(trimmed)
   } catch {
-    return { code: 'PUBLIC_ORIGIN_INVALID', message: '站点地址必须是合法的 URL' }
+    return { code: 'PUBLIC_ORIGIN_INVALID', message: 'Site address must be a valid URL' }
   }
   const insecureOk = process.env.ALLOW_INSECURE_PUBLIC_ORIGIN === 'true'
   const host = url.hostname.toLowerCase()
   const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1'
   if (url.protocol !== 'https:' && !(url.protocol === 'http:' && (isLocal || insecureOk))) {
-    return { code: 'PUBLIC_ORIGIN_INVALID', message: '站点地址必须使用 HTTPS' }
+    return { code: 'PUBLIC_ORIGIN_INVALID', message: 'Site address must use HTTPS' }
   }
   if (url.username || url.password || url.search || url.hash) {
-    return { code: 'PUBLIC_ORIGIN_INVALID', message: '站点地址不能包含认证信息或查询参数' }
+    return { code: 'PUBLIC_ORIGIN_INVALID', message: 'Site address cannot contain authentication info or query parameters' }
   }
   if (url.pathname !== '/' && url.pathname !== '') {
-    return { code: 'PUBLIC_ORIGIN_INVALID', message: '站点地址不能包含路径' }
+    return { code: 'PUBLIC_ORIGIN_INVALID', message: 'Site address cannot contain a path' }
   }
   return url.origin
 }
@@ -86,7 +86,7 @@ export interface ValidSiteInput {
 export function validateSiteInput(input: Record<string, unknown>): ValidSiteInput | InputError {
   const unknown = rejectUnknownFields(input, SITE_FIELDS)
   if (unknown) return unknown
-  const siteName = requiredText(input.siteName, 120, '站点名称不能为空')
+  const siteName = requiredText(input.siteName, 120, 'Site name cannot be empty')
   if (typeof siteName !== 'string') return siteName
   if (input.siteUrl === undefined || input.siteUrl === null || input.siteUrl === '') {
     return { siteName, siteUrl: null }
@@ -120,7 +120,7 @@ export function validateSmtpInput(input: Record<string, unknown>): ValidSmtpInpu
   let tlsMode: ValidSmtpInput['tlsMode'] = undefined
   if (input.tlsMode !== undefined) {
     if (input.tlsMode !== 'none' && input.tlsMode !== 'starttls' && input.tlsMode !== 'implicit_tls') {
-      return INVALID_INPUT('TLS 模式无效')
+      return INVALID_INPUT('Invalid TLS mode')
     }
     tlsMode = input.tlsMode
   }
@@ -131,14 +131,14 @@ export function validateSmtpInput(input: Record<string, unknown>): ValidSmtpInpu
     if (input.password === null || input.password === '') {
       password = { kind: 'clear' }
     } else if (typeof input.password !== 'string' || input.password.length > 2000) {
-      return INVALID_INPUT('SMTP 密码无效')
+      return INVALID_INPUT('Invalid SMTP password')
     } else {
       password = { kind: 'set', password: input.password }
     }
   }
   const fromAddress = optionalText(input.fromAddress, 254)
   if (fromAddress instanceof Object && 'code' in fromAddress) return fromAddress
-  if (fromAddress && !emailValid(fromAddress)) return INVALID_INPUT('发件人邮箱格式不正确')
+  if (fromAddress && !emailValid(fromAddress)) return INVALID_INPUT('Invalid sender email format')
   const fromName = optionalText(input.fromName, 120)
   if (fromName instanceof Object && 'code' in fromName) return fromName
   if (
@@ -146,21 +146,21 @@ export function validateSmtpInput(input: Record<string, unknown>): ValidSmtpInpu
     && process.env.NODE_ENV === 'production'
     && process.env.ALLOW_INSECURE_SMTP !== 'true'
   ) {
-    return INVALID_INPUT('生产环境必须启用 SMTP 加密')
+    return INVALID_INPUT('SMTP encryption must be enabled in production')
   }
   return { host, port, tlsMode, username, password, fromAddress, fromName }
 }
 
 function validHttpUrl(raw: string, field: string): string | InputError {
-  if (raw.length > 500) return INVALID_INPUT(`${field}过长`)
+  if (raw.length > 500) return INVALID_INPUT(`${field} is too long`)
   let url: URL
   try {
     url = new URL(raw.trim())
   } catch {
-    return INVALID_INPUT(`${field}必须是合法的 URL`)
+    return INVALID_INPUT(`${field} must be a valid URL`)
   }
-  if (url.protocol !== 'https:' && url.protocol !== 'http:') return INVALID_INPUT(`${field}必须使用 HTTP(S)`)
-  if (url.username || url.password || url.search || url.hash) return INVALID_INPUT(`${field}不能包含认证信息或查询参数`)
+  if (url.protocol !== 'https:' && url.protocol !== 'http:') return INVALID_INPUT(`${field} must use HTTP(S)`)
+  if (url.username || url.password || url.search || url.hash) return INVALID_INPUT(`${field} cannot contain authentication info or query parameters`)
   return url.toString().replace(/\/+$/, '')
 }
 
@@ -194,9 +194,9 @@ export function validateStorageInput(input: Record<string, unknown>): ValidStora
     if (input.endpoint === null || input.endpoint === '') {
       endpoint = null
     } else if (typeof input.endpoint !== 'string') {
-      return INVALID_INPUT('对象存储服务端点无效')
+      return INVALID_INPUT('Invalid object storage endpoint')
     } else {
-      const parsed = validHttpUrl(input.endpoint, '对象存储服务端点')
+      const parsed = validHttpUrl(input.endpoint, 'Object storage endpoint')
       if (typeof parsed !== 'string') return parsed
       endpoint = parsed
     }
@@ -206,9 +206,9 @@ export function validateStorageInput(input: Record<string, unknown>): ValidStora
     if (input.publicEndpoint === null || input.publicEndpoint === '') {
       publicEndpoint = null
     } else if (typeof input.publicEndpoint !== 'string') {
-      return INVALID_INPUT('对象存储公网端点无效')
+      return INVALID_INPUT('Invalid object storage public endpoint')
     } else {
-      const parsed = validHttpUrl(input.publicEndpoint, '对象存储公网端点')
+      const parsed = validHttpUrl(input.publicEndpoint, 'Object storage public endpoint')
       if (typeof parsed !== 'string') return parsed
       publicEndpoint = parsed
     }
@@ -218,7 +218,7 @@ export function validateStorageInput(input: Record<string, unknown>): ValidStora
     if (input.region === null || input.region === '') {
       region = null
     } else if (typeof input.region !== 'string' || !/^[a-z0-9-]{1,32}$/.test(input.region.trim())) {
-      return INVALID_INPUT('存储区域无效')
+      return INVALID_INPUT('Invalid storage region')
     } else {
       region = input.region.trim()
     }
@@ -228,7 +228,7 @@ export function validateStorageInput(input: Record<string, unknown>): ValidStora
     if (input.bucket === null || input.bucket === '') {
       bucket = null
     } else if (typeof input.bucket !== 'string' || !/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(input.bucket.trim())) {
-      return INVALID_INPUT('存储桶名称无效')
+      return INVALID_INPUT('Invalid storage bucket name')
     } else {
       bucket = input.bucket.trim()
     }
@@ -240,7 +240,7 @@ export function validateStorageInput(input: Record<string, unknown>): ValidStora
     if (input.secretAccessKey === null || input.secretAccessKey === '') {
       secret = { kind: 'clear' }
     } else if (typeof input.secretAccessKey !== 'string' || input.secretAccessKey.length > 2000) {
-      return INVALID_INPUT('对象存储密钥无效')
+      return INVALID_INPUT('Invalid object storage secret key')
     } else {
       secret = { kind: 'set', secret: input.secretAccessKey }
     }
@@ -301,11 +301,11 @@ export function validateRuntimeInput(input: Record<string, unknown>): ValidRunti
     if (parsed instanceof Object && 'code' in parsed) return parsed
     output[key as keyof ValidRuntimeInput] = parsed as number
   }
-  if (present === 0) return INVALID_INPUT('运行时设置不能为空')
+  if (present === 0) return INVALID_INPUT('Runtime settings cannot be empty')
   const maxImage = output.maxImageBytes ?? undefined
   const maxTotal = output.maxTotalBytes ?? undefined
   if (typeof maxImage === 'number' && typeof maxTotal === 'number' && maxTotal < maxImage) {
-    return INVALID_INPUT('总大小上限不能小于单图大小上限')
+    return INVALID_INPUT('Total size limit cannot be less than the single-image size limit')
   }
   return output
 }
@@ -328,34 +328,34 @@ function templateVariablesValid(instruction: string): boolean {
 }
 
 export function validateTemplateImport(input: unknown): ValidTemplateEntry[] | InputError {
-  if (!input || typeof input !== 'object' || Array.isArray(input)) return INVALID_INPUT('模板列表无效')
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return INVALID_INPUT('Invalid template list')
   // Boundary value: narrowed to a non-array object; fields are validated per use below.
   const record: Record<string, unknown> = input as Record<string, unknown>
   const raw = record.templates ?? record.entries
-  if (!Array.isArray(raw)) return INVALID_INPUT('模板列表无效')
-  if (raw.length === 0 || raw.length > TEMPLATE_MAX_ENTRIES) return INVALID_INPUT('模板数量必须在 1 到 100 之间')
+  if (!Array.isArray(raw)) return INVALID_INPUT('Invalid template list')
+  if (raw.length === 0 || raw.length > TEMPLATE_MAX_ENTRIES) return INVALID_INPUT('Template count must be between 1 and 100')
   const names = new Set<string>()
   const entries: ValidTemplateEntry[] = []
   for (const item of raw) {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) return INVALID_INPUT('模板条目无效')
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return INVALID_INPUT('Invalid template entry')
     const record = item as Record<string, unknown>
-    const name = requiredText(record.name, 120, '模板名称不能为空')
+    const name = requiredText(record.name, 120, 'Template name cannot be empty')
     if (typeof name !== 'string') return name
-    if (names.has(name)) return INVALID_INPUT('模板名称不能重复')
+    if (names.has(name)) return INVALID_INPUT('Template names must be unique')
     names.add(name)
     const descriptionRaw = record.description
     if (descriptionRaw !== undefined && descriptionRaw !== null && typeof descriptionRaw !== 'string') {
-      return INVALID_INPUT('模板描述无效')
+      return INVALID_INPUT('Invalid template description')
     }
     const description = typeof descriptionRaw === 'string' ? descriptionRaw.trim() : ''
-    if (description.length > 1000) return INVALID_INPUT('模板描述过长')
+    if (description.length > 1000) return INVALID_INPUT('Template description is too long')
     const instructionRaw = record.instruction ?? record.content
-    if (typeof instructionRaw !== 'string' || !instructionRaw.trim()) return INVALID_INPUT('模板内容不能为空')
+    if (typeof instructionRaw !== 'string' || !instructionRaw.trim()) return INVALID_INPUT('Template content cannot be empty')
     if (Buffer.byteLength(instructionRaw, 'utf8') > TEMPLATE_MAX_INSTRUCTION_BYTES) {
-      return INVALID_INPUT('模板内容超出 128KB 上限')
+      return INVALID_INPUT('Template content exceeds the 128KB limit')
     }
-    if (instructionRaw.indexOf(String.fromCharCode(0)) !== -1) return INVALID_INPUT('模板内容包含非法字符')
-    if (!templateVariablesValid(instructionRaw)) return INVALID_INPUT('模板包含不支持的变量')
+    if (instructionRaw.indexOf(String.fromCharCode(0)) !== -1) return INVALID_INPUT('Template content contains illegal characters')
+    if (!templateVariablesValid(instructionRaw)) return INVALID_INPUT('Template contains unsupported variables')
     entries.push({ name, description, instruction: instructionRaw })
   }
   return entries

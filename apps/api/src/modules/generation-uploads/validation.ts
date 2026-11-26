@@ -59,15 +59,15 @@ export function normalizeGenerationInputs(
     return legacyIds.map((id, index) => ({ uploadId: id, role: fallbackRole, position: index }))
   }
   if (!Array.isArray(inputs)) {
-    throw new GenerationInputError('INVALID_INPUT', 'inputs 必须为数组')
+    throw new GenerationInputError('INVALID_INPUT', 'inputs must be an array')
   }
   if (inputs.length > 32) {
-    throw new GenerationInputError('INVALID_INPUT', '输入数量超出上限')
+    throw new GenerationInputError('INVALID_INPUT', 'Input count exceeds the limit')
   }
   const seen: Record<string, true> = {}
   const normalized: NormalizedGenerationInput[] = inputs.map((item, index) => {
     if (!item || typeof item !== 'object') {
-      throw new GenerationInputError('INVALID_INPUT', '输入项格式无效')
+      throw new GenerationInputError('INVALID_INPUT', 'Invalid input item format')
     }
     const record = item as Record<string, unknown>
     // An input carries exactly one reference: an upload (bytes the browser streamed
@@ -76,27 +76,27 @@ export function normalizeGenerationInputs(
     const uploadId = typeof record.uploadId === 'string' ? record.uploadId.trim() : ''
     const assetId = typeof record.assetId === 'string' ? record.assetId.trim() : ''
     if (uploadId && assetId) {
-      throw new GenerationInputError('INVALID_INPUT', '输入不能同时携带 uploadId 与 assetId')
+      throw new GenerationInputError('INVALID_INPUT', 'An input cannot carry both uploadId and assetId')
     }
     if (!uploadId && !assetId) {
-      throw new GenerationInputError('INVALID_INPUT', '输入必须提供 uploadId 或 assetId')
+      throw new GenerationInputError('INVALID_INPUT', 'An input must provide uploadId or assetId')
     }
     const ref = uploadId || assetId
     // Both kinds are uuids (`gen_random_uuid()`), so one pattern covers them.
     if (!GENERATION_UPLOAD_ID_PATTERN.test(ref)) {
-      throw new GenerationInputError('INVALID_INPUT', uploadId ? '输入 uploadId 格式无效' : '输入 assetId 格式无效')
+      throw new GenerationInputError('INVALID_INPUT', uploadId ? 'Invalid input uploadId format' : 'Invalid input assetId format')
     }
     // Kind-prefixed key: the same string used as an upload id and as an asset id
     // refers to two different images, so it is not a duplicate.
     const refKey = uploadId ? `u:${ref}` : `a:${ref}`
     if (seen[refKey]) {
-      throw new GenerationInputError('INVALID_INPUT', uploadId ? '输入 uploadId 重复' : '输入 assetId 重复')
+      throw new GenerationInputError('INVALID_INPUT', uploadId ? 'Duplicate input uploadId' : 'Duplicate input assetId')
     }
     seen[refKey] = true
     const role = typeof record.role === 'string' && record.role.trim() ? record.role.trim() : fallbackRole
     const position = record.position === undefined || record.position === null ? index : Number(record.position)
     if (!Number.isInteger(position) || position < 0 || position >= 32) {
-      throw new GenerationInputError('INVALID_INPUT', '输入 position 无效')
+      throw new GenerationInputError('INVALID_INPUT', 'Invalid input position')
     }
     return { ...(uploadId ? { uploadId } : { assetId }), role, position }
   })
@@ -116,12 +116,12 @@ export function validateInputsAgainstSlots(
 ): NormalizedGenerationInput[] {
   const maxInputs = limits?.maxInputs ?? MAX_INPUT_IMAGES
   if (normalized.length > maxInputs) {
-    throw new GenerationInputError('INVALID_INPUT', '参考图数量超出上限')
+    throw new GenerationInputError('INVALID_INPUT', 'Reference image count exceeds the limit')
   }
   if (!slots || slots.length === 0) {
     for (const item of normalized) {
       if (!KNOWN_INPUT_ROLES[item.role]) {
-        throw new GenerationInputError('INVALID_INPUT', `不支持的输入角色：${item.role}`)
+        throw new GenerationInputError('INVALID_INPUT', `Unsupported input role: ${item.role}`)
       }
     }
     return normalized
@@ -136,16 +136,16 @@ export function validateInputsAgainstSlots(
     const min = slot.minCount ?? (slot.required ? 1 : 0)
     const max = slot.maxCount ?? maxInputs
     if (items.length < min) {
-      throw new GenerationInputError('INVALID_INPUT', `缺少必需的输入：${slot.role}`)
+      throw new GenerationInputError('INVALID_INPUT', `Missing required input: ${slot.role}`)
     }
     if (items.length > max) {
-      throw new GenerationInputError('INVALID_INPUT', `输入 ${slot.role} 数量超出模型支持上限`)
+      throw new GenerationInputError('INVALID_INPUT', `Input ${slot.role} count exceeds the model limit`)
     }
     delete byRole[slot.role]
   }
   const leftovers = Object.keys(byRole)
   if (leftovers.length > 0) {
-    throw new GenerationInputError('INVALID_INPUT', `当前模型不支持输入角色：${leftovers.join(',')}`)
+    throw new GenerationInputError('INVALID_INPUT', `The current model does not support input role(s): ${leftovers.join(',')}`)
   }
   return normalized
 }
@@ -158,27 +158,27 @@ export function validateInputImageIdsSyntax(
 ): string[] {
   if (inputImageIds === undefined || inputImageIds === null) return []
   if (!Array.isArray(inputImageIds)) {
-    throw new GenerationInputError('INVALID_INPUT', 'inputImageIds 必须为数组')
+    throw new GenerationInputError('INVALID_INPUT', 'inputImageIds must be an array')
   }
   if (inputImageIds.length === 0) return []
   const maxInputs = limits?.maxInputs ?? MAX_INPUT_IMAGES
   if (inputImageIds.length > maxInputs) {
-    throw new GenerationInputError('INVALID_INPUT', '参考图数量超出上限')
+    throw new GenerationInputError('INVALID_INPUT', 'Reference image count exceeds the limit')
   }
   if (modelMaxInputImages <= 0) {
-    throw new GenerationInputError('MODEL_INPUT_IMAGES_NOT_SUPPORTED', '当前模型不支持参考图输入', 400)
+    throw new GenerationInputError('MODEL_INPUT_IMAGES_NOT_SUPPORTED', 'The current model does not support reference image input', 400)
   }
   if (inputImageIds.length > modelMaxInputImages) {
-    throw new GenerationInputError('INVALID_INPUT', '参考图数量超出模型支持上限', 400)
+    throw new GenerationInputError('INVALID_INPUT', 'Reference image count exceeds the model limit', 400)
   }
 
   const seen: Record<string, true> = {}
   for (const id of inputImageIds) {
     if (typeof id !== 'string' || !GENERATION_UPLOAD_ID_PATTERN.test(id)) {
-      throw new GenerationInputError('INVALID_INPUT', '参考图 ID 格式无效')
+      throw new GenerationInputError('INVALID_INPUT', 'Invalid reference image ID format')
     }
     if (seen[id]) {
-      throw new GenerationInputError('INVALID_INPUT', '参考图 ID 重复')
+      throw new GenerationInputError('INVALID_INPUT', 'Duplicate reference image ID')
     }
     seen[id] = true
   }
@@ -201,7 +201,7 @@ export async function validateAndAttachGenerationInputs(
 ): Promise<void> {
   const maxInputs = limits?.maxInputs ?? MAX_INPUT_IMAGES
   if (inputImageIds.length > maxInputs) {
-    throw new GenerationInputError('INVALID_INPUT', '参考图数量超出上限')
+    throw new GenerationInputError('INVALID_INPUT', 'Reference image count exceeds the limit')
   }
 
   const result = await client.query(
@@ -213,7 +213,7 @@ export async function validateAndAttachGenerationInputs(
   )
 
   if (result.rows.length !== inputImageIds.length) {
-    throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', '参考图不存在或无权访问')
+    throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', 'Reference image not found or inaccessible')
   }
 
   const rowsById: Record<string, Record<string, unknown>> = {}
@@ -227,27 +227,27 @@ export async function validateAndAttachGenerationInputs(
   for (const id of inputImageIds) {
     const row = rowsById[id]
     if (!row || row.deleted_at !== null || row.status === 'deleted') {
-      throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', '参考图已被删除')
+      throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', 'Reference image has been deleted')
     }
     if (row.status !== 'ready') {
-      throw new GenerationInputError('INVALID_INPUT_IMAGE', '参考图未就绪')
+      throw new GenerationInputError('INVALID_INPUT_IMAGE', 'Reference image is not ready')
     }
     if (row.attached_job_id !== null && row.attached_job_id !== undefined) {
-      throw new GenerationInputError('INVALID_INPUT_IMAGE', '参考图已被其他任务使用')
+      throw new GenerationInputError('INVALID_INPUT_IMAGE', 'Reference image is already used by another task')
     }
     const expiresAt = new Date(row.expires_at as string | number | Date).getTime()
     if (Number.isFinite(expiresAt) && expiresAt <= now) {
-      throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', '参考图已过期')
+      throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', 'Reference image has expired')
     }
     const sizeBytes = Number(row.size_bytes || 0)
     const maxSingle = limits?.maxImageBytes ?? MAX_UPLOAD_IMAGE_BYTES
     if (sizeBytes > maxSingle) {
-      throw new GenerationInputError('INVALID_INPUT_IMAGE_SIZE', '参考图大小超出限制')
+      throw new GenerationInputError('INVALID_INPUT_IMAGE_SIZE', 'Reference image size exceeds the limit')
     }
     totalBytes += sizeBytes
   }
   if (totalBytes > (limits?.maxTotalBytes ?? MAX_UPLOAD_TOTAL_BYTES)) {
-    throw new GenerationInputError('INVALID_INPUT_IMAGE_SIZE', '参考图总大小超出限制')
+    throw new GenerationInputError('INVALID_INPUT_IMAGE_SIZE', 'Total reference image size exceeds the limit')
   }
 
   for (let i = 0; i < inputImageIds.length; i++) {
@@ -283,7 +283,7 @@ export async function validateAndAttachGenerationUploads(
 ): Promise<number> {
   const maxInputs = limits?.maxInputs ?? MAX_INPUT_IMAGES
   if (normalized.length > maxInputs) {
-    throw new GenerationInputError('INVALID_INPUT', '参考图数量超出上限')
+    throw new GenerationInputError('INVALID_INPUT', 'Reference image count exceeds the limit')
   }
   const items = normalized.filter((item): item is NormalizedGenerationInput & { uploadId: string } =>
     Boolean(item.uploadId),
@@ -319,7 +319,7 @@ export async function validateAndAttachGenerationUploads(
     rows = [...rows, ...fallback.rows.map(row => ({ ...row, media_kind: 'image' }))]
   }
   if (rows.length !== ids.length) {
-    throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', '参考图不存在或无权访问')
+    throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', 'Reference image not found or inaccessible')
   }
   const rowsById: Record<string, Record<string, unknown>> = {}
   for (const row of rows) {
@@ -330,27 +330,27 @@ export async function validateAndAttachGenerationUploads(
   for (const item of items) {
     const row = rowsById[item.uploadId]
     if (!row || row.deleted_at !== null || row.status === 'deleted') {
-      throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', '参考图已被删除')
+      throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', 'Reference image has been deleted')
     }
     if (row.status !== 'ready') {
-      throw new GenerationInputError('INVALID_INPUT_IMAGE', '参考图未就绪')
+      throw new GenerationInputError('INVALID_INPUT_IMAGE', 'Reference image is not ready')
     }
     if (row.attached_job_id !== null && row.attached_job_id !== undefined) {
-      throw new GenerationInputError('INVALID_INPUT_IMAGE', '参考图已被其他任务使用')
+      throw new GenerationInputError('INVALID_INPUT_IMAGE', 'Reference image is already used by another task')
     }
     const expiresAt = new Date(row.expires_at as string | number | Date).getTime()
     if (Number.isFinite(expiresAt) && expiresAt <= now) {
-      throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', '参考图已过期')
+      throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', 'Reference image has expired')
     }
     const sizeBytes = Number(row.size_bytes || 0)
     const maxSingle = limits?.maxImageBytes ?? MAX_UPLOAD_IMAGE_BYTES
     if (sizeBytes > maxSingle) {
-      throw new GenerationInputError('INVALID_INPUT_IMAGE_SIZE', '参考图大小超出限制')
+      throw new GenerationInputError('INVALID_INPUT_IMAGE_SIZE', 'Reference image size exceeds the limit')
     }
     totalBytes += sizeBytes
   }
   if (totalBytes > (limits?.maxTotalBytes ?? MAX_UPLOAD_TOTAL_BYTES)) {
-    throw new GenerationInputError('INVALID_INPUT_IMAGE_SIZE', '参考图总大小超出限制')
+    throw new GenerationInputError('INVALID_INPUT_IMAGE_SIZE', 'Total reference image size exceeds the limit')
   }
   for (const item of items) {
     const mediaKind = String(rowsById[item.uploadId]?.media_kind || 'image')
@@ -407,7 +407,7 @@ export async function validateAndAttachGenerationAssets(
 ): Promise<number> {
   const maxInputs = limits?.maxInputs ?? MAX_INPUT_IMAGES
   if (normalized.length > maxInputs) {
-    throw new GenerationInputError('INVALID_INPUT', '参考图数量超出上限')
+    throw new GenerationInputError('INVALID_INPUT', 'Reference image count exceeds the limit')
   }
   const items = normalized.filter((item): item is NormalizedGenerationInput & { assetId: string } =>
     Boolean(item.assetId),
@@ -424,7 +424,7 @@ export async function validateAndAttachGenerationAssets(
     [ids, actorId],
   )
   if (result.rows.length !== ids.length) {
-    throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', '参考图不存在或无权访问')
+    throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', 'Reference image not found or inaccessible')
   }
   const rowsById: Record<string, Record<string, unknown>> = {}
   for (const row of result.rows) {
@@ -437,13 +437,13 @@ export async function validateAndAttachGenerationAssets(
   for (const item of items) {
     const row = rowsById[item.assetId]
     if (!row) {
-      throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', '参考图不存在或无权访问')
+      throw new GenerationInputError('INPUT_IMAGE_UNAVAILABLE', 'Reference image not found or inaccessible')
     }
     // Only PNG/JPEG bytes survive `inspectImageBytes` in the worker, so a WebP
     // artifact (or a video poster) is rejected here with a readable message instead
     // of failing the job minutes later.
     if (String(row.media_kind || 'image') !== 'image' || !ALLOWED_MIME_TYPES[String(row.mime_type)]) {
-      throw new GenerationInputError('INVALID_INPUT_IMAGE', '图库作品格式不支持作为参考图，仅支持 PNG 或 JPEG 图片')
+      throw new GenerationInputError('INVALID_INPUT_IMAGE', 'Library artwork format is not supported as a reference image; only PNG or JPEG images are supported')
     }
     // Same geometry gate the worker applies to the bytes it loads.
     const width = Number(row.width || 0)
@@ -456,20 +456,20 @@ export async function validateAndAttachGenerationAssets(
     ) {
       throw new GenerationInputError(
         'INVALID_INPUT_IMAGE',
-        `参考图分辨率须在 ${MIN_INPUT_IMAGE_DIMENSION}~${MAX_INPUT_IMAGE_DIMENSION} 像素之间`,
+        `Reference image resolution must be between ${MIN_INPUT_IMAGE_DIMENSION} and ${MAX_INPUT_IMAGE_DIMENSION} pixels`,
       )
     }
     const aspectRatio = Math.max(width / height, height / width)
     if (aspectRatio > MAX_INPUT_IMAGE_ASPECT_RATIO) {
-      throw new GenerationInputError('INVALID_INPUT_IMAGE', `参考图宽高比不能超过 ${MAX_INPUT_IMAGE_ASPECT_RATIO}:1`)
+      throw new GenerationInputError('INVALID_INPUT_IMAGE', `Reference image aspect ratio cannot exceed ${MAX_INPUT_IMAGE_ASPECT_RATIO}:1`)
     }
     const sizeBytes = Number(row.size_bytes || 0)
     if (sizeBytes > maxSingle) {
-      throw new GenerationInputError('INVALID_INPUT_IMAGE_SIZE', '参考图大小超出限制')
+      throw new GenerationInputError('INVALID_INPUT_IMAGE_SIZE', 'Reference image size exceeds the limit')
     }
     totalBytes += sizeBytes
     if (totalBytes > maxTotal) {
-      throw new GenerationInputError('INVALID_INPUT_IMAGE_SIZE', '参考图总大小超出限制')
+      throw new GenerationInputError('INVALID_INPUT_IMAGE_SIZE', 'Total reference image size exceeds the limit')
     }
   }
 

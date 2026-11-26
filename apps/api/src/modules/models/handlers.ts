@@ -111,7 +111,7 @@ export async function validateImageModelContract(
       }
     }
   } catch (error) {
-    return { ok: false, message: error instanceof Error ? error.message : '模型配置与插件契约不符' }
+    return { ok: false, message: error instanceof Error ? error.message : 'Model configuration does not match the plugin contract' }
   }
   // The declared reference slot may not promise more input images than the host
   // can actually stage, and a model that declares no slot accepts none.
@@ -288,7 +288,7 @@ export async function upsertModel(
     ? (await db().query('SELECT * FROM model_configs WHERE id=$1 AND deleted_at IS NULL', [id]))
         .rows[0]
     : null
-  if (id && !existing) return fail('NOT_FOUND', '模型不存在', 404)
+  if (id && !existing) return fail('NOT_FOUND', 'Model not found', 404)
 
   // Uniform across every media kind and both write paths: the parameter contract
   // belongs to the plugin manifest, so a body carrying its own capabilities or
@@ -297,10 +297,10 @@ export async function upsertModel(
   // never declared. An omitted or empty override stays accepted.
   const overrideError = modelOverrideError(input)
   if (overrideError === 'capabilities') {
-    return fail('INVALID_INPUT', 'capabilities 由插件 manifest 声明，不接受自定义覆盖')
+    return fail('INVALID_INPUT', 'capabilities are declared by the plugin manifest and do not accept custom overrides')
   }
   if (overrideError === 'defaults') {
-    return fail('INVALID_INPUT', 'defaults 由插件 manifest 声明，不接受自定义覆盖')
+    return fail('INVALID_INPUT', 'defaults are declared by the plugin manifest and do not accept custom overrides')
   }
 
   return modelSavePath(input) === 'plugin'
@@ -333,12 +333,12 @@ async function savePluginModel(
     // registry alone — decides whether a plugin exists: an uploaded plugin is
     // bindable once the worker has activated its row.
     const catalog = await resolveCatalogPlugin(pluginId, pluginVersion)
-    if (!catalog) return fail('INVALID_PLUGIN', '供应商插件不存在或版本不受支持')
+    if (!catalog) return fail('INVALID_PLUGIN', 'The provider plugin does not exist or its version is not supported')
     const provisionalKind = requestedKind || (catalog.manifest.kind === 'media' ? catalog.manifest.modalities[0] : undefined)
-    if (!provisionalKind) return fail('INVALID_PLUGIN', '供应商插件不存在或版本不受支持')
+    if (!provisionalKind) return fail('INVALID_PLUGIN', 'The provider plugin does not exist or its version is not supported')
     const selection = manifestMediaSelection(catalog.manifest, provisionalKind)
     if (!selection.ok) {
-      return fail('INVALID_PLUGIN', '供应商插件不支持该媒体类型')
+      return fail('INVALID_PLUGIN', 'The provider plugin does not support this media type')
     }
     const mediaKind = selection.mediaKind
     // The hardened 1.1.0 rules are built-in image keys only. An uploaded image
@@ -347,7 +347,7 @@ async function savePluginModel(
     const hardenedImageWrite = mediaKind === 'image' && catalog.source === 'builtin' && Boolean(IMAGE_PLUGIN_IDS[pluginId])
     if (hardenedImageWrite && pluginVersion !== ACTIVE_IMAGE_PLUGIN_VERSION) {
       const pinned = id && existing?.plugin_id === pluginId && existing?.plugin_version === pluginVersion
-      if (!pinned) return fail('INVALID_INPUT', '新的图片模型配置必须使用插件版本 1.1.0')
+      if (!pinned) return fail('INVALID_INPUT', 'A new image model configuration must use plugin version 1.1.0')
     }
     // The plugin declares which provider account it consumes; a caller-supplied id
     // is kept for compatibility but defaults to the declaration.
@@ -357,11 +357,11 @@ async function savePluginModel(
     const displayName = (typeof input.displayName === 'string' && input.displayName.trim()
       ? input.displayName.trim()
       : existing?.display_name) as string | undefined
-    if (!displayName) return fail('INVALID_INPUT', '模型名称不能为空')
+    if (!displayName) return fail('INVALID_INPUT', 'Model name cannot be empty')
     const vendorModelId = (typeof input.vendorModelId === 'string' && input.vendorModelId.trim()
       ? input.vendorModelId.trim()
       : existing?.vendor_model_id) as string | undefined
-    if (!vendorModelId) return fail('INVALID_INPUT', '供应商模型 ID（vendorModelId）必填')
+    if (!vendorModelId) return fail('INVALID_INPUT', 'Provider model ID (vendorModelId) is required')
     // Hardened image keys carry an exhaustive manifest model list: unknown or
     // custom vendor IDs are rejected here so they never reach strict plugin
     // validation. Historical 1.0.0 revisions stay permissive.
@@ -370,23 +370,23 @@ async function savePluginModel(
         globalProviderRegistry.get(pluginId, pluginVersion).manifest.models,
         vendorModelId,
       )
-      if (!supported) return fail('INVALID_INPUT', '供应商模型 ID（vendorModelId）不受该插件版本支持')
+      if (!supported) return fail('INVALID_INPUT', 'Provider model ID (vendorModelId) is not supported by this plugin version')
     }
     const baseUrl = input.baseUrl !== undefined
       ? normalizedProviderBaseUrl(input.baseUrl)
       : (existing?.base_url ?? undefined)
-    if (baseUrl === null) return fail('INVALID_BASE_URL', 'Base URL 必须是安全的 HTTPS 地址')
+    if (baseUrl === null) return fail('INVALID_BASE_URL', 'Base URL must be a secure HTTPS address')
     // The plugin's declared endpoint policy, the same rule a credential's base URL
     // is held to (a `fixed` plugin such as image 1.1.0 accepts only its official host).
     const effectiveBase = (baseUrl === undefined ? existing?.base_url : baseUrl) as string | null | undefined
     if (!resolveCredentialBaseUrl(catalog.manifest, effectiveBase).ok) {
-      return fail('INVALID_BASE_URL', 'Base URL 不符合该插件的服务端点策略')
+      return fail('INVALID_BASE_URL', 'Base URL does not comply with this plugin's server endpoint policy')
     }
     const credId = input.providerCredentialId
     const effectiveCredId = credId === undefined ? existing?.provider_credential_id : credId
     if (typeof effectiveCredId === 'string' && effectiveCredId) {
       const cred = await findProviderCredential(db(), effectiveCredId)
-      if (!cred) return fail('INVALID_INPUT', '供应商凭据不存在')
+      if (!cred) return fail('INVALID_INPUT', 'Provider credential not found')
       const bindingError = credentialBindingError(catalog.manifest, cred)
       if (bindingError) return fail(bindingError.code, bindingError.message)
     }
@@ -395,7 +395,7 @@ async function savePluginModel(
       : Number(input.concurrencyLimit)
     const sortOrder = input.sortOrder === undefined ? Number(existing?.sort_order ?? 0) : Number(input.sortOrder)
     if (!Number.isInteger(concurrencyLimit) || concurrencyLimit < 1 || concurrencyLimit > 50 || !Number.isInteger(sortOrder)) {
-      return fail('INVALID_INPUT', '并发或排序配置无效')
+      return fail('INVALID_INPUT', 'Invalid concurrency or ordering configuration')
     }
     // One contract source for both media kinds. Whatever the plugin declares is
     // what the model offers; a model the manifest does not describe (an uploaded
@@ -405,7 +405,7 @@ async function savePluginModel(
     // persisted snapshot a copy of the manifest rather than a second opinion.
     const resolved = await resolvePresetCapabilities(pluginId, pluginVersion, vendorModelId)
     if (resolved.findings && resolved.findings.length > 0) {
-      return fail('INVALID_MODEL_CAPABILITIES', `插件声明的参数契约无效：${resolved.findings[0].message}`)
+      return fail('INVALID_MODEL_CAPABILITIES', `Invalid parameter contract declared by the plugin: ${resolved.findings[0].message}`)
     }
     const capabilities = resolved.capabilities
     const defaults = resolved.defaults
@@ -479,7 +479,7 @@ async function savePresetModel(
   existing: Record<string, any> | null | undefined,
 ) {
   if (hasForbiddenManualModelFields(input))
-    return fail('INVALID_INPUT', '模型参数只能通过预设选择')
+    return fail('INVALID_INPUT', 'Model parameters can only be selected via presets')
   // Preset resolution is catalog-aware so a model can be re-saved from a preset
   // synthesized from an active installed manifest.
   const storedPreset = existing?.preset_id ? await resolvePresetById(existing.preset_id) : null
@@ -489,29 +489,29 @@ async function savePresetModel(
         ? storedPreset
         : null
       : await resolvePresetById(input.presetId)
-  if (!id && !preset) return fail('INVALID_PRESET', '请选择模型预设')
-  if (input.presetId !== undefined && !preset) return fail('INVALID_PRESET', '模型预设不存在')
+  if (!id && !preset) return fail('INVALID_PRESET', 'Please select a model preset')
+  if (input.presetId !== undefined && !preset) return fail('INVALID_PRESET', 'Model preset not found')
   const targetPreset = preset
   const credId = input.providerCredentialId
   const effectiveCredId = credId === undefined ? existing?.provider_credential_id : credId
   const targetKind = targetPreset?.modelKind || existing?.model_kind || 'image'
   if (targetKind === 'language' && (typeof effectiveCredId !== 'string' || !effectiveCredId))
-    return fail('LANGUAGE_MODEL_CONFIG_INVALID', '语言模型必须选择供应商凭据')
+    return fail('LANGUAGE_MODEL_CONFIG_INVALID', 'A language model must select a provider credential')
   if (typeof effectiveCredId === 'string' && effectiveCredId) {
     const cred = await findProviderCredential(db(), effectiveCredId)
-    if (!cred) return fail('INVALID_INPUT', '供应商凭据不存在')
+    if (!cred) return fail('INVALID_INPUT', 'Provider credential not found')
     // Media presets bind through their plugin's declared credential contract, the
     // same check the plugin-selected write applies. Language presets keep accepting
     // any credential: a compatible gateway may speak another vendor's protocol.
     if (targetPreset && 'pluginId' in targetPreset) {
       const catalog = await resolveCatalogPlugin(targetPreset.pluginId, String(targetPreset.pluginVersion))
-      if (!catalog) return fail('INVALID_PLUGIN', '供应商插件不存在或版本不受支持')
+      if (!catalog) return fail('INVALID_PLUGIN', 'The provider plugin does not exist or its version is not supported')
       const bindingError = credentialBindingError(catalog.manifest, cred)
       if (bindingError) return fail(bindingError.code, bindingError.message)
     }
   }
   if (targetPreset && 'adapter' in targetPreset && !['openai', 'seedream', 'anthropic'].includes(String(targetPreset.adapter)))
-    return fail('INVALID_INPUT', '模型配置无效')
+    return fail('INVALID_INPUT', 'Invalid model configuration')
   const concurrencyLimit =
     input.concurrencyLimit === undefined
       ? existing?.concurrency_limit ?? targetPreset?.concurrencyLimit ?? 1
@@ -524,7 +524,7 @@ async function savePresetModel(
     concurrencyLimit > 50 ||
     !Number.isInteger(sortOrder)
   )
-    return fail('INVALID_INPUT', '并发或排序配置无效')
+    return fail('INVALID_INPUT', 'Invalid concurrency or ordering configuration')
   const reasoningFallback =
     existing?.reasoning_effort ||
     (targetPreset && 'reasoningEffort' in targetPreset ? targetPreset.reasoningEffort : null) ||
@@ -532,7 +532,7 @@ async function savePresetModel(
   const reasoningEffort =
     targetKind === 'language' ? sanitizeReasoningEffort(input.reasoningEffort, reasoningFallback) : null
   if (reasoningEffort === undefined && targetKind === 'language')
-    return fail('INVALID_INPUT', '思考等级无效')
+    return fail('INVALID_INPUT', 'Invalid thinking level')
 
   // Which resolution path this write pins: 'installed' only when the preset's exact
   // key resolves to an active provider_plugins row. Built-in and language presets
@@ -633,9 +633,9 @@ async function savePresetModel(
       ],
     )
   } else {
-    return fail('INVALID_PRESET', '请选择模型预设')
+    return fail('INVALID_PRESET', 'Please select a model preset')
   }
-  if (!result.rows[0]) return fail('NOT_FOUND', '模型不存在', 404)
+  if (!result.rows[0]) return fail('NOT_FOUND', 'Model not found', 404)
   await db().query('INSERT INTO audit_logs(actor_id,action,target_type,target_id,summary) VALUES($1,$2,$3,$4,$5)', [actor.id, id ? 'model.update' : 'model.create', 'model', result.rows[0].id, {}])
   const withRevision = await presetRevisionOrRow(result.rows[0], () => snapshotRevisionForRow(
     db(),
@@ -660,5 +660,5 @@ export async function deleteModel(actor: Actor, id: string) {
     )
     return true
   })
-  return deleted ? ok({ deleted: true }) : fail('NOT_FOUND', '模型不存在', 404)
+  return deleted ? ok({ deleted: true }) : fail('NOT_FOUND', 'Model not found', 404)
 }

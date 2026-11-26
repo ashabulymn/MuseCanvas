@@ -5,115 +5,115 @@ import { Alert } from '@/shared/components/ui/alert'
 export const dynamic = 'force-static'
 
 export const metadata = {
-  title: '隐私政策 - MuseCanvas',
-  description: 'MuseCanvas 隐私政策与数据保护说明',
+  title: 'Privacy Policy - MuseCanvas',
+  description: 'MuseCanvas privacy policy and data protection notice',
 }
 
 const privacySections: LegalSection[] = [
-  { id: 'notice', title: '适用对象与地域限制' },
-  { id: 'section-1', title: '一、信息收集' },
-  { id: 'section-2', title: '二、信息用途' },
-  { id: 'section-3', title: '三、第三方共享与数据训练' },
-  { id: 'section-4', title: '四、数据存储与安全' },
-  { id: 'section-5', title: '五、数据保留' },
-  { id: 'section-6', title: '六、用户权利' },
-  { id: 'section-7', title: '七、Cookie 与同类技术' },
-  { id: 'section-8', title: '八、未成年人' },
-  { id: 'section-9', title: '九、政策变更' },
-  { id: 'section-10', title: '十、联系我们' },
+  { id: 'notice', title: 'Scope & Regional Restrictions' },
+  { id: 'section-1', title: '1. Information We Collect' },
+  { id: 'section-2', title: '2. How We Use Information' },
+  { id: 'section-3', title: '3. Third-Party Sharing & Data Training' },
+  { id: 'section-4', title: '4. Data Storage & Security' },
+  { id: 'section-5', title: '5. Data Retention' },
+  { id: 'section-6', title: '6. Your Rights' },
+  { id: 'section-7', title: '7. Cookies & Similar Technologies' },
+  { id: 'section-8', title: '8. Minors' },
+  { id: 'section-9', title: '9. Changes to This Policy' },
+  { id: 'section-10', title: '10. Contact Us' },
 ]
 
 export default function PrivacyPage() {
   return (
-    <LegalShell title="隐私政策" updatedAt="2026-06-25" current="privacy" sections={privacySections}>
+    <LegalShell title="Privacy Policy" updatedAt="2026-06-25" current="privacy" sections={privacySections}>
       <div id="notice" className="scroll-mt-20">
         <Alert tone="warning">
-          <h2>适用对象与地域限制</h2>
+          <h2>Scope &amp; Regional Restrictions</h2>
           <p>
-            <strong>本服务不面向中国大陆用户。</strong>我们不向位于中国大陆境内的用户提供本服务，亦不接受来自中国大陆的注册、访问与使用。
+            <strong>This service is not available to users in mainland China.</strong> We do not provide this service to users located in mainland China, nor do we accept registrations, access, or use from mainland China.
           </p>
           <p>
-            如你位于中国大陆，请勿访问、使用本服务或向我们提供任何个人信息；本政策其他条款以本条适用对象范围为前提，对不属于本服务适用对象的用户不适用。
+            If you are located in mainland China, please do not access or use this service, or provide us with any personal information. The other provisions of this policy are premised on the scope set out in this section and do not apply to users who fall outside the intended audience of the Service.
           </p>
         </Alert>
       </div>
 
       <section id="section-1" className="scroll-mt-20">
-        <h2>一、信息收集</h2>
-        <p>为提供与改进服务，我们可能收集以下信息：</p>
+        <h2>1. Information We Collect</h2>
+        <p>To provide and improve the Service, we may collect the following information:</p>
         <ul>
-          <li>账户信息：邮箱地址、邀请码、第三方登录授权信息；</li>
-          <li>使用数据：你输入的提示词与生成参数、生成的图像结果、任务记录；</li>
-          <li>日志信息：IP 地址、访问时间、设备与浏览器信息等技术日志。</li>
+          <li>Account information: email address, invitation code, and third-party login authorization information;</li>
+          <li>Usage data: the prompts and generation parameters you enter, the images generated, and task records;</li>
+          <li>Log information: IP address, access times, device and browser information, and other technical logs.</li>
         </ul>
       </section>
 
       <section id="section-2" className="scroll-mt-20">
-        <h2>二、信息用途</h2>
-        <p>我们将上述信息用于：</p>
+        <h2>2. How We Use Information</h2>
+        <p>We use the above information to:</p>
         <ul>
-          <li>提供图像生成、账户管理与任务记录功能；</li>
-          <li>保障账户与系统安全、排查故障与防范滥用；</li>
-          <li>分析并改进服务功能与性能。</li>
+          <li>provide image generation, account management, and task record features;</li>
+          <li>protect account and system security, troubleshoot issues, and prevent abuse;</li>
+          <li>analyze and improve the Service&apos;s features and performance.</li>
         </ul>
       </section>
 
       <section id="section-3" className="scroll-mt-20">
-        <h2>三、第三方共享与数据训练</h2>
+        <h2>3. Third-Party Sharing &amp; Data Training</h2>
         <p>
-          本服务的图像生成能力由我们合作的第三方模型与服务供应商提供，<strong>包括但不限于 OpenAI、火山引擎等</strong>。为完成你的生成请求，我们会将提示词及相关数据共享给上述第三方处理。
+          The image generation capabilities of the Service are provided by third-party model and service providers we work with, <strong>including but not limited to OpenAI, Volcano Engine, and others</strong>. To fulfil your generation request, we share your prompts and related data with the above third parties for processing.
         </p>
         <p>
-          <strong>上述第三方可能将收到的数据用于其自身的服务运营与模型训练。</strong>数据在第三方处的收集、使用与保护，受相应第三方的隐私政策约束，我们无法完全控制其处理行为。
+          <strong>The above third parties may use the data they receive for their own service operations and model training.</strong> The collection, use, and protection of data by those third parties is governed by the relevant third party&apos;s privacy policy, and we cannot fully control how they process it.
         </p>
-        <p>你理解并同意上述共享与处理安排。如不接受，请勿使用相关功能。详细信息可参阅各第三方隐私政策。</p>
+        <p>You understand and agree to the sharing and processing arrangement described above. If you do not accept it, please do not use the relevant features. For more information, please refer to each third party&apos;s privacy policy.</p>
       </section>
 
       <section id="section-4" className="scroll-mt-20">
-        <h2>四、数据存储与安全</h2>
+        <h2>4. Data Storage &amp; Security</h2>
         <p>
-          我们采取合理的技术与管理措施保护你的信息安全。但互联网传输并非绝对安全，我们无法保证信息不被未经授权的访问、披露或篡改。你应在使用中注意保护账户凭证。
+          We take reasonable technical and administrative measures to protect the security of your information. However, transmission over the internet is not absolutely secure, and we cannot guarantee that information will not be accessed, disclosed, or altered without authorization. You should take care to protect your account credentials while using the Service.
         </p>
       </section>
 
       <section id="section-5" className="scroll-mt-20">
-        <h2>五、数据保留</h2>
+        <h2>5. Data Retention</h2>
         <p>
-          我们仅在实现本政策所述目的所必需的期限内保留你的信息，超出必要期限后将删除或匿名化处理，法律法规另有要求的除外。
+          We retain your information only for as long as necessary to achieve the purposes stated in this policy, after which it will be deleted or anonymized, except where otherwise required by law.
         </p>
       </section>
 
       <section id="section-6" className="scroll-mt-20">
-        <h2>六、用户权利</h2>
+        <h2>6. Your Rights</h2>
         <p>
-          在适用法律允许的范围内，你可就你的个人信息行使访问、更正、删除等权利。如需行使上述权利或有任何疑问，可通过本服务公布的官方渠道联系我们。
+          To the extent permitted by applicable law, you may exercise rights such as access, correction, and deletion with respect to your personal information. If you wish to exercise these rights or have any questions, please contact us through the official channels published by the Service.
         </p>
       </section>
 
       <section id="section-7" className="scroll-mt-20">
-        <h2>七、Cookie 与同类技术</h2>
+        <h2>7. Cookies &amp; Similar Technologies</h2>
         <p>
-          我们可能使用 Cookie 及同类技术维持登录状态、记录偏好与改进体验。你可通过浏览器设置管理 Cookie，但部分功能可能受影响。
+          We may use cookies and similar technologies to maintain your login state, remember your preferences, and improve your experience. You can manage cookies through your browser settings, although some features may be affected.
         </p>
       </section>
 
       <section id="section-8" className="scroll-mt-20">
-        <h2>八、未成年人</h2>
+        <h2>8. Minors</h2>
         <p>
-          本服务面向成年人。若你是未成年人，请在监护人陪同下阅读本政策并在取得同意后使用。我们不会故意收集未成年人个人信息。
+          This service is intended for adults. If you are a minor, please read this policy with a guardian and use the Service only after obtaining their consent. We do not knowingly collect personal information from minors.
         </p>
       </section>
 
       <section id="section-9" className="scroll-mt-20">
-        <h2>九、政策变更</h2>
+        <h2>9. Changes to This Policy</h2>
         <p>
-          我们可不时更新本隐私政策，更新后在页面公布并注明更新日期即生效。重大变更时我们将以适当方式提示你。
+          We may update this Privacy Policy from time to time. Updates take effect once published on this page with the updated date noted. For material changes, we will notify you in an appropriate manner.
         </p>
       </section>
 
       <section id="section-10" className="scroll-mt-20">
-        <h2>十、联系我们</h2>
-        <p>如对本政策或个人信息处理有任何问题，可通过本服务公布的官方渠道与我们联系。</p>
+        <h2>10. Contact Us</h2>
+        <p>If you have any questions about this policy or about how personal information is handled, please contact us through the official channels published by the Service.</p>
       </section>
     </LegalShell>
   )

@@ -57,31 +57,31 @@ interface Crumb {
 const SIDEBAR_BREAKPOINT_QUERY = '(min-width: 960px)'
 
 const navGroups: NavGroup[] = [
-  { items: [{ path: '/admin', label: '概览', icon: LayoutDashboard }] },
+  { items: [{ path: '/admin', label: 'Overview', icon: LayoutDashboard }] },
   {
-    title: '用户与权限',
-    items: [{ path: '/admin/users', label: '用户管理', icon: Users }],
+    title: 'Users & permissions',
+    items: [{ path: '/admin/users', label: 'User management', icon: Users }],
   },
   {
-    title: '生成资源',
+    title: 'Generation resources',
     items: [
-      { path: '/admin/media-models', label: '媒体模型', icon: Blocks },
-      { path: '/admin/language-models', label: '语言模型', icon: Cpu },
-      { path: '/admin/prompt-templates', label: '提示词模板', icon: FileText },
+      { path: '/admin/media-models', label: 'Media model', icon: Blocks },
+      { path: '/admin/language-models', label: 'Language model', icon: Cpu },
+      { path: '/admin/prompt-templates', label: 'Prompt templates', icon: FileText },
     ],
   },
   {
-    title: '系统设置',
+    title: 'System settings',
     items: [
       { path: '/admin/oauth', label: 'OAuth', icon: ShieldCheck },
-      { path: '/admin/settings', label: '系统配置', icon: Settings },
+      { path: '/admin/settings', label: 'System settings', icon: Settings },
     ],
   },
-  { items: [{ path: '/admin/jobs', label: '任务监控', icon: ListTodo }] },
+  { items: [{ path: '/admin/jobs', label: 'Job monitoring', icon: ListTodo }] },
 ]
 
 /** path → visible label, shared by the nav and the breadcrumb. */
-const NAV_LABELS: Record<string, string> = { '/admin': '管理后台' }
+const NAV_LABELS: Record<string, string> = { '/admin': 'Admin console' }
 for (const group of navGroups) {
   for (const item of group.items) NAV_LABELS[item.path] = item.label
 }
@@ -108,7 +108,7 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
   const hasMiddle = crumbs.length > 2
 
   return (
-    <nav aria-label="面包屑" className="min-w-0 flex-1 md:flex-none">
+    <nav aria-label="Breadcrumbs" className="min-w-0 flex-1 md:flex-none">
       <ol className="flex min-w-0 items-center gap-1.5 text-sm">
         {crumbs.map((crumb, index) => {
           const isLast = index === crumbs.length - 1
@@ -241,18 +241,18 @@ export function AdminShell({ user, children }: AdminShellProps) {
             variant="ghost"
             size="sm"
             onClick={() => setDrawerOpen(true)}
-            aria-label="打开管理导航"
+            aria-label="Open admin navigation"
             className="min-h-[var(--control-lg)] min-w-[var(--control-lg)] md:hidden"
             icon={<Menu weight="bold" className={iconSize.md} aria-hidden="true" />}
           />
 
           <Link
             href="/generate"
-            aria-label="返回创作端"
+            aria-label="Back to studio"
             className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), 'min-h-[var(--control-lg)] min-w-[var(--control-lg)] shrink-0 sm:min-h-[var(--control-sm)]')}
           >
             <ChevronRight weight="bold" className={`${iconSize.sm} rotate-180`} aria-hidden="true" />
-            <span className="hidden sm:inline">返回创作端</span>
+            <span className="hidden sm:inline">Back to studio</span>
           </Link>
 
           <Breadcrumbs pathname={pathname} />
@@ -272,7 +272,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
         <div className="flex min-h-0 w-full max-w-content flex-1 overflow-hidden">
           {/* Sidebar — fixed at the 260px `--layout-sidebar` width on desktop. */}
           <aside className="hidden w-sidebar shrink-0 flex-col border-r border-border bg-surface py-3 md:flex">
-            <nav className="flex w-full flex-1 flex-col overflow-hidden px-2" aria-label="管理后台导航">
+            <nav className="flex w-full flex-1 flex-col overflow-hidden px-2" aria-label="Admin console navigation">
               <div className="min-h-0 flex-1 overflow-y-auto">{renderNavLinks()}</div>
             </nav>
           </aside>
@@ -312,20 +312,20 @@ export function AdminShell({ user, children }: AdminShellProps) {
             {/* Dialog-class surface: no rule inside the panel, spacing does the work. */}
             <div className="flex items-center justify-between gap-3">
               <h2 id={drawerLabelId} className="text-module text-foreground">
-                管理后台导航
+                Admin console navigation
               </h2>
               <IconButton
                 ref={drawerCloseButtonRef}
                 variant="ghost"
                 size="sm"
                 onClick={closeDrawer}
-                aria-label="关闭导航"
+                aria-label="Close navigation"
                 className="min-h-[var(--control-lg)] min-w-[var(--control-lg)]"
                 icon={<X weight="bold" className={iconSize.md} aria-hidden="true" />}
               />
             </div>
 
-            <nav className="min-h-0 flex-1 overflow-y-auto" aria-label="管理后台导航">
+            <nav className="min-h-0 flex-1 overflow-y-auto" aria-label="Admin console navigation">
               {renderNavLinks({ onNavigate: closeDrawer })}
             </nav>
           </div>

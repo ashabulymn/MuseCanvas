@@ -3,7 +3,7 @@ import { AdminMediaModelsView } from '@/features/admin/components/admin-media-mo
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: '媒体模型 - MuseCanvas 管理后台',
+  title: 'Media Models - MuseCanvas Admin',
 }
 
 export default function AdminMediaModelsPage() {

@@ -50,10 +50,10 @@ const PROVIDERS: { name: OAuthProviderName; label: string }[] = [
 
 /** Left group nav (components.md → 设置页). The ids double as the anchor targets. */
 const NAV_GROUPS: { title: string; items: { id: string; label: string }[] }[] = [
-  { title: '个人资料', items: [{ id: 'profile', label: '基本资料' }] },
+  { title: 'Profile', items: [{ id: 'profile', label: 'Basic info' }] },
   {
-    title: '账号安全',
-    items: [{ id: 'linked-accounts', label: '第三方账号绑定' }],
+    title: 'Account security',
+    items: [{ id: 'linked-accounts', label: 'Linked third-party accounts' }],
   },
 ]
 
@@ -100,7 +100,7 @@ export function AccountView() {
     queryFn: async () => {
       const res = await api.getMe()
       if (!res.success || !res.data) {
-        throw new AccountRequestError(res.error?.code || 'UNKNOWN', res.error?.message || '获取用户资料失败')
+        throw new AccountRequestError(res.error?.code || 'UNKNOWN', res.error?.message || 'Failed to load user profile')
       }
       return res.data as UserProfile
     },
@@ -117,7 +117,7 @@ export function AccountView() {
     queryFn: async () => {
       const res = await api<OAuthIdentity[]>(API_ENDPOINTS.account.oauth)
       if (!res.success) {
-        throw new AccountRequestError(res.error?.code || 'UNKNOWN', res.error?.message || '获取第三方绑定列表失败')
+        throw new AccountRequestError(res.error?.code || 'UNKNOWN', res.error?.message || 'Failed to load third-party link list')
       }
       return res.data || []
     },
@@ -126,20 +126,20 @@ export function AccountView() {
   const unlinkMutation = useMutation({
     mutationFn: async (provider: OAuthProviderName) => {
       const res = await api(API_ENDPOINTS.account.oauthUnlink(provider), { method: 'DELETE' })
-      if (!res.success) throw new Error(res.error?.message || '解除绑定失败')
+      if (!res.success) throw new Error(res.error?.message || 'Failed to unlink')
       return res.data
     },
     onSuccess: (_data, provider) => {
       queryClient.invalidateQueries({ queryKey: ['account', 'oauth-identities'] })
       toast.push({
-        title: `已解除 ${PROVIDERS.find((item) => item.name === provider)?.label ?? provider} 绑定`,
+        title: `${PROVIDERS.find((item) => item.name === provider)?.label ?? provider} unlinked`,
         variant: 'success',
       })
     },
     onError: (error: Error, provider) => {
       toast.push({
-        title: `无法解除 ${PROVIDERS.find((item) => item.name === provider)?.label ?? provider} 绑定`,
-        description: `${error.message}。请检查网络后重新保存更改。`,
+        title: `Could not unlink ${PROVIDERS.find((item) => item.name === provider)?.label ?? provider}`,
+        description: `${error.message}. Check your connection, then save the changes again.`,
         variant: 'error',
       })
     },
@@ -186,10 +186,10 @@ export function AccountView() {
           variant="no-permission"
           objectName={objectName}
           density="compact"
-          description="你没有访问该设置的权限，或登录状态已失效。重新登录后即可继续修改。"
+          description="You do not have permission to access these settings, or your login has expired. Log in again to continue editing."
           action={
             <a href="/login" className={buttonVariants({ variant: 'secondary' })}>
-              重新登录
+              Log in again
             </a>
           }
         />
@@ -200,7 +200,7 @@ export function AccountView() {
         variant="error"
         objectName={objectName}
         density="compact"
-        description={`无法读取${objectName}：${error instanceof Error ? error.message : '网络或服务端错误'}。请稍后刷新重试。`}
+        description={`Could not load ${objectName}: ${error instanceof Error ? error.message : 'Network or server error'}. Refresh and try again later.`}
         onAction={onRetry}
       />
     )
@@ -209,14 +209,14 @@ export function AccountView() {
   const profileSectionError = renderSectionState({
     isError: profileIsError && !profileLoading,
     error: profileError,
-    objectName: '账户资料',
+    objectName: 'account profile',
     onRetry: () => void refetchProfile(),
   })
 
   const identitiesSectionError = renderSectionState({
     isError: identitiesIsError && !identitiesLoading,
     error: identitiesError,
-    objectName: '第三方绑定',
+    objectName: 'third-party links',
     onRetry: () => void refetchIdentities(),
   })
 
@@ -226,15 +226,15 @@ export function AccountView() {
     <div className="flex h-full w-full flex-1 flex-col overflow-y-auto p-4 sm:p-6 lg:p-8">
       <div className="mx-auto flex w-full max-w-content flex-1 flex-col gap-6 lg:gap-8">
         <PageHeader
-          title="账户与安全"
-          description="查看您的个人资料，并管理第三方账号的绑定与解绑。"
+          title="Account & security"
+          description="View your profile and manage linked and unlinked third-party accounts."
         />
 
         <div className="flex flex-1 flex-col gap-6 md:flex-row md:gap-8">
           {/* 设置页 left group nav: 16px group labels, `tonal-selected` + a 3px
               primary bar on the current item, collapsing to a wrapping chip row under
               `md:` (960px). */}
-          <nav aria-label="设置分组" className="flex flex-wrap gap-3 md:w-settings-nav md:shrink-0 md:flex-col md:gap-6">
+          <nav aria-label="Settings groups" className="flex flex-wrap gap-3 md:w-settings-nav md:shrink-0 md:flex-col md:gap-6">
             {NAV_GROUPS.map((group) => (
               <div key={group.title} className="flex min-w-0 flex-row flex-wrap items-center gap-2 md:flex-col md:items-stretch md:gap-1">
                 <p className="hidden text-base font-medium text-foreground md:block mb-1">{group.title}</p>
@@ -277,9 +277,9 @@ export function AccountView() {
                 <Card>
                   <CardHeader>
                     <CardTitle level={2} id="profile-title">
-                      基本资料
+                      Basic info
                     </CardTitle>
-                    <CardDescription>账户的基础信息，此处仅供查看。</CardDescription>
+                    <CardDescription>Basic account information, view-only here.</CardDescription>
                   </CardHeader>
                   <CardBody>
                     {profileLoading ? (
@@ -293,14 +293,14 @@ export function AccountView() {
                             </div>
                           </div>
                         ))}
-                        <p className="sr-only">正在加载账户资料…</p>
+                        <p className="sr-only">Loading account profile…</p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         <div className="flex items-start gap-3">
                           <Mail weight="bold" aria-hidden="true" className={`mt-1 ${iconSize.sm} shrink-0 text-muted-foreground`} />
                           <div className="flex min-w-0 flex-col gap-1">
-                            <p className="text-xs text-muted-foreground">登录邮箱</p>
+                            <p className="text-xs text-muted-foreground">Login email</p>
                             <p className="truncate text-sm text-foreground">{userProfile?.email || '—'}</p>
                           </div>
                         </div>
@@ -308,12 +308,12 @@ export function AccountView() {
                         <div className="flex items-start gap-3">
                           <ShieldCheck weight="bold" aria-hidden="true" className={`mt-1 ${iconSize.sm} shrink-0 text-muted-foreground`} />
                           <div className="flex min-w-0 flex-col gap-1">
-                            <p className="text-xs text-muted-foreground">账户权限</p>
+                            <p className="text-xs text-muted-foreground">Account role</p>
                             <p className="text-sm text-foreground">
                               {userProfile?.role === 'admin' ? (
-                                <Badge tone="info">管理员</Badge>
+                                <Badge tone="info">Admin</Badge>
                               ) : (
-                                <Badge tone="neutral">普通用户</Badge>
+                                <Badge tone="neutral">Regular user</Badge>
                               )}
                             </p>
                           </div>
@@ -322,7 +322,7 @@ export function AccountView() {
                         <div className="flex items-start gap-3">
                           <Calendar weight="bold" aria-hidden="true" className={`mt-1 ${iconSize.sm} shrink-0 text-muted-foreground`} />
                           <div className="flex min-w-0 flex-col gap-1">
-                            <p className="text-xs text-muted-foreground">注册时间</p>
+                            <p className="text-xs text-muted-foreground">Registered on</p>
                             <p className="font-mono text-sm tabular-nums text-foreground">
                               {formatDate(userProfile?.createdAt)}
                             </p>
@@ -345,10 +345,10 @@ export function AccountView() {
                 <Card>
                   <CardHeader>
                     <CardTitle level={2} id="linked-accounts-title">
-                      第三方账号绑定
+                      Linked third-party accounts
                     </CardTitle>
                     <CardDescription>
-                      绑定后可使用对应账号登录。标记解除的绑定需要点击底部“保存更改”才会生效。
+                      Once linked, you can log in with that account. Links marked for removal only take effect after you click “Save changes” at the bottom.
                     </CardDescription>
                   </CardHeader>
                   <CardBody>
@@ -369,7 +369,7 @@ export function AccountView() {
                             <Skeleton className="h-[var(--control-sm)] w-24 rounded-control" />
                           </div>
                         ))}
-                        <p className="sr-only">正在加载第三方绑定…</p>
+                        <p className="sr-only">Loading third-party links…</p>
                       </div>
                     ) : (
                       PROVIDERS.map((provider) => {
@@ -395,17 +395,17 @@ export function AccountView() {
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
                                 {linked ? (
-                                  <Badge tone="success">已绑定</Badge>
+                                  <Badge tone="success">Linked</Badge>
                                 ) : (
-                                  <Badge tone="neutral">未绑定</Badge>
+                                  <Badge tone="neutral">Not linked</Badge>
                                 )}
-                                {staged ? <Badge tone="warning">待解除绑定</Badge> : null}
+                                {staged ? <Badge tone="warning">Pending unlink</Badge> : null}
                                 {identity?.email ? (
                                   <span className="truncate text-xs text-muted-foreground">{identity.email}</span>
                                 ) : null}
                                 {identity?.linkedAt ? (
                                   <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                                    绑定于 {formatDate(identity.linkedAt)}
+                                    Linked on {formatDate(identity.linkedAt)}
                                   </span>
                                 ) : null}
                               </div>
@@ -414,7 +414,7 @@ export function AccountView() {
                             <div className="flex shrink-0 items-center gap-2">
                               {pending ? (
                                 <Button variant="secondary" size="sm" loading>
-                                  解除中
+                                  Unlinking
                                 </Button>
                               ) : linked ? (
                                 staged ? (
@@ -424,7 +424,7 @@ export function AccountView() {
                                     icon={<X weight="bold" aria-hidden="true" />}
                                     onClick={() => toggleStaged(provider.name)}
                                   >
-                                    取消解除
+                                    Cancel unlink
                                   </Button>
                                 ) : (
                                   <Button
@@ -433,7 +433,7 @@ export function AccountView() {
                                     icon={<Unlink weight="bold" aria-hidden="true" />}
                                     onClick={() => toggleStaged(provider.name)}
                                   >
-                                    解除绑定
+                                    Unlink
                                   </Button>
                                 )
                               ) : (
@@ -444,7 +444,7 @@ export function AccountView() {
                                   className={buttonVariants({ variant: 'secondary', size: 'sm' })}
                                 >
                                   <Link2 weight="bold" aria-hidden="true" />
-                                  绑定账号
+                                  Link account
                                 </a>
                               )}
                             </div>
@@ -465,18 +465,18 @@ export function AccountView() {
           <Card density="compact" className="sticky bottom-0 z-sticky shadow-floating">
             <CardFooter>
               <p className="text-sm text-muted-foreground">
-                已标记 {stagedUnlinks.length} 个待解除的绑定，保存后生效。
+                Marked {stagedUnlinks.length} {stagedUnlinks.length === 1 ? 'link' : 'links'} for removal — takes effect after saving.
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <Button variant="ghost" onClick={() => setStagedUnlinks([])}>
-                  取消
+                  Cancel
                 </Button>
                 <Button
                   variant="primary"
                   loading={unlinking.length > 0}
                   onClick={() => setConfirmOpen(true)}
                 >
-                  保存更改
+                  Save changes
                 </Button>
               </div>
             </CardFooter>
@@ -488,26 +488,26 @@ export function AccountView() {
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         size="narrow"
-        title={`确定要解除 ${stagedUnlinks.length} 个第三方账号的绑定吗？`}
+        title={`Unlink ${stagedUnlinks.length} third-party account${stagedUnlinks.length === 1 ? '' : 's'}?`}
         footer={
           <>
             <Button variant="secondary" onClick={() => setConfirmOpen(false)}>
-              取消
+              Cancel
             </Button>
             <Button variant="danger" onClick={() => void saveUnlinks()}>
-              解除绑定
+              Unlink
             </Button>
           </>
         }
       >
         <p className="text-sm text-muted-foreground">
-          解除后你将无法再使用
+          After unlinking, you will no longer be able to use
           {' '}
           {stagedUnlinks
             .map((provider) => PROVIDERS.find((item) => item.name === provider)?.label ?? provider)
-            .join('、')}
+            .join(', ')}
           {' '}
-          登录 MuseCanvas，需要重新前往第三方授权才能恢复。此操作无法撤销。
+          to log in to MuseCanvas. You will need to re-authorize with the provider to restore access. This cannot be undone.
         </p>
       </Dialog>
     </div>

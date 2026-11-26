@@ -54,57 +54,57 @@ interface WizardStep {
 const steps: WizardStep[] = [
   {
     id: 'site',
-    label: 'Konfigurasi situs',
+    label: 'Site configuration',
     sections: ['site'],
-    summary: 'Konfigurasi situs mencakup domain layanan (misalnya https://musecanvas.example.com) dan endpoint akses publik.',
+    summary: 'Site configuration covers the service domain (e.g. https://musecanvas.example.com) and the public access endpoint.',
     manual: [
-      'Environment variable server BASE_URL sudah mengarah ke alamat publik instance ini.',
-      'Nama dan alamat situs akan dipakai untuk email, callback OAuth, dan link berbagi.',
+      'The server BASE_URL environment variable already points to this instance’s public address.',
+      'The site name and address will be used for emails, OAuth callbacks, and share links.',
     ],
   },
   {
     id: 'smtp',
     label: 'SMTP email & admin',
     sections: ['smtp', 'admin'],
-    summary: 'Konfigurasi server SMTP pengirim untuk mengirim kode OTP login email ke pengguna, lalu buat akun admin pertama.',
+    summary: 'Configure the sender SMTP server to send email login OTP codes to users, then create the first admin account.',
     manual: [
-      'Tes pengiriman dilakukan di halaman konfigurasi sistem pada admin panel; wizard ini sendiri tidak mengirim email apa pun.',
-      'Di lingkungan dev, kode OTP bisa langsung dilihat dari output konsol backend, tanpa perlu pengiriman email untuk debugging.',
+      'Send tests are done on the system configuration page in the admin panel; this wizard itself sends no emails.',
+      'In a dev environment, OTP codes can be read directly from the backend console output, without sending email for debugging.',
     ],
   },
   {
     id: 'storage',
     label: 'Object storage (S3)',
     sections: ['storage'],
-    summary: 'Object storage (kompatibel S3, Alibaba Cloud OSS, Tencent Cloud COS, Cloudflare R2, MinIO lokal) dipakai untuk menyimpan aset gambar hasil generate pengguna secara persisten.',
+    summary: 'Object storage (S3-compatible, Alibaba Cloud OSS, Tencent Cloud COS, Cloudflare R2, local MinIO) is used to persistently store users’ generated image assets.',
     manual: [
-      'Kredensial bucket ditulis di halaman konfigurasi sistem pada admin panel; wizard tidak membaca atau menulis objek apa pun.',
-      'Worker akan mengunggah aset ke bucket tujuan setelah generate selesai, lalu menerbitkan URL aksesnya.',
+      'Bucket credentials are written on the system configuration page in the admin panel; the wizard neither reads nor writes any objects.',
+      'The worker will upload assets to the destination bucket after generation finishes, then publish the access URL.',
     ],
   },
   {
     id: 'providers',
-    label: 'Model AI & supplier',
+    label: 'AI models & providers',
     sections: ['providers', 'models'],
-    summary: 'Konfigurasi kredensial layanan model generate upstream (misalnya OpenAI DALL·E 3, Seedream Volcengine, Anthropic Claude, Google Veo).',
+    summary: 'Configure credentials for the upstream generation model services (e.g. OpenAI DALL·E 3, Seedream Volcengine, Anthropic Claude, Google Veo).',
     manual: [
-      'Kredensial bisa ditambah dengan banyak API Key setelah panduan selesai, dari admin panel, beserta tarif dan kuota pemakaian.',
-      'Wizard tidak memanggil antarmuka upstream apa pun, dan tidak memvalidasi apakah Key bisa dipakai.',
+      'More API keys can be added after the guide finishes, from the admin panel, along with rates and usage quotas.',
+      'The wizard calls no upstream APIs and does not validate whether a key works.',
     ],
   },
   {
     id: 'review',
-    label: 'Pemeriksaan lingkungan & selesai',
+    label: 'Environment check & finish',
     sections: ['oauth', 'templates', 'runtime'],
-    summary: 'Ringkasan hasil pemeriksaan lingkungan yang dicatat server saat startup, beserta item panduan yang belum selesai.',
-    manual: ['"Pemeriksaan lingkungan" di bawah berasal dari hasil pembacaan server; item lainnya perlu dikonfirmasi satu per satu secara manual.'],
+    summary: 'A summary of the environment check results recorded by the server at startup, plus guide items that are not yet done.',
+    manual: ['"Environment check" below comes from the server’s readings; the other items need to be confirmed one by one manually.'],
   },
 ]
 
 export function SetupWizardSkeleton() {
   return (
     <div className="flex min-h-screen flex-col bg-canvas text-foreground" role="status" aria-busy="true">
-      <span className="sr-only">Memuat status konfigurasi sistem</span>
+      <span className="sr-only">Loading system configuration status</span>
       <header className="flex min-h-[var(--layout-header)] shrink-0 items-center justify-between gap-4 border-b border-border bg-surface px-4 sm:px-6" aria-hidden="true">
         <div className="flex items-center gap-3">
           <Skeleton className="h-5 w-32" />
@@ -158,24 +158,24 @@ export function SetupWizardSkeleton() {
 }
 
 const checkKeyLabel: Record<BootstrapCheckKey, string> = {
-  database: 'Koneksi database',
-  redis: 'Antrean Redis Streams',
+  database: 'Database connection',
+  redis: 'Redis Streams queue',
   masterKey: 'Master key (HKDF)',
-  runtime: 'Batasan runtime',
+  runtime: 'Runtime limits',
 }
 
 function sectionLabel(key: OnboardingSectionKey): string {
   return {
-    bootstrap: 'Panduan lingkungan',
-    site: 'Info situs',
-    smtp: 'Email SMTP',
-    admin: 'Akun admin',
+    bootstrap: 'Environment guide',
+    site: 'Site info',
+    smtp: 'SMTP email',
+    admin: 'Admin account',
     storage: 'Object storage',
-    providers: 'Supplier model',
-    models: 'Model generate',
-    oauth: 'Login OAuth',
-    templates: 'Template prompt',
-    runtime: 'Batasan runtime',
+    providers: 'Model providers',
+    models: 'Generation models',
+    oauth: 'OAuth login',
+    templates: 'Prompt templates',
+    runtime: 'Runtime limits',
   }[key]
 }
 
@@ -194,7 +194,7 @@ function SectionStatusLine({
         {state ? (
           <span className="font-mono text-xs text-muted-foreground">{state.updatedAt.slice(0, 10)}</span>
         ) : null}
-        <Badge tone={complete ? 'success' : 'neutral'}>{complete ? 'Sudah dicatat server' : 'Belum selesai'}</Badge>
+        <Badge tone={complete ? 'success' : 'neutral'}>{complete ? 'Recorded by server' : 'Not done yet'}</Badge>
       </span>
     </div>
   )
@@ -279,10 +279,10 @@ export function SetupWizard() {
       <header className="flex min-h-[var(--layout-header)] shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-border bg-surface px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <span className="text-module text-foreground">MuseCanvas</span>
-          <Badge tone="accent">Panduan instalasi sistem</Badge>
+          <Badge tone="accent">System installation guide</Badge>
         </div>
         {status?.setupComplete ? (
-          <span className="text-sm text-muted-foreground">Sistem sudah selesai dikonfigurasi awal</span>
+          <span className="text-sm text-muted-foreground">Initial system configuration is complete</span>
         ) : null}
       </header>
 
@@ -293,7 +293,7 @@ export function SetupWizard() {
             steps={steps.map((step) => ({ id: step.id, label: step.label }))}
             current={currentStepIndex}
             onStepSelect={(index) => navigateToStep(index)}
-            aria-label="Langkah panduan instalasi"
+            aria-label="Installation guide steps"
           />
         </div>
       </div>
@@ -304,7 +304,7 @@ export function SetupWizard() {
             <CardHeader className="gap-1">
               <CardTitle level={2}>{currentStep.label}</CardTitle>
               <CardDescription>
-                Konfigurasi parameter infrastruktur inti untuk instance MuseCanvas ini; bisa diubah kapan saja dari admin panel.
+                Configure the core infrastructure parameters for this MuseCanvas instance; they can be changed at any time from the admin panel.
               </CardDescription>
             </CardHeader>
 
@@ -313,11 +313,11 @@ export function SetupWizard() {
 
               {currentStep.id === 'review' ? (
                 <InfoGroup
-                  title="Pemeriksaan lingkungan (hasil pembacaan server)"
+                  title="Environment check (server readings)"
                   caption={
                     status?.bootstrap
-                      ? `Dibaca oleh server pada ${status.bootstrap.checkedAt.slice(0, 10)}; wizard ini sendiri tidak menjalankan pemeriksaan tersebut.`
-                      : 'Server tidak mengembalikan hasil pemeriksaan lingkungan.'
+                      ? `Read by the server on ${status.bootstrap.checkedAt.slice(0, 10)}; this wizard does not run the check itself.`
+                      : 'The server returned no environment check results.'
                   }
                 >
                   {status?.bootstrap ? (
@@ -331,7 +331,7 @@ export function SetupWizard() {
                               tone={ok ? 'success' : check.status === 'missing' ? 'warning' : 'danger'}
                               icon={ok ? <Check weight="fill" /> : <CircleAlert weight="fill" />}
                             >
-                              {ok ? 'Normal' : check.status === 'missing' ? 'Hilang' : 'Bermasalah'}
+                              {ok ? 'OK' : check.status === 'missing' ? 'Missing' : 'Failing'}
                             </Badge>
                           </li>
                         )
@@ -339,7 +339,7 @@ export function SetupWizard() {
                     </ul>
                   ) : (
                     <Alert tone="warning" role="status">
-                      Hasil pemeriksaan lingkungan tidak tersedia. Pastikan layanan API sudah berjalan, lalu buka lagi halaman ini.
+                      Environment check results are unavailable. Make sure the API service is running, then reopen this page.
                     </Alert>
                   )}
 
@@ -355,8 +355,8 @@ export function SetupWizard() {
                 </InfoGroup>
               ) : (
                 <InfoGroup
-                  title="Pemeriksaan aktual sistem"
-                  caption="Status berikut dibaca dari catatan panduan server; wizard tidak menjalankan konfigurasi atau request apa pun atas namamu."
+                  title="Actual system checks"
+                  caption="The status below is read from the server’s onboarding records; the wizard runs no configuration or requests on your behalf."
                 >
                   <div className="flex flex-col gap-2">
                     {currentStep.sections.map((sectionKey) => (
@@ -371,22 +371,22 @@ export function SetupWizard() {
               )}
 
               <InfoGroup
-                title="Daftar periksa manual"
-                caption="Wizard tidak memverifikasi hal berikut; silakan konfirmasi sendiri di halaman admin panel yang sesuai."
+                title="Manual checklist"
+                caption="The wizard does not verify the following; confirm them yourself on the matching admin panel page."
               >
                 <ManualList items={currentStep.manual} />
               </InfoGroup>
 
               {currentStep.id === 'review' ? (
                 environmentReady ? (
-                  <Alert tone="success" role="status" title="Pemeriksaan lingkungan lolos">
-                    Semua pemeriksaan lingkungan yang dicatat server sudah normal. Item yang masih perlu dikonfirmasi manual ada di status catatan panduan dan daftar periksa di atas.
+                  <Alert tone="success" role="status" title="Environment check passed">
+                    All environment checks recorded by the server are normal. Items that still need manual confirmation are in the onboarding record status and the checklist above.
                   </Alert>
                 ) : (
-                  <Alert tone="danger" role="alert" title="Pemeriksaan lingkungan belum lolos">
+                  <Alert tone="danger" role="alert" title="Environment check not passed yet">
                     {status?.bootstrap
-                      ? 'Setidaknya satu pemeriksaan lingkungan belum lolos; tangani dulu item yang ditandai hilang atau bermasalah di atas.'
-                      : 'Server tidak mengembalikan hasil pemeriksaan lingkungan, jadi tidak bisa dipastikan apakah instance ini sudah siap jalan.'}
+                      ? 'At least one environment check has not passed yet; handle the items marked missing or failing above first.'
+                      : 'The server returned no environment check results, so it cannot be confirmed whether this instance is ready to run.'}
                   </Alert>
                 )
               ) : null}
@@ -394,10 +394,10 @@ export function SetupWizard() {
               {currentStep.id === 'review' ? (
                 <div className="flex flex-wrap gap-3">
                   <Link href="/generate" className={buttonVariants({ variant: 'primary' })}>
-                    Masuk ke meja kreasi
+                    Go to the creation console
                   </Link>
                   <Link href="/admin" className={buttonVariants({ variant: 'secondary' })}>
-                    Masuk ke admin panel
+                    Go to the admin panel
                   </Link>
                 </div>
               ) : null}
@@ -411,7 +411,7 @@ export function SetupWizard() {
                 disabled={currentStepIndex === 0}
                 icon={<ChevronLeft weight="bold" aria-hidden="true" className={iconSize.sm} />}
               >
-                Langkah sebelumnya
+                Previous step
               </Button>
 
               {!isLastStep ? (
@@ -424,7 +424,7 @@ export function SetupWizard() {
                     />
                   }
                 >
-                  Langkah berikutnya
+                  Next step
                 </Button>
               ) : null}
             </div>

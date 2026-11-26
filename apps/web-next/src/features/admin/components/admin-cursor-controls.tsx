@@ -21,10 +21,10 @@ export function AdminCursorControls({ batch, count, total, hasMore, nextCursor, 
   onPrevious: () => void; onNext: () => void
 }) {
   return <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
-    <p className="text-sm text-muted-foreground">第 {batch} 批 · 本批 {count} 条 · 匹配总数 {total ?? '—'}</p>
+    <p className="text-sm text-muted-foreground">Batch {batch} · {count} items in this batch · {total ?? '—'} total matches</p>
     <div className="flex flex-wrap gap-2">
-      <Button variant="secondary" className="min-h-[var(--control-lg)] md:min-h-[var(--control-md)]" disabled={batch === 1 || busy} onClick={onPrevious}>上一批</Button>
-      <Button variant="secondary" className="min-h-[var(--control-lg)] md:min-h-[var(--control-md)]" disabled={!hasMore || !nextCursor || busy} onClick={onNext}>下一批</Button>
+      <Button variant="secondary" className="min-h-[var(--control-lg)] md:min-h-[var(--control-md)]" disabled={batch === 1 || busy} onClick={onPrevious}>Previous batch</Button>
+      <Button variant="secondary" className="min-h-[var(--control-lg)] md:min-h-[var(--control-md)]" disabled={!hasMore || !nextCursor || busy} onClick={onNext}>Next batch</Button>
     </div>
   </div>
 }

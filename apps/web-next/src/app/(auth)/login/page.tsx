@@ -9,15 +9,15 @@ import { Suspense } from 'react'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: '登录 - MuseCanvas',
-  description: '登录 MuseCanvas AI 创作工作台',
+  title: 'Log in - MuseCanvas',
+  description: 'Log in to the MuseCanvas AI creation console',
 }
 
 /** Shape-matched placeholder for the client form and its OAuth alternatives. */
 function LoginFormFallback() {
   return (
     <div aria-busy="true" className="flex flex-col gap-6">
-      <span className="sr-only">正在加载登录表单</span>
+      <span className="sr-only">Loading login form</span>
       <header className="flex flex-col items-center gap-2" aria-hidden="true">
         <Skeleton className="h-7 w-48" />
         <SkeletonText lines={1} width="16rem" />

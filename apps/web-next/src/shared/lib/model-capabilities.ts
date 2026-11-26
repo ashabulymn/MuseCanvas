@@ -45,9 +45,9 @@ export function maskCapabilityBlockReason(
 ): string | null {
   if (modelAcceptsMask(model)) return null
   if (model?.declaredBy === UNDECLARED) {
-    return '该模型的参数契约未通过校验，无法确认支持选区遮罩'
+    return 'This model’s parameter contract failed validation, so mask support cannot be confirmed'
   }
-  return '当前模型不支持选区遮罩，请切换到支持局部修改的图像模型'
+  return 'The current model does not support selection masks — switch to an image model that supports local edits'
 }
 
 /**

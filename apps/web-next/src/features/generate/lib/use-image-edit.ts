@@ -21,7 +21,7 @@ export function useCreateImageEdit() {
     mutationFn: async (request) => {
       const res = await postImageEdit(request)
       if (!res.success || !res.data) {
-        throw new ApiError(res.error?.code || 'UNKNOWN', res.error?.message || '创建局部修改任务失败')
+        throw new ApiError(res.error?.code || 'UNKNOWN', res.error?.message || 'Failed to create the local edit task')
       }
       return res.data
     },

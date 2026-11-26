@@ -25,8 +25,8 @@ export function useAdminActions() {
       toast.push({ variant: 'success', title: success, description: label })
       return result
     } catch (error) {
-      const message = error instanceof Error ? error.message : '操作失败，请重试'
-      setErrors((previous) => ({ ...previous, [id]: `${label}：${message}` }))
+      const message = error instanceof Error ? error.message : 'Action failed, please retry'
+      setErrors((previous) => ({ ...previous, [id]: `${label}: ${message}` }))
       throw error
     } finally {
       lock.release(id)

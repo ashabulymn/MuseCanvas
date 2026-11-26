@@ -62,17 +62,17 @@ export async function clientApi<T>(
     // 这里只兜底非 JSON 响应（nginx 502 HTML、代理错误页等），避免误判为 NETWORK_ERROR。
     const text = await res.text()
     if (!text) {
-      return { success: false, error: { code: `HTTP_${res.status}`, message: '上游服务响应异常' } }
+      return { success: false, error: { code: `HTTP_${res.status}`, message: 'Upstream service returned an unexpected response' } }
     }
     try {
       return JSON.parse(text) as ApiResponse<T>
     } catch {
-      return { success: false, error: { code: `HTTP_${res.status}`, message: '上游服务响应异常' } }
+      return { success: false, error: { code: `HTTP_${res.status}`, message: 'Upstream service returned an unexpected response' } }
     }
   } catch (err: unknown) {
     if (err instanceof DOMException && err.name === 'AbortError') {
-      return { success: false, error: { code: 'ABORTED', message: '请求已取消' } }
+      return { success: false, error: { code: 'ABORTED', message: 'Request was cancelled' } }
     }
-    return { success: false, error: { code: 'NETWORK_ERROR', message: '网络连接失败' } }
+    return { success: false, error: { code: 'NETWORK_ERROR', message: 'Network connection failed' } }
   }
 }

@@ -71,7 +71,7 @@ export function formatFindingLocation(f: Pick<AdminPluginScanFinding, 'path' | '
   if (hasLine) parts.push(String(f.line))
   if (hasColumn) parts.push(String(f.column))
   // Without a path the bare `12:4` reads poorly; prefix a label instead.
-  return f.path ? parts.join(':') : `行 ${parts.join(':')}`
+  return f.path ? parts.join(':') : `Line ${parts.join(':')}`
 }
 
 /** Group findings by package path, keeping first-seen order; path-less findings go under `null` (package level). */
@@ -110,17 +110,17 @@ export async function postPluginPackage<T>(
     const res = await fetch(requestUrl, { method: 'POST', body: form, credentials: 'include', signal })
     const text = await res.text()
     if (!text) {
-      return { success: false, error: { code: `HTTP_${res.status}`, message: '上游服务响应异常' } }
+      return { success: false, error: { code: `HTTP_${res.status}`, message: 'Upstream service returned an unexpected response' } }
     }
     try {
       return JSON.parse(text) as ApiResponse<T>
     } catch {
-      return { success: false, error: { code: `HTTP_${res.status}`, message: '上游服务响应异常' } }
+      return { success: false, error: { code: `HTTP_${res.status}`, message: 'Upstream service returned an unexpected response' } }
     }
   } catch (err: unknown) {
     if (err instanceof DOMException && err.name === 'AbortError') {
-      return { success: false, error: { code: 'ABORTED', message: '请求已取消' } }
+      return { success: false, error: { code: 'ABORTED', message: 'Request cancelled' } }
     }
-    return { success: false, error: { code: 'NETWORK_ERROR', message: '网络连接失败' } }
+    return { success: false, error: { code: 'NETWORK_ERROR', message: 'Network connection failed' } }
   }
 }

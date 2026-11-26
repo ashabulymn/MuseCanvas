@@ -15,7 +15,7 @@ export function useJobsQuery(limit?: number) {
     queryFn: async () => {
       const res = await api.getJobs()
       if (!res.success || !res.data) {
-        throw new ApiError(res.error?.code || 'UNKNOWN', res.error?.message || '获取任务列表失败')
+        throw new ApiError(res.error?.code || 'UNKNOWN', res.error?.message || 'Failed to load task list')
       }
       const items = (res.data.items || []) as GenerationJob[]
       return limit ? items.slice(0, limit) : items
@@ -40,7 +40,7 @@ export function useCreateJobMutation() {
     mutationFn: async (payload: CreateGenerationRequest) => {
       const res = await api.createGeneration(payload)
       if (!res.success || !res.data) {
-        throw new Error(res.error?.message || '创建生成任务失败')
+        throw new Error(res.error?.message || 'Failed to create generation task')
       }
       return res.data as GenerationJob
     },
@@ -60,7 +60,7 @@ export function useCancelJobMutation() {
     mutationFn: async (jobId: string) => {
       const res = await api.cancelJob(jobId)
       if (!res.success || !res.data) {
-        throw new Error(res.error?.message || '取消任务失败')
+        throw new Error(res.error?.message || 'Failed to cancel task')
       }
       return res.data as GenerationJob
     },
@@ -77,7 +77,7 @@ export function useRetryJobMutation() {
     mutationFn: async (jobId: string) => {
       const res = await api.retryJob(jobId)
       if (!res.success || !res.data) {
-        throw new Error(res.error?.message || '重试任务失败')
+        throw new Error(res.error?.message || 'Failed to retry task')
       }
       return res.data as GenerationJob
     },
@@ -94,7 +94,7 @@ export function useDeleteJobMutation() {
     mutationFn: async (jobId: string) => {
       const res = await api.deleteJob(jobId)
       if (!res.success) {
-        throw new Error(res.error?.message || '删除任务失败')
+        throw new Error(res.error?.message || 'Failed to delete task')
       }
       return jobId
     },

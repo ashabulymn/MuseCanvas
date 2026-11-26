@@ -32,7 +32,7 @@ function LibraryPageSkeleton() {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
           {Array.from({ length: 8 }, (_, index) => <SkeletonTile key={index} />)}
         </div>
-        <p className="sr-only">正在加载作品图库…</p>
+        <p className="sr-only">Loading work gallery…</p>
       </div>
     </div>
   )
@@ -41,8 +41,8 @@ function LibraryPageSkeleton() {
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: '作品图库 - MuseCanvas',
-  description: 'AI 创作画廊与历史作品管理',
+  title: 'Work gallery - MuseCanvas',
+  description: 'AI creation gallery and historical work management',
 }
 
 export default function LibraryPage() {

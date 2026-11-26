@@ -187,7 +187,7 @@ function ToastViewport({
     >
       {overflow > 0 ? (
         <p aria-hidden="true" className="rounded-pill bg-surface px-3 py-1 text-xs font-medium text-muted-foreground shadow-toast">
-          已折叠 {overflow} 条通知
+          {overflow} notifications collapsed
         </p>
       ) : null}
       {visible.map((toast) => {
@@ -228,7 +228,7 @@ function ToastViewport({
                 <button
                   type="button"
                   onClick={() => onDismiss(toast.id)}
-                  aria-label="关闭通知"
+                  aria-label="Dismiss notification"
                   className={cn(
                     'inline-flex items-center justify-center rounded-control',
                     controlSquare.sm,

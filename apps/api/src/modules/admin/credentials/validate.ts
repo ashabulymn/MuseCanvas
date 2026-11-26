@@ -58,31 +58,31 @@ export async function resolveCredentialTarget(state: {
   let providerId: string
   if (state.plugin) {
     const catalog = await resolveCatalogPlugin(state.plugin.pluginId, state.plugin.pluginVersion)
-    if (!catalog) return failure('INVALID_PLUGIN', '供应商插件不存在或版本不受支持')
+    if (!catalog) return failure('INVALID_PLUGIN', 'The provider plugin does not exist or its version is not supported')
     const declared = pluginCredentialSpec(catalog.manifest).providerId
     if (state.providerId && state.providerId !== declared) {
-      return failure('INVALID_INPUT', `该插件凭据的供应商类型必须为 ${declared}`)
+      return failure('INVALID_INPUT', `The provider type of this plugin credential must be ${declared}`)
     }
     providerId = declared
     candidates = [catalog]
   } else {
-    if (!state.providerId) return failure('INVALID_INPUT', '供应商类型无效')
+    if (!state.providerId) return failure('INVALID_INPUT', 'Invalid provider type')
     providerId = state.providerId
     candidates = await pluginsForProvider(providerId)
-    if (!candidates.length) return failure('INVALID_INPUT', '供应商类型无效')
+    if (!candidates.length) return failure('INVALID_INPUT', 'Invalid provider type')
   }
 
   const schemaId = state.schemaId ?? pluginCredentialSpec(candidates[0].manifest).schemaId
   const servable = candidates.filter(entry => credentialServesPlugin(entry.manifest, { provider_id: providerId, schema_id: schemaId }))
-  if (!servable.length) return failure('INVALID_INPUT', '该插件不支持此凭据 schema')
+  if (!servable.length) return failure('INVALID_INPUT', 'This plugin does not support this credential schema')
 
   let baseUrl: string | null = state.baseUrl ?? null
   if (state.plugin) {
     const resolved = resolveCredentialBaseUrl(servable[0].manifest, baseUrl)
-    if (!resolved.ok) return failure('INVALID_BASE_URL', 'Base URL 不符合该插件的服务端点策略')
+    if (!resolved.ok) return failure('INVALID_BASE_URL', 'Base URL does not comply with this plugin's server endpoint policy')
     baseUrl = resolved.baseUrl ?? null
   } else if (baseUrl && !servable.some(entry => resolveCredentialBaseUrl(entry.manifest, baseUrl).ok)) {
-    return failure('INVALID_BASE_URL', 'Base URL 不符合该供应商任何插件的服务端点策略')
+    return failure('INVALID_BASE_URL', 'Base URL does not comply with the server endpoint policy of any plugin of this provider')
   }
 
   if (state.secret !== undefined) {
@@ -91,7 +91,7 @@ export async function resolveCredentialTarget(state: {
       decoded = decodeCredential(state.secret, schemaId, state.plugin?.pluginId, state.plugin?.pluginVersion)
     } catch (error) {
       console.error('credential decode failed', error instanceof Error ? error.message : error)
-      return failure('INVALID_CREDENTIAL', '凭据内容无法解析')
+      return failure('INVALID_CREDENTIAL', 'Credential content could not be parsed')
     }
     // Only a built-in's code is available here; an uploaded plugin's validateConfig
     // runs in the worker when it is first used.
@@ -104,7 +104,7 @@ export async function resolveCredentialTarget(state: {
         await plugin.validateConfig({ baseUrl: baseUrl ?? undefined, credential: decoded })
       } catch (error) {
         console.error('credential plugin validation failed', error instanceof Error ? error.message : error)
-        return failure('INVALID_CREDENTIAL', '凭据未通过插件校验')
+        return failure('INVALID_CREDENTIAL', 'Credential failed plugin validation')
       }
     }
   }
@@ -132,11 +132,11 @@ export function credentialBindingError(
   credential: { provider_id?: unknown; schema_id?: unknown; base_url?: unknown },
 ): { code: string; message: string } | null {
   if (!credentialServesPlugin(manifest, credential)) {
-    return { code: 'INVALID_INPUT', message: '供应商凭据与模型插件不匹配' }
+    return { code: 'INVALID_INPUT', message: 'The provider credential does not match the model plugin' }
   }
   const baseUrl = typeof credential.base_url === 'string' ? credential.base_url : null
   if (!resolveCredentialBaseUrl(manifest, baseUrl).ok) {
-    return { code: 'INVALID_BASE_URL', message: '该供应商凭据的 Base URL 不符合模型插件的服务端点策略' }
+    return { code: 'INVALID_BASE_URL', message: 'This provider credential's base URL does not comply with the model plugin's server endpoint policy' }
   }
   return null
 }

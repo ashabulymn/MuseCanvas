@@ -44,15 +44,15 @@ import { GalleryImagePicker } from './gallery-image-picker'
 function statusLabel(image: StagedReferenceImage, index: number, noun: string): string {
   switch (image.status) {
     case 'pending':
-      return `${noun} ${index + 1} 排队中`
+      return `${noun} ${index + 1} queued`
     case 'uploading':
-      return `${noun} ${index + 1} 上传中 ${image.progress}%`
+      return `${noun} ${index + 1} uploading ${image.progress}%`
     case 'processing':
-      return `${noun} ${index + 1} 服务端校验中`
+      return `${noun} ${index + 1} validating on the server`
     case 'error':
-      return `${noun} ${index + 1} 上传失败`
+      return `${noun} ${index + 1} upload failed`
     default:
-      return `${noun} ${index + 1} 已就绪`
+      return `${noun} ${index + 1} ready`
   }
 }
 
@@ -108,16 +108,16 @@ export function ReferenceImagesDialog({
   const frameMode = plan.slots.some(
     (slot) => slot.role === 'first_frame' || slot.role === 'last_frame',
   )
-  const noun = frameMode ? '输入画面' : '参考图'
+  const noun = frameMode ? 'input frame' : 'reference image'
 
   // Counts only, never progress, so the live region stays quiet during a transfer.
   const announcement = useMemo(() => {
-    if (stagedImages.length === 0) return `已清空所有${noun}`
+    if (stagedImages.length === 0) return `All ${noun}s cleared`
     const failed = stagedImages.filter((image) => image.status === 'error').length
     const ready = stagedImages.filter((image) => image.status === 'ready').length
-    if (failed > 0) return `${failed} 张${noun}上传失败`
-    if (ready === stagedImages.length) return `${noun}全部就绪，共 ${ready} 张`
-    return `正在上传${noun}，已就绪 ${ready} 张`
+    if (failed > 0) return `${failed} ${noun}${failed > 1 ? 's' : ''} failed to upload`
+    if (ready === stagedImages.length) return `All ${noun}s ready, ${ready} in total`
+    return `Uploading ${noun}s, ${ready} ready`
   }, [stagedImages, noun])
 
   /**
@@ -187,23 +187,23 @@ export function ReferenceImagesDialog({
       open={open}
       onClose={requestClose}
       size="wide"
-      title={noun}
+      title={noun.charAt(0).toUpperCase() + noun.slice(1)}
       // The panel's first job is picking files, so focus goes to 上传本地图片
       // rather than the X.
       initialFocus="first-input"
-      closeLabel={`关闭${noun}面板`}
+      closeLabel={`Close ${noun} panel`}
       description={
         frameMode
-          ? '顺序即角色：第一张作为首帧，最后一张作为尾帧，可用左右按钮调整。'
-          : '模型会参照这些画面生成，可调整顺序影响参考强度。'
+          ? 'Order is the role: the first image is the first frame, the last is the last frame. Use the arrow buttons to adjust.'
+          : 'The model will generate using these images as reference. Reorder them to change how strongly each one is referenced.'
       }
       footer={
         <div className="flex w-full flex-wrap items-center justify-between gap-3">
           <p className="font-mono text-xs tabular-nums text-muted-foreground">
-            {isReadingFiles ? '正在校验文件…' : `${stagedImages.length}/${maxInputs} 张 · ${formatSize(totalBytes)}`}
+            {isReadingFiles ? 'Validating files…' : `${stagedImages.length}/${maxInputs} images · ${formatSize(totalBytes)}`}
           </p>
           <Button variant="secondary" onClick={requestClose}>
-            完成
+            Done
           </Button>
         </div>
       }
@@ -223,11 +223,11 @@ export function ReferenceImagesDialog({
               onClick={() => mutateInputs(() => clearReferenceImages())}
               icon={<Trash2 weight="bold" aria-hidden="true" />}
             >
-              删除全部
+              Delete all
             </Button>
           }
         >
-          无法使用{noun}：当前模型不接受图像输入。请切换到支持{frameMode ? '图生视频' : '图生图'}的模型，或删除已添加的{noun}。
+          Cannot use {noun}s: the current model does not accept image input. Switch to a model that supports {frameMode ? 'image-to-video' : 'image-to-image'}, or delete the {noun}s you added.
         </Alert>
       )}
 
@@ -236,7 +236,7 @@ export function ReferenceImagesDialog({
           tone="danger"
           role="alert"
           onDismiss={() => setInlineUploadError(null)}
-          dismissLabel="关闭上传错误提示"
+          dismissLabel="Dismiss upload error"
         >
           {inlineUploadError}
         </Alert>
@@ -261,7 +261,7 @@ export function ReferenceImagesDialog({
         {canAdd && (
           <div className="flex flex-col items-center gap-3 px-4 py-5 text-center">
             <Upload weight="duotone" aria-hidden="true" className={`${iconSize.xl} text-muted-foreground`} />
-            <p className="text-sm font-medium text-foreground">拖拽图片到此处</p>
+            <p className="text-sm font-medium text-foreground">Drag images here</p>
             <div className="flex flex-wrap items-center justify-center gap-2">
               <Button
                 type="button"
@@ -271,7 +271,7 @@ export function ReferenceImagesDialog({
                 onClick={() => fileInputRef.current?.click()}
                 icon={<ImagePlus weight="bold" aria-hidden="true" />}
               >
-                上传本地图片
+                Upload local images
               </Button>
               <Button
                 type="button"
@@ -280,15 +280,14 @@ export function ReferenceImagesDialog({
                 onClick={() => setIsGalleryPickerOpen(true)}
                 icon={<ImagePlus weight="bold" aria-hidden="true" className="text-primary" />}
               >
-                从图库选择
+                Choose from gallery
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              PNG 或 JPEG，单张不超过 {formatSize(UPLOAD_LIMITS.maxImageBytes)}，总计不超过{' '}
-              {formatSize(UPLOAD_LIMITS.maxTotalBytes)}，最多 {maxInputs} 张
+              PNG or JPEG, up to {formatSize(UPLOAD_LIMITS.maxImageBytes)} per image, {formatSize(UPLOAD_LIMITS.maxTotalBytes)} in total, at most {maxInputs} images
             </p>
             <p className="text-xs text-muted-foreground">
-              上传期间可关闭此面板或切换到其他页面，任务会在后台继续。
+              You can close this panel or switch to another page while uploading — the task continues in the background.
             </p>
           </div>
         )}
@@ -322,15 +321,15 @@ export function ReferenceImagesDialog({
 
                     {image.status === 'error' ? (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-control bg-danger-soft p-2 text-center text-danger">
-                        <p className="text-xs font-medium">上传失败</p>
+                        <p className="text-xs font-medium">Upload failed</p>
                         <Button
                           type="button"
                           variant="danger"
                           size="sm"
                           onClick={() => mutateInputs(() => retryReferenceUpload(image.localId))}
-                          aria-label={`重试上传${noun} ${index + 1}`}
+                          aria-label={`Retry uploading ${noun} ${index + 1}`}
                         >
-                          重试
+                          Retry
                         </Button>
                       </div>
                     ) : image.status === 'ready' ? (
@@ -347,14 +346,14 @@ export function ReferenceImagesDialog({
                       <div className="media-scrim absolute inset-0 flex flex-col items-start justify-end gap-1 p-2 text-foreground-inverse">
                         <span className="text-xs tabular-nums">
                           {image.status === 'uploading'
-                            ? `上传中 ${image.progress}%`
+                            ? `Uploading ${image.progress}%`
                             : image.status === 'processing'
-                              ? '校验中'
-                              : '排队中'}
+                              ? 'Validating'
+                              : 'Queued'}
                         </span>
                         <Progress
                           value={image.status === 'uploading' ? image.progress : null}
-                          label={`${noun} ${index + 1} 上传进度`}
+                          label={`${noun} ${index + 1} upload progress`}
                           showLabelRow={false}
                           // The bar sits on the tile's own scrim, so it needs the
                           // inverse track instead of a tonal stripe over dark media.
@@ -369,7 +368,7 @@ export function ReferenceImagesDialog({
                       {badge ? (
                         <Badge tone="neutral">{badge}</Badge>
                       ) : (
-                        <Badge tone="danger">超出当前模型上限</Badge>
+                        <Badge tone="danger">Exceeds current model limit</Badge>
                       )}
                     </div>
                   )}
@@ -385,7 +384,7 @@ export function ReferenceImagesDialog({
                         size="sm"
                         onClick={() => mutateInputs(() => reorderReferenceImages(index, index - 1))}
                         disabled={index === 0}
-                        aria-label={`将${noun} ${index + 1} 前移`}
+                        aria-label={`Move ${noun} ${index + 1} forward`}
                         icon={<ChevronLeft weight="bold" aria-hidden="true" />}
                       />
                       <IconButton
@@ -394,7 +393,7 @@ export function ReferenceImagesDialog({
                         size="sm"
                         onClick={() => mutateInputs(() => reorderReferenceImages(index, index + 1))}
                         disabled={index === stagedImages.length - 1}
-                        aria-label={`将${noun} ${index + 1} 后移`}
+                        aria-label={`Move ${noun} ${index + 1} back`}
                         icon={<ChevronRight weight="bold" aria-hidden="true" />}
                       />
                       <IconButton
@@ -402,7 +401,7 @@ export function ReferenceImagesDialog({
                         variant="danger-ghost"
                         size="sm"
                         onClick={() => mutateInputs(() => removeReferenceImage(image.localId))}
-                        aria-label={`删除${noun} ${index + 1}`}
+                        aria-label={`Delete ${noun} ${index + 1}`}
                         icon={<Trash2 weight="bold" aria-hidden="true" />}
                       />
                     </div>
@@ -418,13 +417,13 @@ export function ReferenceImagesDialog({
             variant="no-permission"
             objectName={noun}
             density="compact"
-            title={`当前模型不支持${noun}`}
-            description={`请直接输入提示词生成，或切换到支持${frameMode ? '图生视频' : '图生图'}的模型后再添加${noun}。`}
+            title={`The current model does not support ${noun}s`}
+            description={`Generate from a text prompt directly, or switch to a model that supports ${frameMode ? 'image-to-video' : 'image-to-image'} before adding ${noun}s.`}
           />
         )}
         {!canAdd && stagedImages.length >= maxInputs && supportsImages && (
           <p className="px-1 text-xs text-muted-foreground">
-            已达当前模型上限（{maxInputs} 张），如需替换请先删除一张。
+            Reached the current model limit ({maxInputs} images). Delete one first to replace it.
           </p>
         )}
       </div>
@@ -435,7 +434,7 @@ export function ReferenceImagesDialog({
         accept={ALLOWED_IMAGE_MIME_TYPES.join(',')}
         multiple
         tabIndex={-1}
-        aria-label={`选择本地${noun}文件`}
+        aria-label={`Choose local ${noun} files`}
         className="sr-only"
         onChange={onInputChange}
       />

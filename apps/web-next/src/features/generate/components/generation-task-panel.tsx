@@ -18,10 +18,10 @@ export interface GenerationTaskPanelProps extends ActiveJobsBoardProps {
 
 export function GenerationTaskPanel({ open, onClose, busy, actionErrors, ...board }: GenerationTaskPanelProps) {
   return (
-    <Dialog open={open} onClose={onClose} title="任务与最近记录" size="wide" description={`最近 30 条已加载任务（当前 ${board.jobs.length} 条）；运行数仅统计这份列表，并非全量队列。`}>
+    <Dialog open={open} onClose={onClose} title="Tasks and recent history" size="wide" description={`Latest 30 loaded tasks (currently ${board.jobs.length}); the running count only covers this list, not the full queue.`}>
       <ActiveJobsBoard {...board} actionErrors={actionErrors} disabled={busy} variant="inline" open />
-      <h3 className="mb-3 mt-6 text-sm font-medium text-foreground">最近记录</h3>
-      {board.isLoading && board.jobs.length === 0 ? <SkeletonRow cells={3} /> : board.jobs.length === 0 ? <EmptyState density="compact" variant="first-use" title="还没有生成记录" description="提交后可在此查看任务，查看记录不会更改草稿。" /> : (
+      <h3 className="mb-3 mt-6 text-sm font-medium text-foreground">Recent history</h3>
+      {board.isLoading && board.jobs.length === 0 ? <SkeletonRow cells={3} /> : board.jobs.length === 0 ? <EmptyState density="compact" variant="first-use" title="No generation history yet" description="Tasks will appear here after you submit. Viewing history never changes your draft." /> : (
         <ul className="flex flex-col gap-2">
           {board.jobs.map((job) => {
             const output = job.outputs?.[0]
@@ -32,8 +32,8 @@ export function GenerationTaskPanel({ open, onClose, busy, actionErrors, ...boar
                 <JobStatusBadge status={job.status} />
               </button>
               {(isJobActive(job) || job.status === 'failed') && <div className="flex flex-wrap gap-2">
-                {isJobActive(job) && <Button variant="danger-ghost" size="sm" onClick={() => board.onCancel(job.id)} loading={board.pendingCancelId === job.id} disabled={busy || Boolean(job.cancelRequested) || Boolean(board.pendingCancelId)}>{job.cancelRequested ? '取消中' : '取消任务'}</Button>}
-                {job.status === 'failed' && <Button variant="secondary" size="sm" onClick={() => board.onRetry(job.id)} loading={board.pendingRetryId === job.id} disabled={busy || Boolean(board.pendingRetryId)}>重试原任务</Button>}
+                {isJobActive(job) && <Button variant="danger-ghost" size="sm" onClick={() => board.onCancel(job.id)} loading={board.pendingCancelId === job.id} disabled={busy || Boolean(job.cancelRequested) || Boolean(board.pendingCancelId)}>{job.cancelRequested ? 'Cancelling' : 'Cancel task'}</Button>}
+                {job.status === 'failed' && <Button variant="secondary" size="sm" onClick={() => board.onRetry(job.id)} loading={board.pendingRetryId === job.id} disabled={busy || Boolean(board.pendingRetryId)}>Retry original task</Button>}
               </div>}
               {actionErrors[job.id] && <Alert tone="danger" role="alert">{actionErrors[job.id]}</Alert>}
             </li>

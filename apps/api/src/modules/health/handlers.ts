@@ -13,12 +13,12 @@ export async function readiness() {
   try {
     await db().query('SELECT 1')
   } catch {
-    return fail('DEPENDENCY_UNAVAILABLE', '服务尚未就绪', 503)
+    return fail('DEPENDENCY_UNAVAILABLE', 'Service is not ready yet', 503)
   }
   try {
     derivePurposeKey('session-hmac')
   } catch {
-    return fail('DEPENDENCY_UNAVAILABLE', '服务尚未就绪', 503)
+    return fail('DEPENDENCY_UNAVAILABLE', 'Service is not ready yet', 503)
   }
   let setupComplete = false
   try {

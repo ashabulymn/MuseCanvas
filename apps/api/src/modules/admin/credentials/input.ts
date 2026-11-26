@@ -59,7 +59,7 @@ export function parseCredentialInput(body: Record<string, unknown>): ParsedCrede
   const input: CredentialInput = {}
   if (body.displayName !== undefined) {
     const displayName = text(body.displayName)
-    if (!displayName) return { ok: false, code: 'INVALID_INPUT', message: '凭据名称不能为空' }
+    if (!displayName) return { ok: false, code: 'INVALID_INPUT', message: 'Credential name cannot be empty' }
     input.displayName = displayName
   }
 
@@ -69,7 +69,7 @@ export function parseCredentialInput(body: Record<string, unknown>): ParsedCrede
   const pluginId = text(body.pluginId)
   const pluginVersion = text(body.pluginVersion)
   if (!!pluginId !== !!pluginVersion) {
-    return { ok: false, code: 'INVALID_INPUT', message: '插件身份需要同时提供 pluginId 与 pluginVersion' }
+    return { ok: false, code: 'INVALID_INPUT', message: 'The plugin identity requires both pluginId and pluginVersion' }
   }
   if (pluginId && pluginVersion) input.plugin = { pluginId, pluginVersion }
 
@@ -77,7 +77,7 @@ export function parseCredentialInput(body: Record<string, unknown>): ParsedCrede
   if (schemaId) input.schemaId = schemaId
   if (body.schemaVersion !== undefined) {
     const version = Number(body.schemaVersion)
-    if (!Number.isSafeInteger(version) || version < 1) return { ok: false, code: 'INVALID_INPUT', message: '凭据 schema 版本无效' }
+    if (!Number.isSafeInteger(version) || version < 1) return { ok: false, code: 'INVALID_INPUT', message: 'Invalid credential schema version' }
     input.schemaVersion = version
   }
 
@@ -88,7 +88,7 @@ export function parseCredentialInput(body: Record<string, unknown>): ParsedCrede
   const rawBaseUrl = body.baseUrl !== undefined ? body.baseUrl : (typeof object?.baseUrl === 'string' ? object.baseUrl : undefined)
   if (rawBaseUrl !== undefined && rawBaseUrl !== null) {
     const baseUrl = normalizedProviderBaseUrl(rawBaseUrl)
-    if (baseUrl === null) return { ok: false, code: 'INVALID_BASE_URL', message: 'Base URL 必须是安全的 HTTPS 地址' }
+    if (baseUrl === null) return { ok: false, code: 'INVALID_BASE_URL', message: 'Base URL must be a secure HTTPS address' }
     input.baseUrl = baseUrl || null
   } else if (rawBaseUrl === null) {
     input.baseUrl = null

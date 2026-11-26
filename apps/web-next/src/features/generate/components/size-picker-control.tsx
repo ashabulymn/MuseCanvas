@@ -98,7 +98,7 @@ export function SizePickerControl({ descriptor, value, onChange, label, labelId 
           </option>
         ))}
         {size.allowCustom === true && (
-          <option value={CUSTOM_VALUE}>自定义尺寸</option>
+          <option value={CUSTOM_VALUE}>Custom size</option>
         )}
       </Select>
 
@@ -106,12 +106,12 @@ export function SizePickerControl({ descriptor, value, onChange, label, labelId 
         <div className="flex flex-col gap-2 rounded-control bg-tonal p-2">
           <div className="flex items-center gap-2">
             <label className="flex items-center gap-1 text-xs text-muted-foreground">
-              宽
+              Width
               <Input
                 type="number"
                 size="sm"
                 inputMode="numeric"
-                aria-label={`${label} 宽度`}
+                aria-label={`${label} width`}
                 aria-invalid={violations.length > 0}
                 aria-describedby={violations.length > 0 ? errorId : undefined}
                 value={draft.widthRaw}
@@ -121,12 +121,12 @@ export function SizePickerControl({ descriptor, value, onChange, label, labelId 
             </label>
             <span aria-hidden="true" className="text-xs text-muted-foreground">×</span>
             <label className="flex items-center gap-1 text-xs text-muted-foreground">
-              高
+              Height
               <Input
                 type="number"
                 size="sm"
                 inputMode="numeric"
-                aria-label={`${label} 高度`}
+                aria-label={`${label} height`}
                 aria-invalid={violations.length > 0}
                 value={draft.heightRaw}
                 onChange={(event) => setEdge('height', event.target.value)}
@@ -161,8 +161,8 @@ export function SizePickerControl({ descriptor, value, onChange, label, labelId 
 }
 
 function optionLabel(option: DescriptorOption): string {
-  const experimental = option.experimental ? '（实验性）' : ''
-  return `${option.label}${experimental}${option.isDefault ? ' · 默认' : ''}`
+  const experimental = option.experimental ? ' (Experimental)' : ''
+  return `${option.label}${experimental}${option.isDefault ? ' · Default' : ''}`
 }
 
 /** Split a `WxH` wire value back into editable text, keeping partial input. */

@@ -60,17 +60,17 @@ const SEEDANCE_MAX_FRAMES = 10_000
 const seedanceDurationParameter: IntegerParameterDescriptor = {
   type: 'integer',
   name: 'durationSeconds',
-  label: '时长（秒）',
+  label: 'Duration (seconds)',
   min: 1,
   max: 30,
   defaultValue: 5,
-  ui: { control: 'slider', unit: '秒', order: 1 },
+  ui: { control: 'slider', unit: 'seconds', order: 1 },
 }
 
 const seedanceAspectRatioParameter: EnumParameterDescriptor = {
   type: 'enum',
   name: 'aspectRatio',
-  label: '宽高比',
+  label: 'Aspect ratio',
   options: ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9'],
   defaultValue: '16:9',
   ui: { control: 'select', order: 2 },
@@ -79,7 +79,7 @@ const seedanceAspectRatioParameter: EnumParameterDescriptor = {
 const seedanceResolutionParameter: EnumParameterDescriptor = {
   type: 'enum',
   name: 'resolution',
-  label: '分辨率',
+  label: 'Resolution',
   options: ['720p', '1080p'],
   defaultValue: '720p',
   ui: { control: 'segmented', order: 3 },
@@ -88,7 +88,7 @@ const seedanceResolutionParameter: EnumParameterDescriptor = {
 const seedanceAudioParameter: BooleanParameterDescriptor = {
   type: 'boolean',
   name: 'audio',
-  label: '生成音频',
+  label: 'Generate audio',
   defaultValue: true,
   ui: { control: 'switch', order: 4 },
 }
@@ -96,7 +96,7 @@ const seedanceAudioParameter: BooleanParameterDescriptor = {
 const seedanceCountParameter: IntegerParameterDescriptor = {
   type: 'integer',
   name: 'count',
-  label: '生成数量',
+  label: 'Generation count',
   min: 1,
   max: 4,
   defaultValue: 1,
@@ -106,7 +106,7 @@ const seedanceCountParameter: IntegerParameterDescriptor = {
 const seedanceSeedParameter: IntegerParameterDescriptor = {
   type: 'integer',
   name: 'seed',
-  label: '随机种子',
+  label: 'Random seed',
   min: 0,
   max: SEEDANCE_MAX_SEED,
   ui: { control: 'number', advanced: true, order: 6 },
@@ -115,7 +115,7 @@ const seedanceSeedParameter: IntegerParameterDescriptor = {
 const seedanceWatermarkParameter: BooleanParameterDescriptor = {
   type: 'boolean',
   name: 'watermark',
-  label: '水印',
+  label: 'Watermark',
   defaultValue: false,
   ui: { control: 'switch', advanced: true, order: 7 },
 }
@@ -123,14 +123,14 @@ const seedanceWatermarkParameter: BooleanParameterDescriptor = {
 const seedanceCameraFixedParameter: BooleanParameterDescriptor = {
   type: 'boolean',
   name: 'camera_fixed',
-  label: '镜头固定',
+  label: 'Fixed camera',
   ui: { control: 'switch', advanced: true, order: 8 },
 }
 
 const seedanceFramesParameter: IntegerParameterDescriptor = {
   type: 'integer',
   name: 'frames',
-  label: '总帧数',
+  label: 'Total frames',
   min: 1,
   max: SEEDANCE_MAX_FRAMES,
   ui: { control: 'number', advanced: true, order: 9 },
@@ -155,13 +155,13 @@ const seedanceVideoParameters: ParameterDescriptor[] = [
  * and never puts it on the wire.
  */
 const seedanceInputSlots: InputSlotDescriptor[] = [
-  { role: 'first_frame', required: false, minCount: 0, maxCount: 1, allowedMediaKinds: ['image'], label: '首帧' },
-  { role: 'last_frame', required: false, minCount: 0, maxCount: 1, allowedMediaKinds: ['image'], label: '尾帧' },
-  { role: 'reference_image', required: false, minCount: 0, maxCount: 4, allowedMediaKinds: ['image'], label: '参考图' },
+  { role: 'first_frame', required: false, minCount: 0, maxCount: 1, allowedMediaKinds: ['image'], label: 'First frame' },
+  { role: 'last_frame', required: false, minCount: 0, maxCount: 1, allowedMediaKinds: ['image'], label: 'Last frame' },
+  { role: 'reference_image', required: false, minCount: 0, maxCount: 4, allowedMediaKinds: ['image'], label: 'Reference image' },
   // `mask` has been accepted verbatim by `resolveImageRoles` (and listed in
   // `SEEDANCE_IMAGE_ROLES`) all along; declaring the slot is what makes the role
   // discoverable to the console instead of existing only in this file.
-  { role: 'mask', required: false, minCount: 0, maxCount: 1, allowedMediaKinds: ['image'], label: '蒙版' },
+  { role: 'mask', required: false, minCount: 0, maxCount: 1, allowedMediaKinds: ['image'], label: 'Mask' },
 ]
 
 const seedanceCapabilities: ModelCapabilities = {

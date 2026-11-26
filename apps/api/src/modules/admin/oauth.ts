@@ -15,9 +15,9 @@ export async function updateOAuthProvider(
   const clientId = typeof input.clientId === 'string' ? input.clientId.trim() : undefined
   const clientSecret = typeof input.clientSecret === 'string' ? input.clientSecret.trim() : undefined
   const enabled = typeof input.enabled === 'boolean' ? input.enabled : undefined
-  if (clientId !== undefined && clientId.length > 300) return fail('INVALID_INPUT', 'Client ID 过长')
+  if (clientId !== undefined && clientId.length > 300) return fail('INVALID_INPUT', 'Client ID is too long')
   if (clientSecret !== undefined && clientSecret.length > 1000)
-    return fail('INVALID_INPUT', 'Client Secret 过长')
+    return fail('INVALID_INPUT', 'Client Secret is too long')
   // New writes are app-v1 only; the key id is persisted alongside the ciphertext.
   let secretEncrypted: string | null = null
   let secretKeyId: string | null = null
@@ -27,7 +27,7 @@ export async function updateOAuthProvider(
       secretEncrypted = envelope.ciphertext
       secretKeyId = envelope.keyId
     } catch {
-      return fail('CREDENTIAL_ENCRYPT_FAILED', '凭据加密失败，请检查加密配置', 500)
+      return fail('CREDENTIAL_ENCRYPT_FAILED', 'Credential encryption failed. Please check the encryption configuration.', 500)
     }
   }
   const result = await db().query(

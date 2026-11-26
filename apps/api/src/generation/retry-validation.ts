@@ -32,7 +32,7 @@ export type RetryValidation =
 /** The failure arm, for callers that hold a rejection across a closure boundary. */
 export type RetryRejection = Extract<RetryValidation, { ok: false }>
 
-const UNDECLARED_MESSAGE = '该模型尚未声明参数契约，无法校验历史生成参数，请重新创建任务'
+const UNDECLARED_MESSAGE = 'This model has not declared a parameter contract, so the historical generation parameters cannot be validated. Please create a new task.'
 
 export async function validateRetryRequest(
   client: PoolClient,
@@ -66,7 +66,7 @@ export async function validateRetryRequest(
     return {
       ok: false,
       code: 'MODEL_NOT_AVAILABLE',
-      message: '该任务绑定的模型已不可用，请重新创建任务',
+      message: 'The model bound to this task is no longer available. Please create a new task.',
       status: 409,
     }
   }

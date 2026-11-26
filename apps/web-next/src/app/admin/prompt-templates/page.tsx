@@ -3,7 +3,7 @@ import { AdminPromptTemplatesView } from '@/features/admin/components/admin-prom
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: '提示词模板 - MuseCanvas 管理后台',
+  title: 'Prompt Templates - MuseCanvas Admin',
 }
 
 export default function AdminPromptTemplatesPage() {

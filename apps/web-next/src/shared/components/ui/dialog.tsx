@@ -80,7 +80,7 @@ export function Dialog({
   footer,
   size = 'default',
   panelClassName,
-  closeLabel = '关闭对话框',
+  closeLabel = 'Close dialog',
   initialFocus = 'close',
 }: DialogProps) {
   const descriptionId = useId()

@@ -18,11 +18,11 @@ export const CUSTOM_PROVIDER_OPTIONS: Record<
   readonly { value: string; label: string }[]
 > = {
   media: [
-    { value: 'openai', label: 'OpenAI 兼容' },
-    { value: 'volcengine', label: 'Seedream（火山引擎）' },
+    { value: 'openai', label: 'OpenAI-compatible' },
+    { value: 'volcengine', label: 'Seedream (Volcengine)' },
   ],
   language: [
-    { value: 'openai', label: 'OpenAI 兼容' },
+    { value: 'openai', label: 'OpenAI-compatible' },
     { value: 'anthropic', label: 'Anthropic' },
   ],
 }
@@ -153,15 +153,15 @@ export function parseJsonSecret(
   raw: string,
 ): { ok: true; value: Record<string, unknown> } | { ok: false; error: string } {
   const text = (raw || '').trim()
-  if (!text) return { ok: false, error: '请粘贴凭据 JSON' }
+  if (!text) return { ok: false, error: 'Please paste the credential JSON' }
   let parsed: unknown
   try {
     parsed = JSON.parse(text)
   } catch {
-    return { ok: false, error: '凭据不是合法 JSON' }
+    return { ok: false, error: 'Credential is not valid JSON' }
   }
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    return { ok: false, error: '凭据 JSON 必须是 JSON 对象' }
+    return { ok: false, error: 'Credential JSON must be a JSON object' }
   }
   return { ok: true, value: parsed as Record<string, unknown> }
 }
@@ -170,22 +170,22 @@ export function parseServiceAccountJson(
   raw: string,
 ): { ok: true; value: Record<string, unknown> } | { ok: false; error: string } {
   const text = (raw || '').trim()
-  if (!text) return { ok: false, error: '请粘贴 Google 服务账号 JSON' }
+  if (!text) return { ok: false, error: 'Please paste the Google service account JSON' }
   let parsed: unknown
   try {
     parsed = JSON.parse(text)
   } catch {
-    return { ok: false, error: '服务账号 JSON 不是合法 JSON' }
+    return { ok: false, error: 'Service account JSON is not valid JSON' }
   }
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    return { ok: false, error: '服务账号 JSON 必须是 JSON 对象' }
+    return { ok: false, error: 'Service account JSON must be a JSON object' }
   }
   const record = parsed as Record<string, unknown>
   if (typeof record.client_email !== 'string' || !record.client_email.trim()) {
-    return { ok: false, error: '服务账号 JSON 缺少 client_email' }
+    return { ok: false, error: 'Service account JSON is missing client_email' }
   }
   if (typeof record.private_key !== 'string' || !record.private_key.trim()) {
-    return { ok: false, error: '服务账号 JSON 缺少 private_key' }
+    return { ok: false, error: 'Service account JSON is missing private_key' }
   }
   return { ok: true, value: record }
 }

@@ -109,7 +109,7 @@ export interface BadgeCountProps extends Omit<HTMLAttributes<HTMLSpanElement>, '
 }
 
 /** Pill counter: min-width/height 20px, `99+` cap, `sr-only` expansion. */
-export function BadgeCount({ count, max = 99, tone = 'danger', label = '项', className, ref, ...rest }: BadgeCountProps) {
+export function BadgeCount({ count, max = 99, tone = 'danger', label = 'items', className, ref, ...rest }: BadgeCountProps) {
   const capped = count > max
   return (
     <span
@@ -125,7 +125,7 @@ export function BadgeCount({ count, max = 99, tone = 'danger', label = '项', cl
         {capped ? `${max}+` : count}
       </span>
       <span className="sr-only">
-        {capped ? `超过 ${max} ${label}` : `${count} ${label}`}
+        {capped ? `More than ${max} ${label}` : `${count} ${label}`}
       </span>
     </span>
   )

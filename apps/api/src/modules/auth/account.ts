@@ -27,5 +27,5 @@ export async function unlinkIdentity(context: AuthedContext) {
   const provider = context.params.oauth as OAuthProvider
   const result = await db().query('UPDATE oauth_identities SET deleted_at=now() WHERE user_id=$1 AND provider=$2 AND deleted_at IS NULL RETURNING id', [context.actor.id, provider])
   if (result.rows[0]) await writeAudit(db(), context.actor.id, 'oauth.unlink', 'oauth_identity', result.rows[0].id, { provider })
-  return result.rows[0] ? ok({ unlinked: true }) : fail('NOT_FOUND', '未绑定该第三方账户', 404)
+  return result.rows[0] ? ok({ unlinked: true }) : fail('NOT_FOUND', 'This third-party account is not linked', 404)
 }

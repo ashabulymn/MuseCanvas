@@ -16,12 +16,12 @@ export function buildJobConfigReuse(job: GenerationJob, models: ModelConfig[]): 
   const tab: GenerateModeTab = job.mediaKind === 'video'
     || (job.mediaKind == null && job.outputs.some(isVideoOutput)) ? 'video' : 'image'
   const model = models.find((entry) => entry.id === job.modelId && modelMediaKind(entry) === tab) ?? null
-  const notices = ['未恢复参考图或编辑选区；请检查后再生成。']
+  const notices = ['Reference images and the edit selection were not restored; check before generating.']
   if (job.inputs?.length || job.inputImages?.length) {
-    notices.push('这次历史任务包含输入图片，请重新添加所需参考图或输入画面。')
+    notices.push('This historical task contains input images. Re-add the reference images or input frames you need.')
   }
   if (!model) {
-    notices.push('历史模型当前不可用，只能使用提示词；请自行选择可用模型。')
+    notices.push('The historical model is currently unavailable, so only the prompt can be used. Choose an available model yourself.')
     return { prompt: job.inputPrompt ?? job.prompt, tab, model: null, parameters: {}, notices }
   }
 
@@ -39,7 +39,7 @@ export function buildJobConfigReuse(job: GenerationJob, models: ModelConfig[]): 
   }
   const parameters = reconcileModelParameters(model, values)
   const dropped = Object.keys(raw).filter((name) => !(canonicalNameOf({ name }) in parameters))
-  if (dropped.length > 0) notices.push(`未恢复不兼容参数：${dropped.join('、')}；使用当前模型默认值。`)
-  if (!job.parameters) notices.push('旧任务未记录完整参数，仅恢复可校验的已有值，其余使用当前模型默认值。')
+  if (dropped.length > 0) notices.push(`Incompatible parameters were not restored: ${dropped.join(', ')}; using the current model defaults.`)
+  if (!job.parameters) notices.push('The old task did not record complete parameters; only verifiable values were restored, the rest use the current model defaults.')
   return { prompt: job.inputPrompt ?? job.prompt, tab, model, parameters, notices }
 }

@@ -19,12 +19,12 @@ export function pluginCredentialSpec(manifest: AnyManifest): PluginCredentialSpe
   if (manifest.credential) return manifest.credential
   const schemaId = manifest.credentialSchemas[0] ?? 'legacy-api-key-v1'
   const exactHost = manifest.allowedHosts.find(host => !!host && !host.includes('*'))
-  const help = `${manifest.id}@${manifest.version} 声明的凭据格式（${schemaId}）。`
+  const help = `Credential format declared by ${manifest.id}@${manifest.version} (${schemaId}).`
   return {
     providerId: manifest.id,
     schemaId,
     secret: schemaId === 'json-v1'
-      ? { format: 'json', label: `${manifest.displayName} 凭据 JSON`, placeholder: '{"...":"..."}', help }
+      ? { format: 'json', label: `${manifest.displayName} credential JSON`, placeholder: '{"...":"..."}', help }
       : { format: 'text', label: `${manifest.displayName} API Key`, placeholder: 'API key', help },
     baseUrl: { ...(exactHost ? { default: `https://${exactHost}` } : {}), policy: 'allowlisted' },
   }

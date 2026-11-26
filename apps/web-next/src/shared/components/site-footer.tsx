@@ -18,7 +18,7 @@ export function SiteFooter({ current, className }: SiteFooterProps) {
   return (
     <footer className={cn('border-t border-border bg-tonal py-10', className)}>
       <div className="mx-auto flex w-full max-w-content flex-col items-start justify-between gap-6 px-4 sm:flex-row sm:items-center sm:px-6">
-        <Link href="/" className="flex items-center rounded-control" aria-label="返回 MuseCanvas 首页">
+        <Link href="/" className="flex items-center rounded-control" aria-label="Back to the MuseCanvas home page">
           <img
             src="/brand/musecanvas_flow_ribbon_final_pack/03_transparent_trimmed_png/04_monochrome_logo_transparent_trimmed.png"
             alt="MuseCanvas"
@@ -31,7 +31,7 @@ export function SiteFooter({ current, className }: SiteFooterProps) {
               href="/"
               className="rounded-control transition-colors hover:text-foreground"
             >
-              首页
+              Home
             </Link>
           )}
           <Link
@@ -41,7 +41,7 @@ export function SiteFooter({ current, className }: SiteFooterProps) {
               current === 'terms' && 'font-medium text-foreground',
             )}
           >
-            用户协议
+            Terms of Service
           </Link>
           <Link
             href="/privacy"
@@ -50,7 +50,7 @@ export function SiteFooter({ current, className }: SiteFooterProps) {
               current === 'privacy' && 'font-medium text-foreground',
             )}
           >
-            隐私政策
+            Privacy Policy
           </Link>
           <span className="text-decorative-muted">&copy; 2026 MuseCanvas</span>
         </div>

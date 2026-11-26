@@ -34,7 +34,7 @@ import type { MediaModelDeclaration } from '../../core/types'
  */
 const EXPERIMENTAL_PIXEL_FLOOR = 2560 * 1440
 
-const EXPERIMENTAL_SIZE_NOTE = '高分辨率输出可能具有更高延迟，且部分超高分辨率能力仍属于实验性支持。'
+const EXPERIMENTAL_SIZE_NOTE = 'High-resolution output may have higher latency, and some ultra-high-resolution capabilities are still experimental.'
 
 /**
  * Geometry limits shared by the GPT Image models that accept arbitrary
@@ -57,7 +57,7 @@ const GPT_IMAGE_SIZE_CONSTRAINTS: ImageSizeConstraints = {
  * still send `1536x1024`.
  */
 function sizePreset(value: string): ImageSizePreset {
-  if (value === 'auto') return { value: 'auto', label: '自动' }
+  if (value === 'auto') return { value: 'auto', label: 'Auto' }
   const [width, height] = value.split('x').map(Number)
   const experimental = width * height > EXPERIMENTAL_PIXEL_FLOOR
   return {
@@ -73,10 +73,10 @@ function gptImageSize(presets: string[], allowCustom: boolean) {
   return {
     type: 'image-size' as const,
     name: 'size',
-    label: '尺寸',
+    label: 'Size',
     description: allowCustom
-      ? '可选择预设尺寸，或按下方限制自定义宽高'
-      : '该模型仅支持以下固定尺寸',
+      ? 'Choose a preset size, or customize width and height within the limits below'
+      : 'This model only supports the following fixed sizes',
     presets: presets.map(sizePreset),
     ...(allowCustom ? { allowCustom: true, constraints: GPT_IMAGE_SIZE_CONSTRAINTS } : {}),
     defaultValue: presets[0],
@@ -85,24 +85,24 @@ function gptImageSize(presets: string[], allowCustom: boolean) {
 }
 
 const GPT_IMAGE_QUALITY_OPTIONS: ParameterOption[] = [
-  { value: 'auto', label: '自动', description: '由模型结合尺寸与提示词自行选择档位' },
-  { value: 'low', label: 'Low', description: '最快，细节较少' },
+  { value: 'auto', label: 'Auto', description: 'Let the model choose the tier based on size and prompt' },
+  { value: 'low', label: 'Low', description: 'Fastest, with less detail' },
   { value: 'medium', label: 'Medium' },
-  { value: 'high', label: 'High', description: '细节更完整，耗时更长' },
+  { value: 'high', label: 'High', description: 'More complete detail, but slower' },
 ]
 
 /** The 2.5 ladder adds two rungs above `high`; older models must not show them. */
 const GPT_IMAGE_EXTENDED_QUALITY_OPTIONS: ParameterOption[] = [
   ...GPT_IMAGE_QUALITY_OPTIONS,
-  { value: 'xhigh', label: 'XHigh', description: '高于 High 的档位' },
-  { value: 'max', label: 'Max', description: '最高质量档位，延迟与消耗最大' },
+  { value: 'xhigh', label: 'XHigh', description: 'A tier above High' },
+  { value: 'max', label: 'Max', description: 'Highest quality tier, with the greatest latency and cost' },
 ]
 
 function quality(options: ParameterOption[]) {
   return {
     type: 'enum' as const,
     name: 'quality',
-    label: '质量',
+    label: 'Quality',
     options,
     defaultValue: 'auto',
   }
@@ -112,8 +112,8 @@ function count(max: number) {
   return {
     type: 'integer' as const,
     name: 'count',
-    label: '数量',
-    description: '一次请求生成的图片张数',
+    label: 'Count',
+    description: 'Number of images generated per request',
     min: 1,
     max,
     defaultValue: 1,
@@ -121,15 +121,15 @@ function count(max: number) {
 }
 
 const GPT_IMAGE_BACKGROUND_OPTIONS: ParameterOption[] = [
-  { value: 'auto', label: '自动' },
-  { value: 'opaque', label: '不透明' },
-  { value: 'transparent', label: '透明', description: '输出带 alpha 通道，只能配合 png 或 webp' },
+  { value: 'auto', label: 'Auto' },
+  { value: 'opaque', label: 'Opaque' },
+  { value: 'transparent', label: 'Transparent', description: 'Outputs with an alpha channel; only works with png or webp' },
 ]
 
 const GPT_IMAGE_BACKGROUND = {
   type: 'enum' as const,
   name: 'background',
-  label: '背景',
+  label: 'Background',
   options: GPT_IMAGE_BACKGROUND_OPTIONS,
   defaultValue: 'auto',
 }
@@ -137,11 +137,11 @@ const GPT_IMAGE_BACKGROUND = {
 const GPT_IMAGE_OUTPUT_FORMAT = {
   type: 'enum' as const,
   name: 'output_format',
-  label: '输出格式',
+  label: 'Output format',
   options: [
-    { value: 'png', label: 'PNG', description: '支持 alpha 通道' },
+    { value: 'png', label: 'PNG', description: 'Supports alpha channel' },
     { value: 'jpeg', label: 'JPEG' },
-    { value: 'webp', label: 'WebP', description: '支持 alpha 通道' },
+    { value: 'webp', label: 'WebP', description: 'Supports alpha channel' },
   ] satisfies ParameterOption[],
   // `png` is what this plugin hardcoded on the wire before the parameter
   // existed, so keeping it as the default preserves current behaviour.
@@ -155,8 +155,8 @@ const GPT_IMAGE_OUTPUT_FORMAT = {
 const GPT_IMAGE_OUTPUT_COMPRESSION = {
   type: 'integer' as const,
   name: 'output_compression',
-  label: '输出压缩',
-  description: 'lossy 格式的压缩质量（0 最压缩，100 最保真）',
+  label: 'Output compression',
+  description: 'Compression quality for lossy formats (0 = most compressed, 100 = most faithful)',
   min: 0,
   max: 100,
   defaultValue: 100,
@@ -172,11 +172,11 @@ const GPT_IMAGE_OUTPUT_COMPRESSION = {
 const GPT_IMAGE_INPUT_FIDELITY = {
   type: 'enum' as const,
   name: 'input_fidelity',
-  label: '输入保真度',
-  description: '编辑时保留输入图片细节的程度',
+  label: 'Input fidelity',
+  description: 'How much input image detail is preserved when editing',
   options: [
-    { value: 'low', label: '较低' },
-    { value: 'high', label: '较高' },
+    { value: 'low', label: 'Lower' },
+    { value: 'high', label: 'Higher' },
   ] satisfies ParameterOption[],
   defaultValue: 'high',
 }
@@ -194,7 +194,7 @@ const GPT_IMAGE_CROSS_FIELD: ParameterCrossFieldConstraint[] = [
     whenValueEquals: 'transparent',
     targetParameter: 'output_format',
     targetValues: ['jpeg'],
-    message: 'background=transparent 需要 alpha 通道，output_format 只能是 png 或 webp',
+    message: 'background=transparent requires an alpha channel; output_format can only be png or webp',
   },
 ]
 
@@ -205,8 +205,8 @@ const GPT_IMAGE_EDIT_SLOTS: InputSlotDescriptor[] = [
     minCount: 0,
     maxCount: 4,
     allowedMediaKinds: ['image'],
-    label: '参考图',
-    description: '作为编辑基础或风格参考的图片',
+    label: 'Reference image',
+    description: 'Image used as an edit base or style reference',
   },
   {
     role: 'mask',
@@ -214,8 +214,8 @@ const GPT_IMAGE_EDIT_SLOTS: InputSlotDescriptor[] = [
     minCount: 0,
     maxCount: 1,
     allowedMediaKinds: ['image'],
-    label: '选区遮罩',
-    description: '带 alpha 通道的 PNG，限定可重绘的区域',
+    label: 'Selection mask',
+    description: 'PNG with an alpha channel, limiting the area that can be repainted',
   },
 ]
 
@@ -368,7 +368,7 @@ export const OPENAI_IMAGE_MODELS: MediaModelDeclaration[] = [
     name: 'DALL-E 3',
     modalities: ['image'],
     deprecated: true,
-    deprecationNote: 'DALL-E 3 已被 GPT Image 系列取代，仅保留兼容既有配置，不建议新建模型。',
+    deprecationNote: 'DALL-E 3 has been superseded by the GPT Image series. It is kept only for compatibility with existing configurations; creating new models with it is not recommended.',
     // Declares only what this plugin actually does with dall-e-3: its own
     // quality vocabulary (`standard`/`hd`, *not* the GPT Image ladder), its
     // three fixed sizes, a single image per request, and no input images.
@@ -379,7 +379,7 @@ export const OPENAI_IMAGE_MODELS: MediaModelDeclaration[] = [
         {
           type: 'enum',
           name: 'quality',
-          label: '质量',
+          label: 'Quality',
           options: [
             { value: 'standard', label: 'Standard' },
             { value: 'hd', label: 'HD' },

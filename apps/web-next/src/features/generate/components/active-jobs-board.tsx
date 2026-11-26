@@ -95,14 +95,14 @@ export function ActiveJobsBoard({
         const settled = latestJobs.current.find((job) => job.id === finished[0])
         const outcome =
           settled?.status === 'succeeded'
-            ? '已完成'
+            ? 'completed'
             : settled?.status === 'failed'
-              ? '生成失败'
-              : '已结束'
+              ? 'generation failed'
+              : 'ended'
         setAnnouncement(
           finished.length === 1 && settled
-            ? `任务${outcome}：${settled.prompt.slice(0, 16)}，详情见历史记录`
-            : `有 ${finished.length} 个任务已结束，详情见历史记录`,
+            ? `Task ${outcome}: ${settled.prompt.slice(0, 16)} — see history for details`
+            : `${finished.length} tasks have ended — see history for details`,
         )
       }
     }
@@ -142,7 +142,7 @@ export function ActiveJobsBoard({
         className="w-full justify-start px-2 text-left"
         icon={<ChevronRight weight="bold" aria-hidden="true" className={cn('motion-position', open && 'rotate-90')} />}
       >
-        <span>进行中</span>
+        <span>In progress</span>
         {count > 0 && (
           <span className="font-mono text-xs tabular-nums text-muted-foreground">{count}</span>
         )}
@@ -150,7 +150,7 @@ export function ActiveJobsBoard({
     </h2>
   ) : (
     <h2 id={headingId} className="flex shrink-0 items-center gap-2 text-sm text-foreground">
-      进行中
+      In progress
       {count > 0 && (
         <span className="font-mono text-xs tabular-nums text-muted-foreground">{count}</span>
       )}
@@ -162,7 +162,7 @@ export function ActiveJobsBoard({
       {isError ? (
         <Alert
           tone="danger"
-          title="无法读取任务列表"
+          title="Could not load the task list"
           action={
             <Button
               variant="secondary"
@@ -170,17 +170,17 @@ export function ActiveJobsBoard({
               onClick={onReload}
               icon={<RefreshCw weight="bold" aria-hidden="true" />}
             >
-              重试
+              Retry
             </Button>
           }
         >
-          列表刷新失败，请稍后重试。
+          The list failed to refresh. Please try again later.
         </Alert>
       ) : null}
       {rows.length === 0 && !open ? null : rows.length === 0 ? (
         isLoading ? (
           <div aria-busy="true">
-            <span className="sr-only">加载任务中</span>
+            <span className="sr-only">Loading tasks</span>
             <ul id={listId} role="list" className="m-0 flex list-none flex-col gap-1 overflow-hidden p-0">
               {Array.from({ length: 2 }, (_, index) => (
                 <li key={index} aria-hidden="true" className="flex gap-3 rounded-control bg-tonal p-3">
@@ -199,7 +199,7 @@ export function ActiveJobsBoard({
             </ul>
           </div>
         ) : (
-          <p className="py-2 text-xs text-muted-foreground">当前没有进行中的任务</p>
+          <p className="py-2 text-xs text-muted-foreground">No tasks in progress right now</p>
         )
       ) : (
         <ul
@@ -283,16 +283,16 @@ function ActiveJobRow({
   // `progress` is binary in the worker, so the ticking clock is the only liveness
   // signal between 2.5s polls; it stops at `completedAt` once the job settles.
   const clockEnd = job.completedAt ? Date.parse(job.completedAt) : now
-  const unit = job.mediaKind === 'video' ? '段' : '张'
+  const unit = job.mediaKind === 'video' ? 'clip' : 'image'
 
   const stage = active
     ? job.status === 'queued'
-      ? '已提交，等待服务返回'
+      ? 'Submitted, waiting for the service to respond'
       : job.status === 'retry_wait'
-        ? '上次未成功，等待重试'
+        ? 'Last attempt failed, waiting to retry'
         : phaseLabel(job.phase)
     : job.status === 'succeeded'
-      ? `${job.outputs?.length ?? 0} ${unit}产物`
+      ? `${job.outputs?.length ?? 0} ${unit} output${(job.outputs?.length ?? 0) === 1 ? '' : 's'}`
       : ''
 
   // Historical parameters are rendered straight from the stored request, with no
@@ -306,7 +306,7 @@ function ActiveJobRow({
   const meta = [
     job.modelName,
     job.size,
-    Number.isFinite(job.count) ? `${job.count} ${unit}` : null,
+    Number.isFinite(job.count) ? `${job.count} ${unit}${job.count === 1 ? '' : 's'}` : null,
     ...historicalParameters,
   ]
     .filter(Boolean)
@@ -353,7 +353,7 @@ function ActiveJobRow({
           // The worker writes `progress` as 0 or 100, so there is no real percentage
           // to claim: the indeterminate track says "working" without inventing a
           // number, and the ticking clock above carries the liveness.
-          <Progress value={null} label={stage || '生成中'} showLabelRow={false} />
+          <Progress value={null} label={stage || 'Generating'} showLabelRow={false} />
         )}
 
         <Button
@@ -379,11 +379,11 @@ function ActiveJobRow({
               onClick={() => onCancel(job.id)}
               disabled={disabled || Boolean(job.cancelRequested) || Boolean(pendingCancelId)}
               loading={pendingCancelId === job.id}
-              aria-label={`取消任务：${job.prompt.slice(0, 20)}`}
+              aria-label={`Cancel task: ${job.prompt.slice(0, 20)}`}
               className="px-2 text-xs"
               icon={<XCircle weight="bold" aria-hidden="true" />}
             >
-              {job.cancelRequested ? '取消中' : '取消'}
+              {job.cancelRequested ? 'Cancelling' : 'Cancel'}
             </Button>
           )}
 
@@ -395,11 +395,11 @@ function ActiveJobRow({
               onClick={() => onRetry(job.id)}
               loading={pendingRetryId === job.id}
               disabled={disabled || Boolean(pendingRetryId)}
-              aria-label={`重试任务：${job.prompt.slice(0, 20)}`}
+              aria-label={`Retry task: ${job.prompt.slice(0, 20)}`}
               className="px-2 text-xs"
               icon={<RefreshCw weight="bold" aria-hidden="true" />}
             >
-              重试
+              Retry
             </Button>
           )}
         </div>

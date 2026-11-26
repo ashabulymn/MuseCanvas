@@ -5,15 +5,15 @@ import { GenerateConsole } from '@/features/generate/components/generate-console
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: '创作工作台 - MuseCanvas',
-  description: 'AI 图像与视频生成工作室与控制台',
+  title: 'Creation console - MuseCanvas',
+  description: 'AI image and video generation studio and console',
 }
 
 /** Match the toolbar, remaining-height canvas and bottom composer. The console
  * consumes the one-shot ?tab= deep link and therefore needs this boundary. */
 function GenerateConsoleFallback() {
   return (
-    <div role="region" aria-label="创作台" aria-busy="true" className="flex h-full min-h-0 w-full flex-1 flex-col gap-3 overflow-hidden p-3 md:p-5">
+    <div role="region" aria-label="Creation console" aria-busy="true" className="flex h-full min-h-0 w-full flex-1 flex-col gap-3 overflow-hidden p-3 md:p-5">
       <div aria-hidden="true" className="flex shrink-0 items-center justify-between gap-3">
         <Skeleton className="h-5 w-32" />
         <Skeleton className="h-[var(--control-sm)] w-36" />
@@ -28,7 +28,7 @@ function GenerateConsoleFallback() {
         </div>
         <Skeleton className="ml-auto h-[var(--control-md)] w-28" />
       </div>
-      <span className="sr-only">正在载入创作台</span>
+      <span className="sr-only">Loading creation console</span>
     </div>
   )
 }

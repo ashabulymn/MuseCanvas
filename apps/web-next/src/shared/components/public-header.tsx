@@ -24,14 +24,14 @@ export function PublicHeader({ current = 'landing', className }: PublicHeaderPro
   return (
     <header
       className={cn('sticky top-0 z-sticky border-b border-border bg-surface', className)}
-      aria-label="主导航"
+      aria-label="Main navigation"
     >
       <div className="mx-auto flex h-[var(--layout-header)] w-full max-w-content items-center justify-between gap-3 px-4 sm:px-6">
         <div className="flex items-center gap-4 sm:gap-6">
           <Link
             href="/"
             className="flex min-w-0 shrink items-center rounded-control"
-            aria-label="MuseCanvas 首页"
+            aria-label="MuseCanvas home page"
           >
             <img
               src="/brand/musecanvas_flow_ribbon_final_pack/03_transparent_trimmed_png/03_wordmark_transparent_trimmed.png"
@@ -52,7 +52,7 @@ export function PublicHeader({ current = 'landing', className }: PublicHeaderPro
                     : 'text-muted-foreground hover:bg-tonal-hover hover:text-foreground',
                 )}
               >
-                用户协议
+                Terms of Service
               </Link>
               <Link
                 href="/privacy"
@@ -63,7 +63,7 @@ export function PublicHeader({ current = 'landing', className }: PublicHeaderPro
                     : 'text-muted-foreground hover:bg-tonal-hover hover:text-foreground',
                 )}
               >
-                隐私政策
+                Privacy Policy
               </Link>
             </div>
           )}
@@ -73,28 +73,28 @@ export function PublicHeader({ current = 'landing', className }: PublicHeaderPro
           {current === 'landing' ? (
             <>
               <Link href="#capabilities" className={cn(navLink, 'hidden md:inline-flex')}>
-                产品能力
+                Capabilities
               </Link>
               <Link href="#workflow" className={cn(navLink, 'hidden md:inline-flex')}>
-                创作流程
+                Creation Workflow
               </Link>
               <Link href="/terms" className={cn(navLink, 'hidden sm:inline-flex')}>
-                用户协议
+                Terms of Service
               </Link>
               <Link href="/privacy" className={cn(navLink, 'hidden sm:inline-flex')}>
-                隐私政策
+                Privacy Policy
               </Link>
             </>
           ) : (
             <Link href="/" className={cn(navLink, 'hidden sm:inline-flex')}>
-              返回首页
+              Back to Home
             </Link>
           )}
 
           <ThemeToggle />
 
           <Link href="/login" className={headerLogin}>
-            登录
+            Log in
           </Link>
         </div>
       </div>

@@ -307,18 +307,18 @@ export function EditRegionStage({
 
   const status =
     phase === 'failed'
-      ? '源图加载失败，签名链接可能已过期，请退出后重新进入局部修改'
+      ? 'The source image failed to load — the signed link may have expired. Exit and re-enter local edit.'
       : rejectedDrag
-        ? '框选范围过小，已忽略本次拖动'
+        ? 'The selected area is too small, so this drag was ignored'
         : selection
-          ? `选区 ${selection.width}×${selection.height} 像素，起点（${selection.x}，${selection.y}）`
-          : '尚未框选'
+          ? `Selection ${selection.width}×${selection.height} px, starting at (${selection.x}, ${selection.y})`
+          : 'No selection yet'
 
   return (
     <div className="flex w-full flex-col items-center gap-3">
       <div
         role="group"
-        aria-label="局部修改选区画布"
+        aria-label="Local edit selection canvas"
         aria-describedby="edit-region-stage-hint"
         tabIndex={0}
         onPointerDown={handlePointerDown}
@@ -369,7 +369,7 @@ export function EditRegionStage({
       <div className="flex w-full max-w-3xl flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <p id="edit-region-stage-hint" className="text-xs text-muted-foreground">
-            按住并拖动以框选要修改的区域 · 方向键移动选区，Shift + 方向键调整大小 · Esc 清除选区
+            Press and drag to select the area to edit · Arrow keys move the selection, Shift + arrow keys resize it · Esc clears the selection
           </p>
           {/* Mounted before it has anything to say, so the first commit is a change
               a screen reader actually announces. */}
@@ -385,7 +385,7 @@ export function EditRegionStage({
           disabled={!selection}
           icon={<Eraser weight="bold" aria-hidden="true" />}
         >
-          清除选区
+          Clear selection
         </Button>
       </div>
     </div>

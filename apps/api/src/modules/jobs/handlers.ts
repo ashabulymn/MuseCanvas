@@ -25,7 +25,7 @@ export async function listJobs(context: AuthedContext) {
 export async function getJob(context: AuthedContext) {
   const id = context.params.id
   const result = await db().query(`${userJobSelect} WHERE j.id=$1 AND j.created_by=$2 AND j.deleted_at IS NULL`, [id, context.actor.id])
-  if (!result.rows[0]) return fail('NOT_FOUND', '任务不存在', 404)
+  if (!result.rows[0]) return fail('NOT_FOUND', 'Task not found', 404)
   const outputs = await db().query(jobOutputSelect, [id])
   const inputs = await loadSingleJobInputs(db(), id)
   return ok(await jobDto(result.rows[0], outputs.rows, inputs))
@@ -41,7 +41,7 @@ export async function getJob(context: AuthedContext) {
 export async function cancelJob(context: AuthedContext) {
   const id = context.params.id
   const { actor } = context
-  if (await limited(`gen:cancel:${actor.id}`, 60, 60)) return fail('RATE_LIMITED', '请求过于频繁，请稍后再试', 429)
+  if (await limited(`gen:cancel:${actor.id}`, 60, 60)) return fail('RATE_LIMITED', 'Too many requests. Please try again later.', 429)
   const outcome = await transaction(async client => {
     const current = await client.query('SELECT id,status,attempt FROM generation_jobs WHERE id=$1 AND created_by=$2 AND deleted_at IS NULL FOR UPDATE', [id, actor.id])
     const job = current.rows[0]
@@ -65,7 +65,7 @@ export async function cancelJob(context: AuthedContext) {
     return { kind: 'cancel_requested' as const }
   })
   if (outcome.kind === 'not_found' || outcome.kind === 'not_cancelable') {
-    return fail('JOB_NOT_CANCELABLE', '任务无法取消', 409)
+    return fail('JOB_NOT_CANCELABLE', 'Task cannot be cancelled', 409)
   }
   const responseRow = await db().query(`${userJobSelect} WHERE j.id=$1 AND j.created_by=$2`, [id, actor.id])
   const jobInputs = await loadSingleJobInputs(db(), id)
@@ -82,7 +82,7 @@ type RetryOutcome =
 export async function retryJob(context: AuthedContext) {
   const id = context.params.id
   const { actor } = context
-  if (await limited(`gen:retry:${actor.id}`, 30, 60)) return fail('RATE_LIMITED', '请求过于频繁，请稍后再试', 429)
+  if (await limited(`gen:retry:${actor.id}`, 30, 60)) return fail('RATE_LIMITED', 'Too many requests. Please try again later.', 429)
   // The transaction reports *why* it produced no row rather than writing to a
   // captured outer variable: an outer `let` narrowed to `null` at its
   // declaration is invisible to control-flow analysis across the callback, and
@@ -112,7 +112,7 @@ export async function retryJob(context: AuthedContext) {
     await client.query("INSERT INTO outbox_events(event_type,aggregate_id,payload) VALUES('generation.retry.manual',$1,$2)", [id, { jobId: id }])
     return { kind: 'retried', row: updated.rows[0] as Record<string, unknown> }
   })
-  if (!outcome || outcome.kind === 'not-found') return fail('JOB_NOT_RETRYABLE', '任务无法重试', 409)
+  if (!outcome || outcome.kind === 'not-found') return fail('JOB_NOT_RETRYABLE', 'Task cannot be retried', 409)
   if (outcome.kind === 'rejected') {
     const { code, message, status, details } = outcome.rejection
     return fail(code, message, status, details)
@@ -126,5 +126,5 @@ export async function retryJob(context: AuthedContext) {
 /** DELETE /api/jobs/:id */
 export async function deleteJob(context: AuthedContext) {
   const deleted = await deleteJobWithAssets(context.actor.id, context.params.id)
-  return deleted ? ok({ deleted: true }) : fail('NOT_FOUND', '任务不存在', 404)
+  return deleted ? ok({ deleted: true }) : fail('NOT_FOUND', 'Task not found', 404)
 }

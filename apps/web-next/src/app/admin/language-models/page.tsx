@@ -3,7 +3,7 @@ import { AdminLanguageModelsView } from '@/features/admin/components/admin-langu
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: '语言模型 - MuseCanvas 管理后台',
+  title: 'Language Models - MuseCanvas Admin',
 }
 
 export default function AdminLanguageModelsPage() {

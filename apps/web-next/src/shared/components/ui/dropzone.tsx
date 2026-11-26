@@ -85,7 +85,7 @@ export function FileDropZone({
   maxFileSize,
   maxFiles,
   disabled,
-  label = '拖拽文件到此处，或点击选择文件',
+  label = 'Drag files here, or click to choose files',
   hint,
   error,
   className,
@@ -97,26 +97,26 @@ export function FileDropZone({
   const [rejection, setRejection] = useState<string | null>(null)
 
   const fallbackHint = [
-    accept ? `支持 ${accept.split(',').join(' / ')} 格式` : null,
-    maxFileSize ? `单个文件不超过 ${formatFileSize(maxFileSize)}` : null,
+    accept ? `Supports ${accept.split(',').join(' / ')} formats` : null,
+    maxFileSize ? `Each file up to ${formatFileSize(maxFileSize)}` : null,
   ]
     .filter(Boolean)
-    .join('，')
+    .join(', ')
   const shownHint: ReactNode = hint ?? (fallbackHint || null)
 
   function ingest(selected: File[]) {
     if (disabled || selected.length === 0) return
     const reasons: string[] = []
     const overCount = maxFiles !== undefined && selected.length > maxFiles
-    if (overCount) reasons.push(`一次最多选择 ${maxFiles} 个文件。请减少选择数量后重试。`)
+    if (overCount) reasons.push(`Select at most ${maxFiles} files at a time. Reduce the number of files and try again.`)
 
     const accepted = selected.filter((file) => {
       if (maxFileSize !== undefined && file.size > maxFileSize) {
-        reasons.push(`无法上传：“${file.name}” 超过 ${formatFileSize(maxFileSize)}。请压缩后重试。`)
+        reasons.push(`Could not upload "${file.name}": it exceeds ${formatFileSize(maxFileSize)}. Compress it and try again.`)
         return false
       }
       if (!matchesAccept(file, accept)) {
-        reasons.push(`无法上传：“${file.name}” 的文件类型不受支持。请改为 ${accept ?? '支持的文件类型'}。`)
+        reasons.push(`Could not upload "${file.name}": the file type is not supported. Use ${accept ?? 'a supported file type'} instead.`)
         return false
       }
       return true
@@ -223,20 +223,20 @@ export function FileDropZone({
                     <Progress value={file.progress ?? 0} label={file.name} showLabelRow={false} className="max-w-form" />
                   ) : null}
                   {file.error ? <span className="text-xs text-danger">{file.error}</span> : null}
-                  {file.status === 'done' ? <span className="text-xs text-success">上传完成</span> : null}
+                  {file.status === 'done' ? <span className="text-xs text-success">Upload complete</span> : null}
                 </div>
 
                 <div className="flex shrink-0 items-center gap-1">
                   {failed && onRetry ? (
                     <Button variant="secondary" size="sm" onClick={() => onRetry(file.id)} icon={<RefreshCw weight="bold" />}>
-                      重试
+                      Retry
                     </Button>
                   ) : null}
                   {onRemove ? (
                     <IconButton
                       variant="danger-ghost"
                       size="sm"
-                      aria-label={`删除 ${file.name}`}
+                      aria-label={`Delete ${file.name}`}
                       onClick={() => onRemove(file.id)}
                       icon={<Trash2 weight="bold" />}
                     />

@@ -45,5 +45,5 @@ export async function revokeInvitation(context: AuthedContext) {
   const id = context.params.id
   const result = await db().query('UPDATE invitations SET revoked_at=now() WHERE id=$1 AND consumed_at IS NULL AND revoked_at IS NULL RETURNING id', [id])
   if (result.rows[0]) await writeAudit(db(), context.actor.id, 'invitation.revoke', 'invitation', id)
-  return result.rows[0] ? ok({ revoked: true }) : fail('NOT_FOUND', '邀请码不存在', 404)
+  return result.rows[0] ? ok({ revoked: true }) : fail('NOT_FOUND', 'Invitation code not found', 404)
 }

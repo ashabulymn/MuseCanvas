@@ -78,14 +78,14 @@ export function AdminPluginUploadDialog({ open, onClose, kind, onInstalled }: Ad
       return
     }
     if (!file.name.toLowerCase().endsWith('.zip')) {
-      setValidate({ ...IDLE, phase: 'error', message: '插件包必须是单个 .zip 文件（服务端同样强制）' })
+      setValidate({ ...IDLE, phase: 'error', message: 'The plugin package must be a single .zip file (also enforced by the server)' })
       return
     }
     if (file.size > PLUGIN_PACKAGE_MAX_BYTES) {
       setValidate({
         ...IDLE,
         phase: 'error',
-        message: `插件包不能超过 ${PLUGIN_PACKAGE_MAX_BYTES.toLocaleString('en-US')} 字节（${PACKAGE_MAX_LABEL}，上限由服务端强制），当前为 ${humanFileSize(file.size)}`,
+        message: `The plugin package cannot exceed ${PLUGIN_PACKAGE_MAX_BYTES.toLocaleString('en-US')} bytes (${PACKAGE_MAX_LABEL}, enforced by the server); current size is ${humanFileSize(file.size)}`,
       })
       return
     }
@@ -99,7 +99,7 @@ export function AdminPluginUploadDialog({ open, onClose, kind, onInstalled }: Ad
       )
       if (controller.signal.aborted) return
       if (!res.success) {
-        setValidate({ ...IDLE, phase: 'error', message: `${res.error?.code ?? 'ERROR'}：${res.error?.message ?? '校验请求失败'}` })
+        setValidate({ ...IDLE, phase: 'error', message: `${res.error?.code ?? 'ERROR'}: ${res.error?.message ?? 'Validation request failed'}` })
         return
       }
       const data = res.data
@@ -108,9 +108,9 @@ export function AdminPluginUploadDialog({ open, onClose, kind, onInstalled }: Ad
       } else if (data) {
         // HTTP 422 arrives with a success:true envelope (server `rejected()` wraps `ok()`),
         // so findings live on res.data, not res.error.
-        setValidate({ phase: 'rejected', findings: data.findings, summary: null, message: `服务端拒绝：${data.code}` })
+        setValidate({ phase: 'rejected', findings: data.findings, summary: null, message: `Rejected by server: ${data.code}` })
       } else {
-        setValidate({ ...IDLE, phase: 'error', message: '校验响应缺少数据' })
+        setValidate({ ...IDLE, phase: 'error', message: 'Validation response is missing data' })
       }
     }, VALIDATE_DEBOUNCE_MS)
     return () => {
@@ -128,7 +128,7 @@ export function AdminPluginUploadDialog({ open, onClose, kind, onInstalled }: Ad
         // fail() envelope: PLUGIN_UPLOAD_DISABLED / PLUGIN_VERSION_IMMUTABLE /
         // PLUGIN_ID_RESERVED / INVALID_INPUT / PLUGIN_ARTIFACT_TOO_LARGE / NETWORK_ERROR…
         submission.finish(requestId)
-        setValidate({ ...IDLE, phase: 'error', message: `${res.error?.code ?? 'ERROR'}：${res.error?.message ?? '上传请求失败'}` })
+        setValidate({ ...IDLE, phase: 'error', message: `${res.error?.code ?? 'ERROR'}: ${res.error?.message ?? 'Upload request failed'}` })
         return
       }
       const data = res.data
@@ -144,14 +144,14 @@ export function AdminPluginUploadDialog({ open, onClose, kind, onInstalled }: Ad
       }
       submission.finish(requestId)
       if (data) {
-        setValidate({ phase: 'rejected', findings: data.findings, summary: null, message: `服务端拒绝：${data.code}` })
+        setValidate({ phase: 'rejected', findings: data.findings, summary: null, message: `Rejected by server: ${data.code}` })
       } else {
-        setValidate({ ...IDLE, phase: 'error', message: '上传响应缺少数据' })
+        setValidate({ ...IDLE, phase: 'error', message: 'Upload response is missing data' })
       }
     },
     onError: (err: Error, { requestId }) => {
       if (!submission.finish(requestId)) return
-      setValidate({ ...IDLE, phase: 'error', message: err.message || '上传请求失败' })
+      setValidate({ ...IDLE, phase: 'error', message: err.message || 'Upload request failed' })
     },
   })
 
@@ -173,12 +173,12 @@ export function AdminPluginUploadDialog({ open, onClose, kind, onInstalled }: Ad
     <Dialog
       open={open}
       onClose={close}
-      title={`上传${kind === 'media' ? '媒体' : '语言'}插件`}
+      title={`Upload ${kind === 'media' ? 'media' : 'language'} plugin`}
       panelClassName="max-w-dialog-wide max-h-[90dvh] max-md:[&_button]:min-h-[var(--control-lg)] max-md:[&_button]:min-w-[var(--control-lg)]"
       footer={
         <>
           <Button variant="ghost" onClick={close}>
-            {installMutation.isPending ? '关闭（安装继续）' : '取消'}
+            {installMutation.isPending ? 'Close (installation continues)' : 'Cancel'}
           </Button>
           <Button
             loading={installMutation.isPending}
@@ -189,31 +189,31 @@ export function AdminPluginUploadDialog({ open, onClose, kind, onInstalled }: Ad
               if (requestId !== null) installMutation.mutate({ pkg: file, requestId })
             }}
           >
-            安装插件
+            Install plugin
           </Button>
         </>
       }
     >
       <div className="flex flex-col gap-6">
         {installMutation.isPending && (
-          <Alert tone="info" role="status" title="正在安装插件">
-            正在提交 {file?.name}。关闭此窗口不会取消或回滚安装；重新打开可查看同一笔提交，完成前不能更换、移除或重复提交插件包。
+          <Alert tone="info" role="status" title="Installing plugin">
+            Submitting {file?.name}. Closing this window will not cancel or roll back the installation; reopening shows the same submission, and the plugin package cannot be replaced, removed, or resubmitted until it completes.
           </Alert>
         )}
         {/* Risk disclosure — deliberately first-class content, not fine print. */}
         <Alert
           tone="danger"
           icon={<ShieldAlert weight="fill" aria-hidden="true" />}
-          title="上传前必读"
+          title="Read before uploading"
         >
           <div className="flex flex-col gap-2">
             <p>
-              上传的插件代码会由 Worker 进程<strong>以该进程的全部权限直接执行</strong>（可读写任务数据、访问已配置的供应商凭据与网络）。
-              仅允许受信任的管理员上传，请勿加载任何来源不明的插件包。
+              Uploaded plugin code will be executed by the Worker process<strong>with the full permissions of that process</strong>(it can read and write job data and access configured provider credentials and the network).
+              Only trusted administrators may upload; never load a plugin package from an unknown source.
             </p>
             <p>
-              <strong>同版本不可覆盖，升级版本号后重新上传</strong>：插件以 <code className="font-mono">pluginId@pluginVersion</code>{' '}
-              为一次性写入身份（取自包内 <code className="font-mono">manifest.json</code> 的 id / version），Worker 的注册表与模块缓存都以该身份为键，同版本热替换不会生效，服务端会直接拒绝（PLUGIN_VERSION_IMMUTABLE）。
+              <strong>The same version cannot be overwritten; bump the version number and re-upload</strong>: the plugin uses <code className="font-mono">pluginId@pluginVersion</code>{' '}
+               as a write-once identity (taken from the package's <code className="font-mono">manifest.json</code> id / version); the Worker registry and module cache both key on that identity, so hot-replacing the same version has no effect and the server rejects it directly (PLUGIN_VERSION_IMMUTABLE).
             </p>
           </div>
         </Alert>
@@ -234,52 +234,52 @@ export function AdminPluginUploadDialog({ open, onClose, kind, onInstalled }: Ad
           accept=".zip,application/zip"
           maxFileSize={PLUGIN_PACKAGE_MAX_BYTES}
           maxFiles={1}
-          label="拖拽 .zip 插件包到此处，或点击选择文件"
-          hint={`单个 .zip 文件，大小上限 ${PACKAGE_MAX_LABEL}（${PLUGIN_PACKAGE_MAX_BYTES.toLocaleString('en-US')} 字节），以服务端强制为准。`}
+          label="Drag a .zip plugin package here, or click to select a file"
+          hint={`A single .zip file, max size ${PACKAGE_MAX_LABEL} (${PLUGIN_PACKAGE_MAX_BYTES.toLocaleString('en-US')} bytes), as enforced by the server.`}
         />
 
         <div className="flex flex-col gap-1 rounded-control bg-tonal p-3 text-xs text-muted-foreground">
           <p>
-            插件包须在根目录（或唯一一层顶级目录）包含 <code className="font-mono text-foreground">manifest.json</code> 与其{' '}
-            <code className="font-mono text-foreground">package.entry</code> 指向的单个 <code className="font-mono text-foreground">.mjs</code>{' '}
-            入口；可选附带 <code className="font-mono text-foreground">README.md</code>、<code className="font-mono text-foreground">CHANGELOG.md</code>、
-            <code className="font-mono text-foreground">LICENSE</code> 与 PNG / WebP 图标。
+            The plugin package must contain <code className="font-mono text-foreground">manifest.json</code> and the single {' '}
+            <code className="font-mono text-foreground">package.entry</code> it points to<code className="font-mono text-foreground">.mjs</code>{' '}
+             entry; optionally also include <code className="font-mono text-foreground">README.md</code>, <code className="font-mono text-foreground">CHANGELOG.md</code>, 
+            <code className="font-mono text-foreground">LICENSE</code> and PNG / WebP icons.
           </p>
-          <p>清单只从包内 manifest.json 读取，无需另行填写；字段规则由服务端校验。</p>
+          <p>The manifest is read only from the package's manifest.json; no extra fields need to be filled in, and field rules are validated by the server.</p>
         </div>
 
         {/* aria-live region: pre-flight verdict + findings update without a click. */}
         <div aria-live="polite" role="status" className="flex flex-col gap-2">
           {validate.phase === 'checking' && (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Spinner label="正在校验" />
-              正在服务端解包并扫描插件包（不落库）…
+              <Spinner label="Validating" />
+              Unpacking and scanning the plugin package on the server (not stored)…
             </p>
           )}
           {validate.phase === 'error' && (
-            <Alert tone="danger" role="alert" title="无法完成预检">
-              {validate.message}。请更换插件包文件或修正包内 manifest.json 后重试。
+            <Alert tone="danger" role="alert" title="Pre-check could not be completed">
+              {validate.message}. Please replace the plugin package file or fix the manifest.json inside the package, then retry.
             </Alert>
           )}
           {validate.phase === 'rejected' && (
             <div className="flex flex-col gap-2">
-              <Alert tone="danger" role="alert" title="服务端拒绝该插件包">
-                {validate.message}。请按下列发现（按包内文件分组）修正后，以新的版本号重新上传。
+              <Alert tone="danger" role="alert" title="The server rejected this plugin package">
+                {validate.message}. Fix the findings below (grouped by file in the package) and re-upload with a new version number.
               </Alert>
               <PluginFindingList findings={validate.findings} groupByPath />
             </div>
           )}
           {validate.phase === 'ready' && validate.summary && (
             <div className="flex flex-col gap-2">
-              <Alert tone="success" title="校验通过">
-                插件包已通过服务端扫描，可以安装插件。
+              <Alert tone="success" title="Validation passed">
+                The plugin package passed the server scan and can be installed.
               </Alert>
               <div className="flex flex-col gap-1 rounded-control bg-tonal p-3 text-xs text-muted-foreground">
                 <span className="font-mono text-foreground">
                   {validate.summary.pluginId}@{validate.summary.pluginVersion}
                 </span>
                 <span>
-                  {validate.summary.displayName} · {validate.summary.modelIds.length} 个模型 · 入口制品 sha256{' '}
+                  {validate.summary.displayName} · {validate.summary.modelIds.length} models · entry artifact sha256{' '}
                   <span className="font-mono text-foreground" title={validate.summary.artifactDigest}>
                     {shortDigest(validate.summary.artifactDigest)}
                   </span>{' '}
@@ -288,25 +288,25 @@ export function AdminPluginUploadDialog({ open, onClose, kind, onInstalled }: Ad
               </div>
               {validate.summary.warnings.length > 0 && (
                 <div className="flex flex-col gap-2">
-                  <p className="text-xs text-muted-foreground">警告（不阻断安装，但请确认符合预期）：</p>
+                  <p className="text-xs text-muted-foreground">Warnings (do not block installation, but please confirm they are expected):</p>
                   <PluginFindingList findings={validate.summary.warnings} groupByPath />
                 </div>
               )}
             </div>
           )}
           {validate.phase === 'idle' && (
-            <p className="text-xs text-muted-foreground">选择 .zip 插件包后将自动进行服务端预检。</p>
+            <p className="text-xs text-muted-foreground">A server pre-check runs automatically after you select a .zip plugin package.</p>
           )}
         </div>
 
         {blockingFindings && (
-          <Alert tone="danger" role="alert" title="无法安装插件">
-            存在错误级别的扫描发现，安装已被阻止。请按下列发现修正插件包后重新上传。
+          <Alert tone="danger" role="alert" title="Unable to install plugin">
+            Error-level scan findings exist, so installation is blocked. Fix the plugin package based on the findings below and re-upload.
           </Alert>
         )}
 
         <p className="text-xs text-muted-foreground">
-          安装成功后插件状态为「待加载」：需等待 Worker 拉取制品、核验 sha256 并重新扫描通过后才会启用，安装完成不代表即时生效。
+          After a successful installation the plugin status is "Pending": the Worker must fetch the artifact, verify sha256, and pass a rescan before it is enabled; installation completing does not mean it takes effect immediately.
         </p>
       </div>
     </Dialog>

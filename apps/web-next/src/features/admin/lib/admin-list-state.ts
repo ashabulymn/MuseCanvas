@@ -16,21 +16,21 @@ export function resolveAdminJobFilters(draft: AdminJobFilters) {
   const params: Record<string, string> = {}
   for (const key of ['userId', 'modelId'] as const) {
     const value = draft[key].trim()
-    if (value && !UUID.test(value)) errors[key] = '请输入完整的 UUID。'
+    if (value && !UUID.test(value)) errors[key] = 'Please enter the full UUID.'
     else if (value) params[key] = value
   }
   if (draft.status !== 'all') {
-    if (!JOB_STATUSES.includes(draft.status)) errors.status = '请选择支持的任务状态。'
+    if (!JOB_STATUSES.includes(draft.status)) errors.status = 'Please select a supported job status.'
     else params.status = draft.status
   }
   for (const key of ['from', 'to'] as const) {
     const raw = draft[key].trim()
     if (!raw) continue
     const time = Date.parse(raw)
-    if (!Number.isFinite(time)) errors[key] = '请输入有效时间。'
+    if (!Number.isFinite(time)) errors[key] = 'Please enter a valid time.'
     else params[key] = new Date(time).toISOString()
   }
-  if (params.from && params.to && params.from > params.to) errors.to = '结束时间不能早于开始时间。'
+  if (params.from && params.to && params.from > params.to) errors.to = 'End time cannot be earlier than start time.'
   return { params, errors, valid: Object.keys(errors).length === 0 }
 }
 

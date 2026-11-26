@@ -33,9 +33,9 @@ export const ACCOUNT_ROUTE = '/account'
 export const ADMIN_ROUTE = '/admin'
 
 export const workspaceNavItems: WorkspaceNavItem[] = [
-  { key: 'image', kind: 'mode', mode: 'image', label: '作图', icon: ImageIcon },
-  { key: 'video', kind: 'mode', mode: 'video', label: '生视频', icon: Video },
-  { key: 'library', kind: 'route', href: LIBRARY_ROUTE, label: '图库' },
+  { key: 'image', kind: 'mode', mode: 'image', label: 'Create image', icon: ImageIcon },
+  { key: 'video', kind: 'mode', mode: 'video', label: 'Create video', icon: Video },
+  { key: 'library', kind: 'route', href: LIBRARY_ROUTE, label: 'Gallery' },
 ]
 
 /**

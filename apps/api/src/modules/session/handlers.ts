@@ -26,7 +26,7 @@ export function readSession(context: AuthedContext) {
  */
 export async function setRegistrationMode(context: AuthedContext) {
   const input = await context.json()
-  if (typeof input.requiresInvitation !== 'boolean') return fail('INVALID_INPUT', '注册模式无效')
+  if (typeof input.requiresInvitation !== 'boolean') return fail('INVALID_INPUT', 'Invalid registration mode')
   const mode = input.requiresInvitation ? 'invite_only' : 'open'
   await transaction(async client => {
     await client.query('UPDATE registration_settings SET mode=$1,updated_at=now(),updated_by=$2 WHERE singleton=true', [mode, context.actor.id])

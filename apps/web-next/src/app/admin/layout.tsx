@@ -6,8 +6,8 @@ import { AdminShell } from '@/features/admin/components/admin-shell'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: '管理后台 - MuseCanvas',
-  description: 'MuseCanvas 系统管理与资源调度后台',
+  title: 'Admin - MuseCanvas',
+  description: 'MuseCanvas system administration and resource management console',
 }
 
 export default async function AdminLayout({

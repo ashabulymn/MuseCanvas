@@ -148,42 +148,42 @@ export function imageConstraintViolations(
     })
 
   if (constraints.minWidth !== undefined && width < constraints.minWidth) {
-    push(`宽度不能小于 ${constraints.minWidth} 像素`, 'minWidth')
+    push(`Width cannot be less than ${constraints.minWidth} pixels`, 'minWidth')
   }
   if (constraints.maxWidth !== undefined && width > constraints.maxWidth) {
-    push(`宽度不能超过 ${constraints.maxWidth} 像素`, 'maxWidth')
+    push(`Width cannot exceed ${constraints.maxWidth} pixels`, 'maxWidth')
   }
   if (constraints.minHeight !== undefined && height < constraints.minHeight) {
-    push(`高度不能小于 ${constraints.minHeight} 像素`, 'minHeight')
+    push(`Height cannot be less than ${constraints.minHeight} pixels`, 'minHeight')
   }
   if (constraints.maxHeight !== undefined && height > constraints.maxHeight) {
-    push(`高度不能超过 ${constraints.maxHeight} 像素`, 'maxHeight')
+    push(`Height cannot exceed ${constraints.maxHeight} pixels`, 'maxHeight')
   }
   if (constraints.widthMultipleOf !== undefined && constraints.widthMultipleOf > 0
     && width % constraints.widthMultipleOf !== 0) {
-    push(`宽度必须是 ${constraints.widthMultipleOf} 的整数倍`, 'widthMultipleOf')
+    push(`Width must be a multiple of ${constraints.widthMultipleOf}`, 'widthMultipleOf')
   }
   if (constraints.heightMultipleOf !== undefined && constraints.heightMultipleOf > 0
     && height % constraints.heightMultipleOf !== 0) {
-    push(`高度必须是 ${constraints.heightMultipleOf} 的整数倍`, 'heightMultipleOf')
+    push(`Height must be a multiple of ${constraints.heightMultipleOf}`, 'heightMultipleOf')
   }
 
   const pixels = width * height
   if (!Number.isSafeInteger(pixels)) {
-    push('宽高乘积超出可处理范围', 'maxPixels')
+    push('Width x height product exceeds the processable range', 'maxPixels')
     return issues
   }
   if (constraints.minPixels !== undefined && pixels < constraints.minPixels) {
-    push(`总像素数不能少于 ${formatCount(constraints.minPixels)}（当前 ${formatCount(pixels)}）`, 'minPixels')
+    push(`Total pixels cannot be less than ${formatCount(constraints.minPixels)} (currently ${formatCount(pixels)})`, 'minPixels')
   }
   if (constraints.maxPixels !== undefined && pixels > constraints.maxPixels) {
-    push(`总像素数不能超过 ${formatCount(constraints.maxPixels)}（当前 ${formatCount(pixels)}）`, 'maxPixels')
+    push(`Total pixels cannot exceed ${formatCount(constraints.maxPixels)} (currently ${formatCount(pixels)})`, 'maxPixels')
   }
 
   if (constraints.maxAspectRatio !== undefined) {
     const ratio = sizeAspectRatio(width, height)
     if (ratio > constraints.maxAspectRatio + Number.EPSILON) {
-      push(`宽高比不能超过 ${ratioLabel(constraints.maxAspectRatio)}（当前 ${ratio.toFixed(2)}:1）`, 'maxAspectRatio')
+      push(`Aspect ratio cannot exceed ${ratioLabel(constraints.maxAspectRatio)} (currently ${ratio.toFixed(2)}:1)`, 'maxAspectRatio')
     }
   }
 
@@ -208,7 +208,7 @@ export function validateImageSizeValue(
 ): MediaParameterIssue[] {
   const name = descriptor.name
   if (typeof raw !== 'string') {
-    return [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `参数 '${name}' 必须是字符串`, parameter: name, value: raw }]
+    return [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `Parameter '${name}' must be a string`, parameter: name, value: raw }]
   }
   const value = raw.trim()
   const preset = descriptor.presets.find((candidate) => candidate.value === value)
@@ -218,7 +218,7 @@ export function validateImageSizeValue(
     if (value === AUTO_SIZE_VALUE) return []
     const parsed = parseImageSize(value)
     if (!parsed) {
-      return [{ code: GenerationErrorCode.UNSUPPORTED_MEDIA_PARAMETER, message: `参数 '${name}' 的尺寸格式无效：${value}`, parameter: name, value }]
+      return [{ code: GenerationErrorCode.UNSUPPORTED_MEDIA_PARAMETER, message: `Parameter '${name}' has an invalid size format: ${value}`, parameter: name, value }]
     }
     // Geometry declared by the plugin is authoritative even for presets, so a
     // preset the vendor has since narrowed cannot survive a plugin edit.
@@ -228,7 +228,7 @@ export function validateImageSizeValue(
   if (!descriptor.allowCustom) {
     return [{
       code: GenerationErrorCode.UNSUPPORTED_MEDIA_PARAMETER,
-      message: `参数 '${name}' 不支持尺寸 ${value}；该模型可选：${descriptor.presets.map((p) => p.value).join(', ')}`,
+      message: `Parameter '${name}' does not support size ${value}; this model supports: ${descriptor.presets.map((p) => p.value).join(', ')}`,
       parameter: name,
       value,
       constraint: 'presets',
@@ -237,7 +237,7 @@ export function validateImageSizeValue(
 
   const parsed = parseImageSize(value)
   if (!parsed) {
-    return [{ code: GenerationErrorCode.MEDIA_PARAMETER_CONSTRAINT_FAILED, message: `参数 '${name}' 必须形如 宽x高（例如 1536x864）`, parameter: name, value, constraint: 'format' }]
+    return [{ code: GenerationErrorCode.MEDIA_PARAMETER_CONSTRAINT_FAILED, message: `Parameter '${name}' must be in the form WxH (e.g. 1536x864)`, parameter: name, value, constraint: 'format' }]
   }
   return imageConstraintViolations(constraints, parsed.width, parsed.height, name)
 }
@@ -245,13 +245,13 @@ export function validateImageSizeValue(
 function validateNumberValue(descriptor: NumberParameterDescriptor, raw: JsonValue): MediaParameterIssue[] {
   const name = descriptor.name
   if (typeof raw !== 'number' || !Number.isFinite(raw)) {
-    return [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `参数 '${name}' 必须是数字`, parameter: name, value: raw }]
+    return [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `Parameter '${name}' must be a number`, parameter: name, value: raw }]
   }
   if (descriptor.min !== undefined && raw < descriptor.min) {
-    return [{ code: GenerationErrorCode.PARAMETER_OUT_OF_RANGE, message: `参数 '${name}' 必须 >= ${descriptor.min}`, parameter: name, value: raw }]
+    return [{ code: GenerationErrorCode.PARAMETER_OUT_OF_RANGE, message: `Parameter '${name}' must be >= ${descriptor.min}`, parameter: name, value: raw }]
   }
   if (descriptor.max !== undefined && raw > descriptor.max) {
-    return [{ code: GenerationErrorCode.PARAMETER_OUT_OF_RANGE, message: `参数 '${name}' 必须 <= ${descriptor.max}`, parameter: name, value: raw }]
+    return [{ code: GenerationErrorCode.PARAMETER_OUT_OF_RANGE, message: `Parameter '${name}' must be <= ${descriptor.max}`, parameter: name, value: raw }]
   }
   if (descriptor.precision !== undefined) {
     const factor = 10 ** descriptor.precision
@@ -260,14 +260,14 @@ function validateNumberValue(descriptor: NumberParameterDescriptor, raw: JsonVal
     // silently accepts everything.
     const scaled = raw * factor
     if (Math.abs(scaled - Math.round(scaled)) > 1e-9) {
-      return [{ code: GenerationErrorCode.PARAMETER_STEP_MISMATCH, message: `参数 '${name}' 最多保留 ${descriptor.precision} 位小数`, parameter: name, value: raw }]
+      return [{ code: GenerationErrorCode.PARAMETER_STEP_MISMATCH, message: `Parameter '${name}' can have at most ${descriptor.precision} decimal places`, parameter: name, value: raw }]
     }
   }
   if (descriptor.step !== undefined && descriptor.step > 0) {
     const base = descriptor.min ?? 0
     const steps = (raw - base) / descriptor.step
     if (Math.abs(steps - Math.round(steps)) > 1e-9) {
-      return [{ code: GenerationErrorCode.PARAMETER_STEP_MISMATCH, message: `参数 '${name}' 必须是 ${descriptor.step} 的整数倍`, parameter: name, value: raw }]
+      return [{ code: GenerationErrorCode.PARAMETER_STEP_MISMATCH, message: `Parameter '${name}' must be a multiple of ${descriptor.step}`, parameter: name, value: raw }]
     }
   }
   return []
@@ -291,13 +291,13 @@ export function validateParameterValue(descriptor: ParameterDescriptor, raw: Jso
     case 'enum': {
       const name = descriptor.name
       if (typeof raw !== 'string') {
-        return [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `参数 '${name}' 必须是字符串`, parameter: name, value: raw }]
+        return [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `Parameter '${name}' must be a string`, parameter: name, value: raw }]
       }
       const allowed = enumOptionValues(descriptor.options)
       if (!allowed.includes(raw)) {
         return [{
           code: GenerationErrorCode.UNSUPPORTED_MEDIA_PARAMETER,
-          message: `参数 '${name}' 的值 '${raw}' 不被该模型支持；可选：${allowed.join(', ')}`,
+          message: `Parameter '${name}' value '${raw}' is not supported by this model; allowed: ${allowed.join(', ')}`,
           parameter: name,
           value: raw,
           constraint: 'options',
@@ -309,18 +309,18 @@ export function validateParameterValue(descriptor: ParameterDescriptor, raw: Jso
     case 'integer': {
       const name = descriptor.name
       if (typeof raw !== 'number' || !Number.isFinite(raw) || !Number.isInteger(raw)) {
-        return [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `参数 '${name}' 必须是整数`, parameter: name, value: raw }]
+        return [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `Parameter '${name}' must be an integer`, parameter: name, value: raw }]
       }
       if (descriptor.min !== undefined && raw < descriptor.min) {
-        return [{ code: GenerationErrorCode.PARAMETER_OUT_OF_RANGE, message: `参数 '${name}' 必须 >= ${descriptor.min}`, parameter: name, value: raw }]
+        return [{ code: GenerationErrorCode.PARAMETER_OUT_OF_RANGE, message: `Parameter '${name}' must be >= ${descriptor.min}`, parameter: name, value: raw }]
       }
       if (descriptor.max !== undefined && raw > descriptor.max) {
-        return [{ code: GenerationErrorCode.PARAMETER_OUT_OF_RANGE, message: `参数 '${name}' 必须 <= ${descriptor.max}`, parameter: name, value: raw }]
+        return [{ code: GenerationErrorCode.PARAMETER_OUT_OF_RANGE, message: `Parameter '${name}' must be <= ${descriptor.max}`, parameter: name, value: raw }]
       }
       if (descriptor.step !== undefined && descriptor.step > 0) {
         const base = descriptor.min ?? 0
         if ((raw - base) % descriptor.step !== 0) {
-          return [{ code: GenerationErrorCode.PARAMETER_STEP_MISMATCH, message: `参数 '${name}' 必须与步长 ${descriptor.step} 对齐`, parameter: name, value: raw }]
+          return [{ code: GenerationErrorCode.PARAMETER_STEP_MISMATCH, message: `Parameter '${name}' must align with step ${descriptor.step}`, parameter: name, value: raw }]
         }
       }
       return []
@@ -333,19 +333,19 @@ export function validateParameterValue(descriptor: ParameterDescriptor, raw: Jso
       const name = descriptor.name
       return typeof raw === 'boolean'
         ? []
-        : [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `参数 '${name}' 必须是布尔值`, parameter: name, value: raw }]
+        : [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `Parameter '${name}' must be a boolean`, parameter: name, value: raw }]
     }
 
     case 'text': {
       const name = descriptor.name
       if (typeof raw !== 'string') {
-        return [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `参数 '${name}' 必须是字符串`, parameter: name, value: raw }]
+        return [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `Parameter '${name}' must be a string`, parameter: name, value: raw }]
       }
       if (descriptor.minLength !== undefined && raw.length < descriptor.minLength) {
-        return [{ code: GenerationErrorCode.TEXT_TOO_SHORT, message: `参数 '${name}' 长度必须 >= ${descriptor.minLength}`, parameter: name, value: raw }]
+        return [{ code: GenerationErrorCode.TEXT_TOO_SHORT, message: `Parameter '${name}' length must be >= ${descriptor.minLength}`, parameter: name, value: raw }]
       }
       if (descriptor.maxLength !== undefined && raw.length > descriptor.maxLength) {
-        return [{ code: GenerationErrorCode.TEXT_TOO_LONG, message: `参数 '${name}' 长度必须 <= ${descriptor.maxLength}`, parameter: name, value: raw }]
+        return [{ code: GenerationErrorCode.TEXT_TOO_LONG, message: `Parameter '${name}' length must be <= ${descriptor.maxLength}`, parameter: name, value: raw }]
       }
       if (descriptor.pattern !== undefined) {
         let pattern: RegExp | null = null
@@ -354,10 +354,10 @@ export function validateParameterValue(descriptor: ParameterDescriptor, raw: Jso
         } catch {
           // A bad pattern is a declaration bug, not a user error: refuse rather
           // than let a broken regex silently accept everything.
-          return [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `参数 '${name}' 的校验表达式无效，请联系管理员`, parameter: name }]
+          return [{ code: GenerationErrorCode.INVALID_PARAMETER_TYPE, message: `Parameter '${name}' has an invalid validation expression. Please contact an admin.`, parameter: name }]
         }
         if (!pattern.test(raw)) {
-          return [{ code: GenerationErrorCode.TEXT_PATTERN_MISMATCH, message: `参数 '${name}' 不符合格式要求`, parameter: name, value: raw }]
+          return [{ code: GenerationErrorCode.TEXT_PATTERN_MISMATCH, message: `Parameter '${name}' does not match the required format`, parameter: name, value: raw }]
         }
       }
       return []
@@ -372,7 +372,7 @@ export function validateParameterValue(descriptor: ParameterDescriptor, raw: Jso
       const unknown = descriptor as ParameterDescriptor
       return [{
         code: GenerationErrorCode.INVALID_PARAMETER_TYPE,
-        message: `参数 '${unknown?.name ?? 'unknown'}' 的类型 '${(unknown as { type?: string })?.type}' 不受支持`,
+        message: `Parameter '${unknown?.name ?? 'unknown'}' of type '${(unknown as { type?: string })?.type}' is not supported`,
         parameter: unknown?.name ?? 'unknown',
       }]
     }
@@ -440,7 +440,7 @@ export function evaluateCrossFieldConstraints(
         && valueA * valueB > constraint.maxProduct) {
         issues.push({
           code: GenerationErrorCode.MAX_PRODUCT_EXCEEDED,
-          message: constraint.message ?? `参数 '${paramA}' 与 '${paramB}' 的乘积超出上限 ${constraint.maxProduct}`,
+          message: constraint.message ?? `The product of parameters '${paramA}' and '${paramB}' exceeds the limit ${constraint.maxProduct}`,
           parameter: paramA,
           constraint: 'max_product',
         })
@@ -453,7 +453,7 @@ export function evaluateCrossFieldConstraints(
       if (parameters[paramA] !== undefined && parameters[paramB] !== undefined) {
         issues.push({
           code: GenerationErrorCode.MUTUALLY_EXCLUSIVE_PARAMETERS,
-          message: constraint.message ?? `参数 '${paramA}' 与 '${paramB}' 不能同时设置`,
+          message: constraint.message ?? `Parameters '${paramA}' and '${paramB}' cannot be set at the same time`,
           parameter: paramB,
           constraint: 'mutually_exclusive',
         })
@@ -472,7 +472,7 @@ export function evaluateCrossFieldConstraints(
     if (constraint.type === 'requires' && targetValue === undefined) {
       issues.push({
         code: GenerationErrorCode.REQUIRED_FIELD_MISSING,
-        message: constraint.message ?? `设置 '${constraint.parameter}' 时必须提供 '${constraint.targetParameter}'`,
+        message: constraint.message ?? `'${constraint.targetParameter}' must be provided when setting '${constraint.parameter}'`,
         parameter: constraint.targetParameter,
         constraint: 'requires',
       })
@@ -489,7 +489,7 @@ export function evaluateCrossFieldConstraints(
       }
       issues.push({
         code: GenerationErrorCode.MEDIA_PARAMETER_CONSTRAINT_FAILED,
-        message: constraint.message ?? `参数 '${constraint.targetParameter}' 不能与 '${constraint.parameter}' 同时设置`,
+        message: constraint.message ?? `Parameter '${constraint.targetParameter}' cannot be set together with '${constraint.parameter}'`,
         parameter: constraint.targetParameter,
         value: targetValue,
         constraint: 'forbidden',

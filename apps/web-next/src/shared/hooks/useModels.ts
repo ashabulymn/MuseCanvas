@@ -12,7 +12,7 @@ export function useModelsQuery() {
     queryFn: async () => {
       const res = await api.getModels()
       if (!res.success || !res.data) {
-        throw new Error(res.error?.message || '获取模型列表失败')
+        throw new Error(res.error?.message || 'Failed to load model list')
       }
       return res.data as ModelConfig[]
     },

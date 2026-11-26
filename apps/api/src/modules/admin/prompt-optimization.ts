@@ -39,14 +39,14 @@ export async function updatePromptOptimizationSettings(
   actor: Actor,
   input: Record<string, unknown>,
 ) {
-  if ('maxOutputChars' in input) return fail('INVALID_INPUT', '前处理设置已移除最大输出字符参数')
-  if ('timeoutMs' in input) return fail('INVALID_INPUT', '前处理超时已固定为 600 秒')
+  if ('maxOutputChars' in input) return fail('INVALID_INPUT', 'The preprocessing settings no longer include the max output characters parameter')
+  if ('timeoutMs' in input) return fail('INVALID_INPUT', 'The preprocessing timeout is fixed at 600 seconds')
   if (
     (input.enabled !== undefined && typeof input.enabled !== 'boolean') ||
     (input.allowUserReadFinalPrompt !== undefined &&
       typeof input.allowUserReadFinalPrompt !== 'boolean')
   )
-    return fail('INVALID_INPUT', '前处理设置无效')
+    return fail('INVALID_INPUT', 'Invalid preprocessing settings')
   const current = (
     await db().query('SELECT * FROM prompt_optimization_settings WHERE singleton=true')
   ).rows[0]
@@ -56,16 +56,16 @@ export async function updatePromptOptimizationSettings(
       : input.languageModelConfigId
   const enabled = input.enabled === undefined ? current.enabled : input.enabled
   if (modelId !== null && (typeof modelId !== 'string' || !/^[0-9a-f-]{36}$/i.test(modelId)))
-    return fail('INVALID_INPUT', '语言模型无效')
+    return fail('INVALID_INPUT', 'Invalid language model')
   if (modelId) {
     const model = await db().query(
       `SELECT m.id FROM model_configs m JOIN provider_credentials pc ON pc.id=m.provider_credential_id AND pc.deleted_at IS NULL WHERE m.id=$1 AND m.model_kind='language' AND m.enabled=true AND m.deleted_at IS NULL AND pc.enabled=true AND COALESCE(NULLIF(pc.payload_encrypted,''),pc.api_key_encrypted) IS NOT NULL`,
       [modelId],
     )
     if (!model.rows[0])
-      return fail('LANGUAGE_MODEL_CONFIG_INVALID', '请选择已启用且凭据完整的语言模型')
+      return fail('LANGUAGE_MODEL_CONFIG_INVALID', 'Please select an enabled language model with complete credentials')
   }
-  if (enabled && !modelId) return fail('PROMPT_MODEL_NOT_CONFIGURED', '启用前请先选择语言模型')
+  if (enabled && !modelId) return fail('PROMPT_MODEL_NOT_CONFIGURED', 'Please select a language model before enabling')
   const timeoutMs = 600_000
   const allowUserReadFinalPrompt =
     input.allowUserReadFinalPrompt === undefined
