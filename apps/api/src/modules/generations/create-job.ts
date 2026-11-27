@@ -189,7 +189,7 @@ export async function createGenerationJob(cmd: CreateGenerationJobCommand): Prom
       const lockedModelRes = await client.query(
         `SELECT m.*, rev.id AS revision_id, rev.capabilities AS revision_capabilities, rev.defaults AS revision_defaults, rev.revision AS revision_number FROM model_configs m
          LEFT JOIN model_config_revisions rev ON rev.id=m.latest_revision_id
-         WHERE m.id=$1 AND m.model_kind IN ('image','video') AND m.enabled=true AND m.deleted_at IS NULL FOR SHARE`,
+         WHERE m.id=$1 AND m.model_kind IN ('image','video') AND m.enabled=true AND m.deleted_at IS NULL FOR SHARE OF m`,
         [modelId]
       )
       const lockedModel = lockedModelRes.rows[0]
